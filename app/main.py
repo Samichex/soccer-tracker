@@ -288,7 +288,12 @@ def teams_list(request: Request, conference: str | None = None, state: str | Non
         t["state"] = team_states.get(t["seo"], "")
         t["rank"], t["prev_rank"] = _rank_lookup(rank_map, t["seo"])
 
-    table.sort(key=lambda t: t["rank"] if t["rank"] is not None else 999)
+    table.sort(
+        key=lambda t: (
+            -(t["overall_w"] * 3 + t["overall_d"]),
+            t["rank"] if t["rank"] is not None else 999,
+        )
+    )
 
     states = sorted({t["state"] for t in table if t["state"]})
 
