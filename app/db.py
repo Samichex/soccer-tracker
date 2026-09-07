@@ -3,7 +3,7 @@ import json
 import sqlite3
 from contextlib import contextmanager
 
-from . import config
+from . import config, validate
 
 # Shared by every query below that returns games rows: prefers a team's full
 # name (only known once its boxscore has synced) over the short scoreboard
@@ -143,6 +143,10 @@ def init_db():
 
 def upsert_game(conn, game: dict, date_str: str):
     g = game["game"]
+    game_id = g["gameID"]
+    status = validate.validate_game_status(game_id, g.get("gameState"))
+    home_score = validate.validate_score(game_id, "home", g["home"].get("score"))
+    away_score = validate.validate_score(game_id, "away", g["away"].get("score"))
     conn.execute(
         """
         INSERT INTO games (
@@ -154,27 +158,27 @@ def upsert_game(conn, game: dict, date_str: str):
         ON CONFLICT(id) DO UPDATE SET
             start_time=excluded.start_time,
             start_epoch=excluded.start_epoch,
-            status=excluded.status,
+            status=COALESCE(excluded.status, games.status),
             current_period=excluded.current_period,
-            home_score=excluded.home_score,
-            away_score=excluded.away_score,
+            home_score=COALESCE(excluded.home_score, games.home_score),
+            away_score=COALESCE(excluded.away_score, games.away_score),
             network=excluded.network,
             updated_at=datetime('now')
         """,
         (
-            g["gameID"],
+            game_id,
             date_str,
             g.get("startTime"),
             _safe_int(g.get("startTimeEpoch")),
-            g.get("gameState"),
+            status,
             g.get("currentPeriod"),
             g["home"]["names"].get("seo"),
             g["home"]["names"].get("short"),
-            g["home"].get("score"),
+            home_score,
             (g["home"].get("conferences") or [{}])[0].get("conferenceSeo"),
             g["away"]["names"].get("seo"),
             g["away"]["names"].get("short"),
-            g["away"].get("score"),
+            away_score,
             (g["away"].get("conferences") or [{}])[0].get("conferenceSeo"),
             g.get("network"),
             g.get("url"),
@@ -249,6 +253,10 @@ def games_missing_boxscore(conn):
 
 
 def replace_player_stats(conn, game_id: str, rows: list[dict]):
+    for r in rows:
+        validate.sanitize_player_row_stats(game_id, r)
+    validate.flag_duplicate_players(game_id, rows)
+
     conn.execute("DELETE FROM player_stats WHERE game_id = ?", (game_id,))
     conn.executemany(
         """
