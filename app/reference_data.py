@@ -183,6 +183,16 @@ def title_case_name(value: str | None) -> str:
     return re.sub(r"[A-Za-z]+", lambda m: m.group(0)[:1].upper() + m.group(0)[1:].lower(), value)
 
 
+_POSITION_SHORT = {"GK": "G", "DEF": "D", "MID": "M", "ATK": "F"}
+
+
+def position_short(value: str | None) -> str:
+    """Single-letter position abbreviation, e.g. "DEF" -> "D"."""
+    if not value:
+        return value or ""
+    return _POSITION_SHORT.get(value, value[:1])
+
+
 def _format_local_time(local: dt.datetime, with_year: bool) -> str:
     # Avoid %-d/%-I (no-leading-zero) strftime codes: they're a Unix/glibc
     # extension and raise on Windows.

@@ -35,6 +35,7 @@ templates.env.globals["team_label_responsive"] = reference_data.get_team_label_r
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 templates.env.filters["name_case"] = reference_data.title_case_name
+templates.env.filters["position_short"] = reference_data.position_short
 
 
 def _pretty_date(date_str: str | None) -> str:
