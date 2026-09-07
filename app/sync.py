@@ -173,6 +173,12 @@ def sync_rankings(conn, observed_date: dt.date | None = None):
 
 
 def run_full_sync():
+    """Sync the live window: recent results plus the near-term schedule.
+
+    Scores and game times in this window change, so it's cheap to re-pull on
+    every background cycle and safe to trigger from the manual refresh
+    endpoint. Days further out belong to sync_far_schedule instead.
+    """
     today = dt.date.today()
     with db.get_conn() as conn:
         for offset in range(-config.DAYS_BACK, config.DAYS_FORWARD + 1):
@@ -183,6 +189,19 @@ def run_full_sync():
         except Exception:
             log.exception("failed to sync rankings")
         db.set_last_synced(conn, dt.datetime.utcnow().isoformat())
+
+
+def sync_far_schedule():
+    """Sync the rest-of-season schedule beyond the live window.
+
+    These fixtures rarely change day to day, so this runs on its own slower
+    cadence (SCHEDULE_SYNC_INTERVAL_HOURS) from the background loop only —
+    it's not tied to the manual /api/sync-now refresh.
+    """
+    today = dt.date.today()
+    with db.get_conn() as conn:
+        for offset in range(config.DAYS_FORWARD + 1, config.SCHEDULE_DAYS_FORWARD + 1):
+            sync_date(conn, today + dt.timedelta(days=offset))
 
 
 if __name__ == "__main__":

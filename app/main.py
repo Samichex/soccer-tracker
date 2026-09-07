@@ -57,11 +57,22 @@ templates.env.globals["last_synced"] = _last_synced
 
 
 def _background_sync_loop():
+    last_schedule_sync: dt.datetime | None = None
+    schedule_interval = dt.timedelta(hours=config.SCHEDULE_SYNC_INTERVAL_HOURS)
     while True:
         try:
             sync.run_full_sync()
         except Exception:
             log.exception("sync failed")
+
+        now = dt.datetime.utcnow()
+        if last_schedule_sync is None or now - last_schedule_sync >= schedule_interval:
+            try:
+                sync.sync_far_schedule()
+                last_schedule_sync = now
+            except Exception:
+                log.exception("far schedule sync failed")
+
         time.sleep(config.SYNC_INTERVAL_MINUTES * 60)
 
 

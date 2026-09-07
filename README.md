@@ -29,7 +29,16 @@ On startup it runs a full sync (today +/- a few days) and repeats every
 - `NCAA_API_BASE` — defaults to the public `https://ncaa-api.henrygd.me`.
   Point this at a self-hosted instance (`docker run -p 3000:3000 henrygd/ncaa-api`)
   if the public one becomes unreliable or rate limits are an issue.
-- `DAYS_BACK` / `DAYS_FORWARD` — sync window around today (default 3 / 7).
+- `DAYS_BACK` / `DAYS_FORWARD` — live sync window around today (default 3 / 4).
+  Scores and game times in this window change, so it's re-pulled every
+  `SYNC_INTERVAL_MINUTES` and on manual refresh.
+- `SCHEDULE_DAYS_FORWARD` / `SCHEDULE_SYNC_INTERVAL_HOURS` — further-out
+  schedule window (default 65 days forward, i.e. the rest of the regular
+  season from an early-September start; the upstream API returns nothing
+  past that until postseason brackets are published) and how often it's
+  refreshed (default every 24h). Fixtures out there barely change day to
+  day, so this runs on its own slower cadence in the background only —
+  it isn't triggered by the manual refresh button.
 - `SYNC_INTERVAL_MINUTES` — background sync frequency (default 30).
 
 ## Deploying
