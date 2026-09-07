@@ -3,15 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matches &mdash; Full Time</title>
+    <title>FT: D1 Men's Soccer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     {% include "_nav.html" %}
-
-    <h1>Matches</h1>
 
     <div class="datebar">
         <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}">
