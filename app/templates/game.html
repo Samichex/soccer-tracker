@@ -17,8 +17,8 @@
     <div class="game-header">
         <h1 class="matchup">
             <div class="matchup-names">
-                <a class="matchup-team left" href="/team/{{ game.away_seo }}">{{ rank_prefix(game.away_rank, game.away_prev_rank) }}{{ team_label(game.away_name, game.away_seo, game.away_conference) }}</a>
-                <a class="matchup-team right" href="/team/{{ game.home_seo }}">{{ rank_prefix(game.home_rank, game.home_prev_rank) }}{{ team_label(game.home_name, game.home_seo, game.home_conference) }}</a>
+                <a class="matchup-team left" href="/team/{{ game.away_seo }}">{{ rank_prefix(game.away_rank, game.away_prev_rank) }}{{ team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference) }}</a>
+                <a class="matchup-team right" href="/team/{{ game.home_seo }}">{{ rank_prefix(game.home_rank, game.home_prev_rank) }}{{ team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference) }}</a>
             </div>
             <div class="matchup-score">
                 <span class="score-big">{{ game.away_score }}</span>
@@ -48,7 +48,7 @@
     {% if not away_stats and not home_stats %}
     <p class="empty">No box score available yet{% if game.status != 'final' %} (game not finished){% endif %}.</p>
     {% else %}
-    {% for team_name, stats in [(team_label(game.away_name, game.away_seo, game.away_conference), away_stats), (team_label(game.home_name, game.home_seo, game.home_conference), home_stats)] %}
+    {% for team_name, stats in [(team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference), away_stats), (team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference), home_stats)] %}
     <div class="boxscore-card">
         <h2>{{ team_name }}</h2>
         <div class="table-scroll">

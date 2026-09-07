@@ -183,6 +183,8 @@ h2 {
 .cell-result { text-align: right; }
 .cell-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 
+.name-short { display: none; }
+
 .team-link { font-weight: 600; font-size: 0.92rem; color: var(--text); }
 .team-link.align-left { text-align: left; }
 .team-link.align-right { text-align: right; }
@@ -445,6 +447,8 @@ table.sortable th[data-sort].sort-desc::after { content: " \25BC"; font-size: 0.
     .card-row.history { grid-template-columns: 76px 20px 1fr 40px; }
     .card-row.history .score-link { display: none; }
     .team-link { overflow-wrap: break-word; }
+    .name-full { display: none; }
+    .name-short { display: inline; }
 
     .topnav { flex-wrap: wrap; row-gap: 12px; }
     .topnav-search { order: 3; flex: 1 1 100%; max-width: none; }

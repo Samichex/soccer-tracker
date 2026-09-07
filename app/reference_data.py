@@ -69,6 +69,20 @@ def get_team_label(name: str | None, seo: str | None, conference_seo: str | None
     return f"{name} ({', '.join(parts)})" if parts else name
 
 
+def get_team_label_responsive(
+    short_name: str | None, full_name: str | None, seo: str | None, conference_seo: str | None = None
+) -> Markup:
+    """Team display name that shows the full name on wide screens and the
+    short scoreboard name (e.g. "NC State" instead of "North Carolina State
+    University") on narrow ones, via CSS toggling `.name-full`/`.name-short`.
+    """
+    full_label = get_team_label(full_name or short_name, seo, conference_seo)
+    short_label = get_team_label(short_name or full_name, seo, conference_seo)
+    return Markup('<span class="name-full">{}</span><span class="name-short">{}</span>').format(
+        full_label, short_label
+    )
+
+
 def rank_prefix(rank: int | None, prev_rank: str | None = None) -> Markup:
     """Rank badge prefix, e.g. '#3 ' for rank=3, '' if unranked. When
     `prev_rank` is given, leads with a colored move indicator: an arrow for

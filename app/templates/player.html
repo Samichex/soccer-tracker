@@ -19,7 +19,7 @@
         {% if player.position %}<span class="badge pos">{{ player.position }}</span>{% endif %}
         {% if player.number %}<span class="badge">#{{ player.number }}</span>{% endif %}
     </div>
-    <p class="team-meta"><a href="/team/{{ player.team_seo }}">{{ team_label(player.team_name, player.team_seo, player.team_conference) }}</a></p>
+    <p class="team-meta"><a href="/team/{{ player.team_seo }}">{{ team_label_responsive(player.team_name_short, player.team_name, player.team_seo, player.team_conference) }}</a></p>
 
     <div class="boxscore-card">
         <h2>Season</h2>
