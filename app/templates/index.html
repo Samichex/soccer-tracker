@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Matches &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    <h1>Matches</h1>
+
+    <div class="datebar">
+        <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}">
+            <span class="arrow-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </span>
+            <span class="datebar-label">{{ prev_day.strftime('%a %d %b') }}</span>
+        </a>
+        <h1 class="datebar-title">{% if is_today %}Today{% else %}{{ day.strftime('%a %d %b') }}{% endif %}</h1>
+        <a class="datebar-side" href="/?date={{ next_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}">
+            <span class="arrow-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </span>
+            <span class="datebar-label">{{ next_day.strftime('%a %d %b') }}</span>
+        </a>
+    </div>
+
+    <form method="get" action="/" class="conference-filter">
+        <input type="hidden" name="date" value="{{ day.isoformat() }}">
+        <select name="conference" onchange="this.form.submit()">
+            <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
+            {% for c in conferences %}
+            <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label(c) }}</option>
+            {% endfor %}
+        </select>
+        <noscript><button type="submit">Go</button></noscript>
+    </form>
+
+    {% if not games %}
+    <p class="empty">No games synced for this date{% if selected_conference %} in {{ conference_label(selected_conference) }}{% endif %}.</p>
+    {% else %}
+    <div class="card-list">
+        {% for g in games %}
+        <div class="card-row matches">
+            <a class="team-link align-left" href="/team/{{ g.away_seo }}">{{ rank_prefix(g.away_rank, g.away_prev_rank) }}{{ team_label(g.away_name, g.away_seo, g.away_conference) }}</a>
+            <a class="score-link" href="/game/{{ g.id }}">{% if g.away_score is none and g.home_score is none %}&ndash;{% else %}{{ g.away_score }} &ndash; {{ g.home_score }}{% endif %}</a>
+            <a class="team-link align-right" href="/team/{{ g.home_seo }}">{{ rank_prefix(g.home_rank, g.home_prev_rank) }}{{ team_label(g.home_name, g.home_seo, g.home_conference) }}</a>
+            <div class="cell-status">
+                {% if g.is_upset %}<span class="pill pill-upset" title="A ranked team lost to a lower-ranked or unranked opponent">🔥 Upset</span>{% endif %}
+                <span class="pill status-{{ g.status }}">
+                {% if g.status == 'final' %}Final
+                {% elif g.status == 'live' %}{{ g.current_period or 'Live' }}
+                {% else %}{{ g.start_time }}
+                {% endif %}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>

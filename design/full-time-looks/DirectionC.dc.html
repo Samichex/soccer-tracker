@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .ft-root {
+      background: #faf8f5;
+      color: #201f1d;
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      padding: 40px 52px 60px;
+      width: 100%;
+      min-height: 100%;
+    }
+    a { color: inherit; }
+
+    .ft-topnav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ece8e1;
+    }
+    .ft-brand { font-weight: 700; font-size: 19px; color: #201f1d; }
+    .ft-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #ece8e1;
+      border-radius: 999px;
+      padding: 8px 14px;
+      width: 220px;
+    }
+    .ft-search svg { flex: none; opacity: 0.5; }
+    .ft-search input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: "Source Sans 3", sans-serif;
+      font-size: 13px;
+      color: #201f1d;
+      width: 100%;
+    }
+    .ft-search input::placeholder { color: #9c9890; }
+    .ft-navlinks { display: flex; gap: 24px; margin-left: auto; }
+    .ft-navlinks a { text-decoration: none; font-size: 14px; font-weight: 600; color: #767267; padding-bottom: 6px; border-bottom: 2px solid transparent; }
+    .ft-navlinks a.active { color: #2f6f4f; border-color: #2f6f4f; }
+    .ft-navlinks a:hover { color: #201f1d; }
+
+    .ft-datebar { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 28px 0 22px; }
+    .ft-arrowbtn {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 1px solid #ece8e1; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; color: #767267;
+    }
+    .ft-arrowbtn:hover { border-color: #2f6f4f; color: #2f6f4f; }
+    .ft-today { font-weight: 600; font-size: 18px; color: #201f1d; min-width: 200px; text-align: center; }
+
+    .ft-filterrow { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .ft-select {
+      background: #fff;
+      border: 1px solid #ece8e1;
+      color: #55524a;
+      font-family: "Source Sans 3", sans-serif;
+      font-size: 13px;
+      padding: 7px 12px;
+      border-radius: 6px;
+    }
+
+    .ft-list { display: flex; flex-direction: column; gap: 8px; }
+    .ft-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto 1fr 90px;
+      align-items: center;
+      gap: 14px;
+      background: #ffffff;
+      border: 1px solid #ece8e1;
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .ft-time { font-size: 12.5px; color: #9c9890; font-variant-numeric: tabular-nums; }
+    .ft-team { text-decoration: none; font-weight: 600; font-size: 14.5px; color: #201f1d; }
+    .ft-team.away { text-align: left; }
+    .ft-team.home { text-align: right; }
+    .ft-team:hover { color: #2f6f4f; }
+    .ft-score {
+      text-decoration: none;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 15px;
+      color: #201f1d;
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+    .ft-status { justify-self: end; }
+    .ft-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .ft-pill.final { background: #f1efe9; color: #767267; }
+    .ft-pill.pre { background: #f1efe9; color: #55524a; }
+    .ft-pill.live { background: #fbeae4; color: #c1573c; }
+  </style>
+</helmet>
+
+<div class="ft-root">
+  <div class="ft-topnav">
+    <div class="ft-brand">Full Time</div>
+    <div class="ft-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" placeholder="Search teams">
+    </div>
+    <div class="ft-navlinks">
+      <a href="#" class="active">Matches</a>
+      <a href="#">Conferences</a>
+      <a href="#">Players</a>
+    </div>
+  </div>
+
+  <div class="ft-datebar">
+    <a class="ft-arrowbtn" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </a>
+    <div class="ft-today">Wednesday, Sep 3</div>
+    <a class="ft-arrowbtn" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </a>
+  </div>
+
+  <div class="ft-filterrow">
+    <select class="ft-select"><option>All conferences</option></select>
+  </div>
+
+  <div class="ft-list">
+    <div class="ft-row">
+      <div class="ft-time">12:00 PM</div>
+      <a class="ft-team away" href="#">Wake Forest</a>
+      <a class="ft-score" href="#">2 &ndash; 1</a>
+      <a class="ft-team home" href="#">Duke</a>
+      <div class="ft-status"><span class="ft-pill final">Final</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">1:00 PM</div>
+      <a class="ft-team away" href="#">Clemson</a>
+      <a class="ft-score" href="#">0 &ndash; 0</a>
+      <a class="ft-team home" href="#">Notre Dame</a>
+      <div class="ft-status"><span class="ft-pill live">Live 78&prime;</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">3:30 PM</div>
+      <a class="ft-team away" href="#">Virginia</a>
+      <a class="ft-score" href="#">&ndash;</a>
+      <a class="ft-team home" href="#">Louisville</a>
+      <div class="ft-status"><span class="ft-pill pre">3:30 PM</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">4:00 PM</div>
+      <a class="ft-team away" href="#">Pittsburgh</a>
+      <a class="ft-score" href="#">&ndash;</a>
+      <a class="ft-team home" href="#">Syracuse</a>
+      <div class="ft-status"><span class="ft-pill pre">4:00 PM</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">5:00 PM</div>
+      <a class="ft-team away" href="#">Georgetown</a>
+      <a class="ft-score" href="#">1 &ndash; 3</a>
+      <a class="ft-team home" href="#">Stanford</a>
+      <div class="ft-status"><span class="ft-pill final">Final</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">6:00 PM</div>
+      <a class="ft-team away" href="#">UCLA</a>
+      <a class="ft-score" href="#">&ndash;</a>
+      <a class="ft-team home" href="#">North Carolina</a>
+      <div class="ft-status"><span class="ft-pill pre">6:00 PM</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">7:00 PM</div>
+      <a class="ft-team away" href="#">Boston College</a>
+      <a class="ft-score" href="#">2 &ndash; 2</a>
+      <a class="ft-team home" href="#">Virginia Tech</a>
+      <div class="ft-status"><span class="ft-pill final">Final</span></div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-time">7:30 PM</div>
+      <a class="ft-team away" href="#">Michigan</a>
+      <a class="ft-score" href="#">&ndash;</a>
+      <a class="ft-team home" href="#">Indiana</a>
+      <div class="ft-status"><span class="ft-pill pre">7:30 PM</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

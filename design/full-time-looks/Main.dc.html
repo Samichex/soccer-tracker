@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .ft-root {
+      background: #0d0e12;
+      color: #eceef1;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      padding: 44px 56px 64px;
+      width: 100%;
+      min-height: 100%;
+    }
+    .ft-topnav {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #1e2026;
+    }
+    .ft-brand {
+      font-family: "Newsreader", Georgia, serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 22px;
+      color: #eceef1;
+      letter-spacing: 0.01em;
+    }
+    .ft-search {
+      flex: 1;
+      max-width: 260px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #2a2d34;
+      color: #eceef1;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 13px;
+      padding: 6px 2px;
+    }
+    .ft-search::placeholder { color: #6d717c; }
+    .ft-search:focus { outline: none; border-color: #7fae90; }
+    .ft-navlinks { display: flex; gap: 28px; margin-left: auto; }
+    .ft-navlinks a {
+      color: #9aa0ab;
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+    .ft-navlinks a.active { color: #eceef1; }
+    .ft-navlinks a:hover { color: #eceef1; }
+
+    .ft-datebar {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 28px;
+      padding: 30px 0 22px;
+    }
+    .ft-daylink {
+      color: #8b8f99;
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+    .ft-daylink:hover { color: #eceef1; }
+    .ft-today {
+      font-family: "Newsreader", Georgia, serif;
+      font-weight: 500;
+      font-size: 26px;
+      letter-spacing: 0.01em;
+    }
+
+    .ft-filterrow {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 6px;
+    }
+    .ft-select {
+      background: transparent;
+      border: 1px solid #262a33;
+      color: #9aa0ab;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 3px;
+    }
+
+    table.ft-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    table.ft-table thead th {
+      text-align: left;
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: #6d717c;
+      padding: 0 12px 12px;
+      border-bottom: 1px solid #1e2026;
+    }
+    table.ft-table thead th.num { text-align: right; }
+    table.ft-table tbody td {
+      padding: 18px 12px;
+      border-bottom: 1px solid #17181d;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    table.ft-table tbody tr:hover td { background: #131419; }
+    table.ft-table tbody tr:last-child td { border-bottom: none; }
+    .ft-time { color: #8b8f99; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+    .ft-team { color: #dfe1e6; text-decoration: none; }
+    .ft-team:hover { color: #a9c9b6; }
+    .ft-score {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-size: 15px;
+      color: #eceef1;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .ft-score a { color: inherit; text-decoration: none; }
+    .ft-status { font-size: 12px; text-align: right; }
+    .ft-status.final { color: #6d717c; }
+    .ft-status.pre { color: #6d717c; font-style: italic; }
+    .ft-status.live { color: #d9a860; display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+    .ft-dot { width: 6px; height: 6px; border-radius: 50%; background: #d9a860; display: inline-block; }
+  </style>
+</helmet>
+
+<div class="ft-root">
+  <div class="ft-topnav">
+    <div class="ft-brand">Full Time</div>
+    <input class="ft-search" type="text" placeholder="Search teams&hellip;">
+    <div class="ft-navlinks">
+      <a href="#" class="active">Matches</a>
+      <a href="#">Conferences</a>
+      <a href="#">Players</a>
+    </div>
+  </div>
+
+  <div class="ft-datebar">
+    <a class="ft-daylink" href="#">&larr; Tue 2 Sep</a>
+    <div class="ft-today">Wednesday, Sep 3</div>
+    <a class="ft-daylink" href="#">Thu 4 Sep &rarr;</a>
+  </div>
+
+  <div class="ft-filterrow">
+    <select class="ft-select"><option>All conferences</option></select>
+  </div>
+
+  <table class="ft-table">
+    <thead>
+      <tr><th>Time</th><th>Away</th><th class="num">Score</th><th>Home</th><th class="num">Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="ft-time">12:00 PM</td>
+        <td><a class="ft-team" href="#">Wake Forest</a></td>
+        <td class="ft-score"><a href="#">2&nbsp;&ndash;&nbsp;1</a></td>
+        <td><a class="ft-team" href="#">Duke</a></td>
+        <td class="ft-status final">Final</td>
+      </tr>
+      <tr>
+        <td class="ft-time">1:00 PM</td>
+        <td><a class="ft-team" href="#">Clemson</a></td>
+        <td class="ft-score"><a href="#">0&nbsp;&ndash;&nbsp;0</a></td>
+        <td><a class="ft-team" href="#">Notre Dame</a></td>
+        <td class="ft-status live"><span class="ft-dot"></span>78&prime;</td>
+      </tr>
+      <tr>
+        <td class="ft-time">3:30 PM</td>
+        <td><a class="ft-team" href="#">Virginia</a></td>
+        <td class="ft-score"><a href="#">&ndash;</a></td>
+        <td><a class="ft-team" href="#">Louisville</a></td>
+        <td class="ft-status pre">3:30 PM</td>
+      </tr>
+      <tr>
+        <td class="ft-time">4:00 PM</td>
+        <td><a class="ft-team" href="#">Pittsburgh</a></td>
+        <td class="ft-score"><a href="#">&ndash;</a></td>
+        <td><a class="ft-team" href="#">Syracuse</a></td>
+        <td class="ft-status pre">4:00 PM</td>
+      </tr>
+      <tr>
+        <td class="ft-time">5:00 PM</td>
+        <td><a class="ft-team" href="#">Georgetown</a></td>
+        <td class="ft-score"><a href="#">1&nbsp;&ndash;&nbsp;3</a></td>
+        <td><a class="ft-team" href="#">Stanford</a></td>
+        <td class="ft-status final">Final</td>
+      </tr>
+      <tr>
+        <td class="ft-time">6:00 PM</td>
+        <td><a class="ft-team" href="#">UCLA</a></td>
+        <td class="ft-score"><a href="#">&ndash;</a></td>
+        <td><a class="ft-team" href="#">North Carolina</a></td>
+        <td class="ft-status pre">6:00 PM</td>
+      </tr>
+      <tr>
+        <td class="ft-time">7:00 PM</td>
+        <td><a class="ft-team" href="#">Boston College</a></td>
+        <td class="ft-score"><a href="#">2&nbsp;&ndash;&nbsp;2</a></td>
+        <td><a class="ft-team" href="#">Virginia Tech</a></td>
+        <td class="ft-status final">Final</td>
+      </tr>
+      <tr>
+        <td class="ft-time">7:30 PM</td>
+        <td><a class="ft-team" href="#">Michigan</a></td>
+        <td class="ft-score"><a href="#">&ndash;</a></td>
+        <td><a class="ft-team" href="#">Indiana</a></td>
+        <td class="ft-status pre">7:30 PM</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</x-dc>
+</body>
+</html>

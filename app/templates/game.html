@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if game %}{{ game.away_name }} @ {{ game.home_name }}{% else %}Game{% endif %} &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    {% if not game %}
+    <p class="empty">Game not found.</p>
+    {% else %}
+    <div class="game-header">
+        <h1 class="matchup">
+            <div class="matchup-names">
+                <a class="matchup-team left" href="/team/{{ game.away_seo }}">{{ rank_prefix(game.away_rank, game.away_prev_rank) }}{{ team_label(game.away_name, game.away_seo, game.away_conference) }}</a>
+                <a class="matchup-team right" href="/team/{{ game.home_seo }}">{{ rank_prefix(game.home_rank, game.home_prev_rank) }}{{ team_label(game.home_name, game.home_seo, game.home_conference) }}</a>
+            </div>
+            <div class="matchup-score">
+                <span class="score-big">{{ game.away_score }}</span>
+                <span class="score-sep">&ndash;</span>
+                <span class="score-big">{{ game.home_score }}</span>
+            </div>
+        </h1>
+    </div>
+    <p class="game-meta">{{ game.date | pretty_date }} &middot; {{ game.current_period or game.status }}</p>
+
+    {% if team_stats %}
+    <div class="boxscore-card stats-card">
+        <h2>Team Stats</h2>
+        <div class="stats-grid">
+        {% for label, key in [("Shots","shots"), ("Shots on Goal","shots_on_goal"),
+                               ("Corners","corners"), ("Fouls","fouls"),
+                               ("Offsides","offsides"), ("Yellow Cards","yellow_cards"),
+                               ("Red Cards","red_cards"), ("Saves","saves")] %}
+            <span class="stats-val left{% if team_stats.away[key] > team_stats.home[key] %} hi{% endif %}">{{ team_stats.away[key] }}</span>
+            <span class="stats-label">{{ label }}</span>
+            <span class="stats-val right{% if team_stats.home[key] > team_stats.away[key] %} hi{% endif %}">{{ team_stats.home[key] }}</span>
+        {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not away_stats and not home_stats %}
+    <p class="empty">No box score available yet{% if game.status != 'final' %} (game not finished){% endif %}.</p>
+    {% else %}
+    {% for team_name, stats in [(team_label(game.away_name, game.away_seo, game.away_conference), away_stats), (team_label(game.home_name, game.home_seo, game.home_conference), home_stats)] %}
+    <div class="boxscore-card">
+        <h2>{{ team_name }}</h2>
+        <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Player</th><th>Pos</th>
+                    <th class="num">Min</th><th class="num">G</th><th class="num">A</th>
+                    <th class="num">S</th><th class="num">SOT</th><th class="num">SAV</th>
+                    <th class="num">YC</th><th class="num">RC</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for p in stats %}
+                <tr>
+                    <td>{{ p.number }}</td>
+                    <td>{{ p.first_name | name_case }} {{ p.last_name | name_case }}</td>
+                    <td>{{ p.position }}</td>
+                    <td class="num">{{ p.minutes_played }}</td>
+                    <td class="num">{{ p.goals }}</td>
+                    <td class="num">{{ p.assists }}</td>
+                    <td class="num">{{ p.shots }}</td>
+                    <td class="num">{{ p.shots_on_goal }}</td>
+                    <td class="num">{{ p.saves }}</td>
+                    <td class="num">{{ p.yellow_cards }}</td>
+                    <td class="num">{{ p.red_cards }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+</body>
+</html>

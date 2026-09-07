@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ conference_label }} &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    <h1>{{ conference_label }}</h1>
+
+    <form class="conference-filter" onsubmit="return false">
+        <select onchange="if (this.value) window.location.href = '/conference/' + this.value">
+            {% for c in conferences %}
+            <option value="{{ c }}" {% if c == conference %}selected{% endif %}>{{ conference_label_fn(c) }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if not table %}
+    <p class="empty">No final games synced yet for this conference.</p>
+    {% else %}
+    <div class="boxscore-card">
+    <div class="table-scroll">
+    <table class="sortable standings">
+        <thead>
+            <tr>
+                <th class="num" data-sort="rank" data-sort-default="asc">Rk</th>
+                <th data-sort="team" data-sort-default="asc">Team</th>
+                <th data-sort="state" data-sort-default="asc">ST</th>
+                <th class="num" data-sort="conf" data-sort-default="desc">Conf.</th>
+                <th class="num" data-sort="pts" data-sort-default="desc">Pts</th>
+                <th class="num" data-sort="nc" data-sort-default="desc">Non-Conf.</th>
+                <th class="num sort-desc" data-sort="overall" data-sort-default="desc">Overall</th>
+                <th class="num" data-sort="gf" data-sort-default="desc">GF</th>
+                <th class="num" data-sort="ga" data-sort-default="desc">GA</th>
+                <th class="num" data-sort="gd" data-sort-default="desc">GD</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in table %}
+            <tr>
+                <td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {{ t.rank or '' }}</td>
+                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label(t.name, t.seo, conference) }}</a></td>
+                <td data-sort-key="state" data-sort-value="{{ t.state }}">{{ t.state }}</td>
+                <td class="num" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
+                <td class="num" data-sort-key="pts" data-sort-value="{{ t.conf_pts }}">{{ t.conf_pts }}</td>
+                <td class="num" data-sort-key="nc" data-sort-value="{{ t.nc_w * 3 + t.nc_d }}">{{ t.nc_w }}-{{ t.nc_l }}-{{ t.nc_d }}</td>
+                <td class="num" data-sort-key="overall" data-sort-value="{{ t.overall_w * 3 + t.overall_d }}">{{ t.overall_w }}-{{ t.overall_l }}-{{ t.overall_d }}</td>
+                <td class="num" data-sort-key="gf" data-sort-value="{{ t.gf }}">{{ t.gf }}</td>
+                <td class="num" data-sort-key="ga" data-sort-value="{{ t.ga }}">{{ t.ga }}</td>
+                <td class="num" data-sort-key="gd" data-sort-value="{{ t.gd }}">{{ t.gd }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    <p class="glossary">GF = Goals For &middot; GA = Goals Against &middot; GD = Goal Differential (GF-GA)</p>
+    <script src="/static/sort-table.js"></script>
+    {% endif %}
+</body>
+</html>

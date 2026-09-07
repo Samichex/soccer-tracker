@@ -1,0 +1,20 @@
+{
+  "acc": {"short": "ACC", "full": "Atlantic Coast Conference"},
+  "asun": {"short": "ASUN", "full": "ASUN Conference"},
+  "caa": {"short": "CAA", "full": "Coastal Athletic Association"},
+  "gliac": {"short": "GLIAC", "full": "Great Lakes Intercollegiate Athletic Conference"},
+  "glvc": {"short": "GLVC", "full": "Great Lakes Valley Conference"},
+  "hcac": {"short": "HCAC", "full": "Heartland Collegiate Athletic Conference"},
+  "metro": {"short": "MAAC", "full": "Metro Atlantic Athletic Conference"},
+  "michigan-intercol. ath. assn.": {"short": "MIAA", "full": "Michigan Intercollegiate Athletic Association"},
+  "mvc": {"short": "MVC", "full": "Missouri Valley Conference"},
+  "nec": {"short": "NEC", "full": "Northeast Conference"},
+  "odac": {"short": "ODAC", "full": "Old Dominion Athletic Conference"},
+  "ovc": {"short": "OVC", "full": "Ohio Valley Conference"},
+  "pac": {"short": "PAC", "full": "Presidents' Athletic Conference"},
+  "pac-12": {"short": "Pac-12", "full": "Pac-12 Conference"},
+  "sliac": {"short": "SLIAC", "full": "St. Louis Intercollegiate Athletic Conference"},
+  "socon": {"short": "SOCON", "full": "Southern Conference"},
+  "usa-south": {"short": "USA South", "full": "USA South Athletic Conference"},
+  "wcc": {"short": "WCC", "full": "West Coast Conference"}
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if player %}{{ player.first_name | name_case }} {{ player.last_name | name_case }}{% else %}Player{% endif %} &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    {% if not player %}
+    <p class="empty">Player not found.</p>
+    {% else %}
+    <h1>{{ player.first_name }} {{ player.last_name }}</h1>
+    <p class="team-meta"><a href="/team/{{ player.team_seo }}">{{ team_label(player.team_name, player.team_seo, player.team_conference) }}</a></p>
+    <p class="team-meta">
+        {{ totals.games }} games &middot;
+        {{ totals.goals }} goals &middot;
+        {{ totals.assists }} assists &middot;
+        {{ totals.shots }} shots ({{ totals.shots_on_goal }} on target)
+    </p>
+
+    <div class="boxscore-card">
+    <div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th><th></th><th>Opponent</th>
+                <th class="num">Min</th><th class="num">G</th><th class="num">A</th>
+                <th class="num">S</th><th class="num">SOT</th><th class="num">SAV</th>
+                <th class="num">YC</th><th class="num">RC</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in log %}
+            <tr>
+                <td><a href="/game/{{ r.game_id }}">{{ r.date | pretty_date }}</a></td>
+                <td>{{ 'vs' if r.is_home else '@' }}</td>
+                <td><a href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a></td>
+                <td class="num">{{ r.minutes_played }}</td>
+                <td class="num">{{ r.goals }}</td>
+                <td class="num">{{ r.assists }}</td>
+                <td class="num">{{ r.shots }}</td>
+                <td class="num">{{ r.shots_on_goal }}</td>
+                <td class="num">{{ r.saves }}</td>
+                <td class="num">{{ r.yellow_cards }}</td>
+                <td class="num">{{ r.red_cards }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    {% endif %}
+</body>
+</html>

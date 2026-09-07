@@ -1,0 +1,13 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "A — Quiet Editorial", "x": 0, "y": 0, "w": 1000, "h": 1050 },
+    { "file": "DirectionB.dc.html", "title": "B — Technical Grid", "x": 1080, "y": 0, "w": 1000, "h": 1000 },
+    { "file": "DirectionC.dc.html", "title": "C — Soft Paper", "x": 2160, "y": 0, "w": 1000, "h": 1150 }
+  ],
+  "annotations": [
+    { "id": "note-a", "x": 0, "y": -140, "w": 320, "text": "A — Quiet Editorial\nDark, serif headings (Newsreader) + plain sans body, hairline dividers, muted sage-green accent instead of blue. Feels like a sports-desk publication." },
+    { "id": "note-b", "x": 1080, "y": -140, "w": 320, "text": "B — Technical Grid\nDark, monospace for all scores/times/status, faint column rules, cyan accent + bracketed status tags. Scoreboard precision." },
+    { "id": "note-c", "x": 2160, "y": -160, "w": 320, "text": "C — Soft Paper\nLight mode, single sans family, rows become soft bordered cards with pill statuses, forest-green accent. Calmer, more app-like than spreadsheet-like." }
+  ],
+  "launch": { "view": "canvas" }
+}

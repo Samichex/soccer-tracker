@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if team %}{{ team.name_full or team.name }}{% else %}Team{% endif %} &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    {% if not team %}
+    <p class="empty">Team not found.</p>
+    {% else %}
+    <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label(team.name_full or team.name, team.seo, team.conference) }}</h1>
+    <p class="team-meta">
+        {% if team.conference %}<a href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a> &middot; {% endif %}
+        Conference: {{ record.conf_w }}-{{ record.conf_l }}-{{ record.conf_d }} &middot;
+        Non-Conference: {{ record.nc_w }}-{{ record.nc_l }}-{{ record.nc_d }} &middot;
+        Overall: {{ record.overall_w }}-{{ record.overall_l }}-{{ record.overall_d }}
+    </p>
+
+    <div class="card-list">
+    {% for r in rows %}
+        <div class="card-row history">
+            <div class="cell-date">{{ r.game.date | pretty_date }}</div>
+            <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}</div>
+            <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
+            <a class="score-link" href="/game/{{ r.game.id }}">
+                {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
+                {% else %}{{ r.game.start_time }}
+                {% endif %}
+            </a>
+            <div class="cell-result">
+                {% if r.result == 'w' %}<span class="pill result-w">W</span>
+                {% elif r.result == 'l' %}<span class="pill result-l">L</span>
+                {% elif r.result == 'd' %}<span class="pill result-d">D</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+    {% if rank_history %}
+    <h2>Poll History</h2>
+    <div class="boxscore-card">
+    <div class="table-scroll">
+    <table>
+        <thead>
+            <tr><th>Week Of</th><th class="num">Rank</th><th class="num">Prev</th><th>Record</th></tr>
+        </thead>
+        <tbody>
+        {% for r in rank_history %}
+            <tr>
+                <td>{{ r.week_start | pretty_date }}</td>
+                <td class="num">#{{ r.rank }}</td>
+                <td class="num">{{ r.prev_rank or 'NR' }}</td>
+                <td>{{ r.record }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    {% endif %}
+
+    <h2>Roster</h2>
+    {% if not roster %}
+    <p class="empty">No roster data yet.</p>
+    {% else %}
+    <div class="boxscore-card">
+    <div class="table-scroll">
+    <table class="sortable">
+        <thead>
+            <tr>
+                <th class="num" data-sort="number" data-sort-default="asc">#</th>
+                <th data-sort="name" data-sort-default="asc">Player</th>
+                <th data-sort="pos" data-sort-default="asc">Pos</th>
+                <th class="num" data-sort="gp" data-sort-default="desc">GP</th>
+                <th class="num" data-sort="min" data-sort-default="desc">MIN</th>
+                <th class="num" data-sort="g" data-sort-default="desc">G</th>
+                <th class="num" data-sort="a" data-sort-default="desc">A</th>
+                <th class="num" data-sort="s" data-sort-default="desc">S</th>
+                <th class="num" data-sort="sot" data-sort-default="desc">SOT</th>
+                <th class="num" data-sort="sav" data-sort-default="desc">SAV</th>
+                <th class="num" data-sort="yc" data-sort-default="desc">YC</th>
+                <th class="num" data-sort="rc" data-sort-default="desc">RC</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in roster %}
+            <tr>
+                <td class="num" data-sort-key="number" data-sort-value="{{ p.number }}">{{ p.number }}</td>
+                <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">
+                    <a href="/player?team={{ seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>
+                </td>
+                <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position }}</td>
+                <td class="num" data-sort-key="gp" data-sort-value="{{ p.games_played }}">{{ p.games_played }}</td>
+                <td class="num" data-sort-key="min" data-sort-value="{{ p.avg_minutes }}">{{ p.avg_minutes }}</td>
+                <td class="num" data-sort-key="g" data-sort-value="{{ p.goals }}">{{ p.goals }}</td>
+                <td class="num" data-sort-key="a" data-sort-value="{{ p.assists }}">{{ p.assists }}</td>
+                <td class="num" data-sort-key="s" data-sort-value="{{ p.shots }}">{{ p.shots }}</td>
+                <td class="num" data-sort-key="sot" data-sort-value="{{ p.shots_on_goal }}">{{ p.shots_on_goal }}</td>
+                <td class="num" data-sort-key="sav" data-sort-value="{{ p.saves }}">{{ p.saves }}</td>
+                <td class="num" data-sort-key="yc" data-sort-value="{{ p.yellow_cards }}">{{ p.yellow_cards }}</td>
+                <td class="num" data-sort-key="rc" data-sort-value="{{ p.red_cards }}">{{ p.red_cards }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    <script src="/static/sort-table.js"></script>
+    {% endif %}
+    {% endif %}
+</body>
+</html>

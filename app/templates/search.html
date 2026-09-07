@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Search &mdash; Full Time</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    <h1>Search: {{ q }}</h1>
+
+    {% if not q.strip() %}
+    <p class="empty">Type a team or player name above.</p>
+    {% elif not team_results and not player_results %}
+    <p class="empty">No teams or players found matching &ldquo;{{ q }}&rdquo;.</p>
+    {% else %}
+
+    <div class="boxscore-card">
+    <h2>Teams</h2>
+    {% if not team_results %}
+    <p class="empty">No teams found matching &ldquo;{{ q }}&rdquo;.</p>
+    {% else %}
+    <table>
+        <thead><tr><th>Team</th><th>Conference</th></tr></thead>
+        <tbody>
+        {% for r in team_results %}
+            <tr>
+                <td><a href="/team/{{ r.seo }}">{{ team_label(r.name_full or r.name, r.seo, r.conference) }}</a></td>
+                <td>{{ conference_label_fn(r.conference) if r.conference else '' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    </div>
+
+    <div class="boxscore-card">
+    <h2>Players</h2>
+    {% if not player_results %}
+    <p class="empty">No players found matching &ldquo;{{ q }}&rdquo;.</p>
+    {% else %}
+    <table>
+        <thead><tr><th>Player</th><th>Team</th><th>Pos</th></tr></thead>
+        <tbody>
+        {% for p in player_results %}
+            <tr>
+                <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) if p.team_name else '' }}</td>
+                <td>{{ p.position or '' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    </div>
+
+    {% endif %}
+</body>
+</html>

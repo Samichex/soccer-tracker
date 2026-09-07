@@ -1,0 +1,32 @@
+{
+  "conferences": {
+    "american-rivers": "D3",
+    "c2c": "D3",
+    "conference-carolinas": "D2",
+    "empire-8": "D3",
+    "gliac": "D2",
+    "glvc": "D2",
+    "hcac": "D3",
+    "liberty-league": "D3",
+    "michigan-intercol. ath. assn.": "D3",
+    "odac": "D3",
+    "pac": "D3",
+    "skyline": "D3",
+    "sliac": "D3",
+    "united-east": "D3",
+    "usa-south": "D3"
+  },
+  "schools": {
+    "bob-jones": "NCCAA",
+    "central-baptist": "NAIA",
+    "defiance": "NAIA",
+    "fisher": "D3",
+    "life-pacific": "NAIA",
+    "masters": "NAIA",
+    "northwest-wa": "NAIA",
+    "our-lady-of-the-lake": "NAIA",
+    "southern-ore": "NAIA",
+    "st-thomas-fl": "NAIA",
+    "trinity-baptist": "NCCAA"
+  }
+}

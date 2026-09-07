@@ -1,0 +1,398 @@
+<title>Stat Leaders Layouts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --border: #ece8e1;
+    --text: #201f1d;
+    --muted: #767267;
+    --muted-2: #9c9890;
+    --accent: #2f6f4f;
+    --accent-soft: #eaf3ee;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font: "Source Sans 3", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #18191b;
+      --surface: #212325;
+      --border: #2e3033;
+      --text: #ece9e3;
+      --muted: #a29c90;
+      --muted-2: #7c786f;
+      --accent: #5fb98a;
+      --accent-soft: rgba(95, 185, 138, 0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #18191b;
+    --surface: #212325;
+    --border: #2e3033;
+    --text: #ece9e3;
+    --muted: #a29c90;
+    --muted-2: #7c786f;
+    --accent: #5fb98a;
+    --accent-soft: rgba(95, 185, 138, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  .intro-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+  h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.6rem; text-wrap: balance; }
+  .intro-body { color: var(--muted); font-size: 0.95rem; max-width: 62ch; line-height: 1.55; margin: 0 0 2.75rem; }
+  .intro-body strong { color: var(--text); font-weight: 600; }
+
+  section.option { margin-bottom: 3.5rem; }
+  .option-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    margin-bottom: 1.4rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .option-tag {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option-head h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 0.3rem; }
+  .option-desc { font-size: 0.86rem; color: var(--muted); margin: 0; max-width: 56ch; line-height: 1.5; }
+
+  .stack { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.2rem;
+  }
+  .card h3 { margin: 0 0 0.7rem; font-size: 0.98rem; font-weight: 700; }
+
+  /* --- Option A: table stack --- */
+  table.leaders { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.leaders th, table.leaders td {
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.86rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  table.leaders th {
+    color: var(--muted-2);
+    font-weight: 600;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  table.leaders tbody tr:last-child td { border-bottom: none; }
+  table.leaders tbody tr:hover { background: var(--accent-soft); }
+  table.leaders td.num, table.leaders th.num { text-align: right; }
+  table.leaders th:nth-child(1), table.leaders td:nth-child(1) { width: 6%; }
+  table.leaders th:nth-child(2), table.leaders td:nth-child(2) { width: 34%; }
+  table.leaders th:nth-child(3), table.leaders td:nth-child(3) { width: 44%; }
+  table.leaders th:nth-child(4), table.leaders td:nth-child(4) { width: 16%; white-space: normal; }
+  table.leaders a { color: inherit; text-decoration: none; }
+  table.leaders a:hover { color: var(--accent); }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .toggle:hover { text-decoration: underline; }
+  .toggle-arrow { display: inline-block; transition: transform 0.15s ease; }
+  .toggle[aria-expanded="true"] .toggle-arrow { transform: rotate(90deg); }
+  .card:not(.expanded) tr.extra-row,
+  .card:not(.expanded) .extra-row { display: none; }
+
+  /* --- Option B: tiles --- */
+  .tiles { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .tile {
+    flex: 1 1 150px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tile.rank-1 { border-color: var(--accent); background: var(--accent-soft); }
+  .tile-rank {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .tile.rank-1 .tile-rank { background: var(--accent); color: var(--surface); }
+  .tile-name { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-team { font-size: 0.74rem; color: var(--muted-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-stat { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .tile-stat span { font-size: 0.68rem; font-weight: 600; color: var(--muted-2); letter-spacing: 0.04em; text-transform: uppercase; margin-left: 0.3rem; }
+
+  /* --- Option C: bar list --- */
+  .barlist { display: flex; flex-direction: column; }
+  .barrow {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .barlist .barrow:last-child { border-bottom: none; }
+  .bar-rank { font-size: 0.8rem; font-weight: 700; color: var(--muted-2); text-align: center; font-variant-numeric: tabular-nums; }
+  .barrow.rank-1 .bar-rank { color: var(--accent); }
+  .bar-main { min-width: 0; }
+  .bar-name-row { display: flex; align-items: baseline; gap: 0.45rem; margin-bottom: 0.32rem; }
+  .bar-name { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-team { font-size: 0.74rem; color: var(--muted-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { height: 5px; border-radius: 3px; background: var(--accent-soft); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+  .bar-value { font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-value span { font-size: 0.68rem; font-weight: 600; color: var(--muted-2); margin-left: 0.15rem; }
+
+  .note {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 62ch;
+  }
+  .note strong { color: var(--text); }
+
+  @media (max-width: 480px) {
+    .tiles { flex-direction: column; }
+  }
+</style>
+
+<div class="page">
+  <p class="intro-eyebrow">Stats page &middot; Stat Leaders</p>
+  <h1>Three ways to stack the leader boards</h1>
+  <p class="intro-body">
+    Same top-3-plus-expand behavior as the current 2&times;2 grid, laid out full width instead.
+    Real data from this week's <strong>Top Goals</strong>, <strong>Top Assists</strong>,
+    <strong>Clean Sheets</strong> and <strong>Top Cards</strong> boards, using the site's
+    existing colors and type &mdash; only the card layout changes between options.
+  </p>
+
+  <!-- ============ OPTION A ============ -->
+  <section class="option">
+    <div class="option-head">
+      <span class="option-tag">A</span>
+      <div>
+        <h2>Straightforward stack</h2>
+        <p class="option-desc">Today's table, just full width. Fastest to ship, zero visual risk &mdash; but on a wide screen the table still only uses its four narrow columns, leaving space unused.</p>
+      </div>
+    </div>
+    <div class="stack" id="a-root">
+      <div class="card">
+        <h3>Top Goals</h3>
+        <table class="leaders">
+          <thead><tr><th>#</th><th>Player</th><th>Team</th><th class="num">G</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Zach Ramsey</td><td>University of Washington (WA)</td><td class="num">9</td></tr>
+            <tr><td class="num">2</td><td>Isaiah Chisolm</td><td>The Ohio State University (OH)</td><td class="num">7</td></tr>
+            <tr><td class="num">3</td><td>Tomiwa Adewumi</td><td>Marquette University (WI)</td><td class="num">5</td></tr>
+            <tr class="extra-row"><td class="num">3</td><td>Mitchell Baker</td><td>Georgetown University (DC)</td><td class="num">5</td></tr>
+            <tr class="extra-row"><td class="num">3</td><td>Luca Bartoni</td><td>Lindenwood University (MO)</td><td class="num">5</td></tr>
+          </tbody>
+        </table>
+        <button type="button" class="toggle" aria-expanded="false" data-toggle="a-goals"><span class="toggle-label">Show all</span><span class="toggle-arrow">&rarr;</span></button>
+      </div>
+      <div class="card">
+        <h3>Top Assists</h3>
+        <table class="leaders">
+          <thead><tr><th>#</th><th>Player</th><th>Team</th><th class="num">A</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Brando Bedolla</td><td>Longwood University (VA)</td><td class="num">7</td></tr>
+            <tr><td class="num">2</td><td>Jaylinn Mitchell</td><td>Southern Methodist University (TX)</td><td class="num">5</td></tr>
+            <tr><td class="num">2</td><td>Angelo Ventrella</td><td>Providence College (RI)</td><td class="num">5</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Clean Sheets</h3>
+        <table class="leaders">
+          <thead><tr><th>#</th><th>Player</th><th>Team</th><th class="num">CS</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Nic Thiele</td><td>UC San Diego (CA)</td><td class="num">4</td></tr>
+            <tr><td class="num">1</td><td>Alfred Mikkelsen</td><td>Florida Atlantic University (FL)</td><td class="num">4</td></tr>
+            <tr><td class="num">1</td><td>Patrick Mclaughlin</td><td>The Ohio State University (OH)</td><td class="num">4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Top Cards</h3>
+        <table class="leaders">
+          <thead><tr><th>#</th><th>Player</th><th>Team</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Anthony Pate</td><td>Virginia Military Institute (VA)</td><td class="num">5 (5Y, 0R)</td></tr>
+            <tr><td class="num">2</td><td>Bildad Abonga</td><td>Grand Canyon University (AZ)</td><td class="num">4 (4Y, 0R)</td></tr>
+            <tr><td class="num">2</td><td>Felix Contreras</td><td>Loyola Marymount University (CA)</td><td class="num">4 (3Y, 1R)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OPTION B ============ -->
+  <section class="option">
+    <div class="option-head">
+      <span class="option-tag">B</span>
+      <div>
+        <h2>Leader tiles</h2>
+        <p class="option-desc">Top 3 sit side by side as tiles instead of table rows &mdash; the stat is the biggest thing on the card, so a glance tells you who leads. Uses the extra width well; needs its own small component apart from the standard table.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Top Goals</h3>
+        <div class="tiles" id="b-goals-tiles">
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Zach Ramsey</span><span class="tile-team">Washington (WA)</span><span class="tile-stat">9<span>G</span></span></div>
+          <div class="tile"><span class="tile-rank">2</span><span class="tile-name">Isaiah Chisolm</span><span class="tile-team">Ohio State (OH)</span><span class="tile-stat">7<span>G</span></span></div>
+          <div class="tile"><span class="tile-rank">3</span><span class="tile-name">Tomiwa Adewumi</span><span class="tile-team">Marquette (WI)</span><span class="tile-stat">5<span>G</span></span></div>
+          <div class="tile extra-row"><span class="tile-rank">3</span><span class="tile-name">Mitchell Baker</span><span class="tile-team">Georgetown (DC)</span><span class="tile-stat">5<span>G</span></span></div>
+          <div class="tile extra-row"><span class="tile-rank">3</span><span class="tile-name">Luca Bartoni</span><span class="tile-team">Lindenwood (MO)</span><span class="tile-stat">5<span>G</span></span></div>
+        </div>
+        <button type="button" class="toggle" aria-expanded="false" data-toggle="b-goals-tiles"><span class="toggle-label">Show all</span><span class="toggle-arrow">&rarr;</span></button>
+      </div>
+      <div class="card">
+        <h3>Top Assists</h3>
+        <div class="tiles">
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Brando Bedolla</span><span class="tile-team">Longwood (VA)</span><span class="tile-stat">7<span>A</span></span></div>
+          <div class="tile"><span class="tile-rank">2</span><span class="tile-name">Jaylinn Mitchell</span><span class="tile-team">SMU (TX)</span><span class="tile-stat">5<span>A</span></span></div>
+          <div class="tile"><span class="tile-rank">2</span><span class="tile-name">Angelo Ventrella</span><span class="tile-team">Providence (RI)</span><span class="tile-stat">5<span>A</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Clean Sheets</h3>
+        <div class="tiles">
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Nic Thiele</span><span class="tile-team">UC San Diego (CA)</span><span class="tile-stat">4<span>CS</span></span></div>
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Alfred Mikkelsen</span><span class="tile-team">Fla. Atlantic (FL)</span><span class="tile-stat">4<span>CS</span></span></div>
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Patrick Mclaughlin</span><span class="tile-team">Ohio State (OH)</span><span class="tile-stat">4<span>CS</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Top Cards</h3>
+        <div class="tiles">
+          <div class="tile rank-1"><span class="tile-rank">1</span><span class="tile-name">Anthony Pate</span><span class="tile-team">VMI (VA)</span><span class="tile-stat">5<span>TOT</span></span></div>
+          <div class="tile"><span class="tile-rank">2</span><span class="tile-name">Bildad Abonga</span><span class="tile-team">Grand Canyon (AZ)</span><span class="tile-stat">4<span>TOT</span></span></div>
+          <div class="tile"><span class="tile-rank">2</span><span class="tile-name">Felix Contreras</span><span class="tile-team">LMU (CA)</span><span class="tile-stat">4<span>TOT</span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OPTION C ============ -->
+  <section class="option">
+    <div class="option-head">
+      <span class="option-tag">C</span>
+      <div>
+        <h2>Ranked bars</h2>
+        <p class="option-desc">Each row gets a proportional bar scaled against the leader's total, so you can see how close #2 and #3 are without reading the numbers. Most "designed" of the three; a bit more code than a table.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Top Goals</h3>
+        <div class="barlist" id="c-goals-bars">
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Zach Ramsey</span><span class="bar-team">Washington (WA)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">9<span>G</span></span></div>
+          <div class="barrow"><span class="bar-rank">2</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Isaiah Chisolm</span><span class="bar-team">Ohio State (OH)</span></div><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div></div><span class="bar-value">7<span>G</span></span></div>
+          <div class="barrow"><span class="bar-rank">3</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Tomiwa Adewumi</span><span class="bar-team">Marquette (WI)</span></div><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div></div><span class="bar-value">5<span>G</span></span></div>
+          <div class="barrow extra-row"><span class="bar-rank">3</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Mitchell Baker</span><span class="bar-team">Georgetown (DC)</span></div><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div></div><span class="bar-value">5<span>G</span></span></div>
+          <div class="barrow extra-row"><span class="bar-rank">3</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Luca Bartoni</span><span class="bar-team">Lindenwood (MO)</span></div><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div></div><span class="bar-value">5<span>G</span></span></div>
+        </div>
+        <button type="button" class="toggle" aria-expanded="false" data-toggle="c-goals-bars"><span class="toggle-label">Show all</span><span class="toggle-arrow">&rarr;</span></button>
+      </div>
+      <div class="card">
+        <h3>Top Assists</h3>
+        <div class="barlist">
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Brando Bedolla</span><span class="bar-team">Longwood (VA)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">7<span>A</span></span></div>
+          <div class="barrow"><span class="bar-rank">2</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Jaylinn Mitchell</span><span class="bar-team">SMU (TX)</span></div><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div></div><span class="bar-value">5<span>A</span></span></div>
+          <div class="barrow"><span class="bar-rank">2</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Angelo Ventrella</span><span class="bar-team">Providence (RI)</span></div><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div></div><span class="bar-value">5<span>A</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Clean Sheets</h3>
+        <div class="barlist">
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Nic Thiele</span><span class="bar-team">UC San Diego (CA)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">4<span>CS</span></span></div>
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Alfred Mikkelsen</span><span class="bar-team">Fla. Atlantic (FL)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">4<span>CS</span></span></div>
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Patrick Mclaughlin</span><span class="bar-team">Ohio State (OH)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">4<span>CS</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Top Cards</h3>
+        <div class="barlist">
+          <div class="barrow rank-1"><span class="bar-rank">1</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Anthony Pate</span><span class="bar-team">VMI (VA)</span></div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div><span class="bar-value">5<span>TOT</span></span></div>
+          <div class="barrow"><span class="bar-rank">2</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Bildad Abonga</span><span class="bar-team">Grand Canyon (AZ)</span></div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div></div><span class="bar-value">4<span>TOT</span></span></div>
+          <div class="barrow"><span class="bar-rank">2</span><div class="bar-main"><div class="bar-name-row"><span class="bar-name">Felix Contreras</span><span class="bar-team">LMU (CA)</span></div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div></div><span class="bar-value">4<span>TOT</span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">
+    All three keep the same <strong>top 3 + expand</strong> rule already built for the grid, so
+    whichever direction wins, the collapse behavior carries over unchanged. Toggle the
+    <strong>Show all</strong> controls above &mdash; only Top Goals and Top Assists have a
+    tied 4th/5th place this week, which is why those are the only cards with an arrow.
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll(".toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!expanded));
+      btn.closest(".card").classList.toggle("expanded", !expanded);
+      btn.querySelector(".toggle-label").textContent = expanded ? "Show all" : "Show top 3";
+    });
+  });
+</script>
