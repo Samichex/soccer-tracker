@@ -14,7 +14,7 @@
     {% if not team %}
     <p class="empty">Team not found.</p>
     {% else %}
-    <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label(team.name_full or team.name, team.seo, team.conference) }}</h1>
+    <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
     <p class="team-meta">
         {% if team.conference %}<a href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a> &middot; {% endif %}
         Conference: {{ record.conf_w }}-{{ record.conf_l }}-{{ record.conf_d }} &middot;
@@ -28,7 +28,7 @@
             <div class="card-row history{% if not r.recent %} extra-row{% endif %}">
                 <div class="cell-date">{{ r.game.date | pretty_date }}</div>
                 <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}</div>
-                <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
+                <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label_responsive(r.opponent_name_short, r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
                 <a class="score-link" href="/game/{{ r.game.id }}">
                     {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
                     {% else %}{{ r.game.start_time }}

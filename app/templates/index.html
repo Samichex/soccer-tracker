@@ -46,9 +46,9 @@
     <div class="card-list">
         {% for g in games %}
         <div class="card-row matches">
-            <a class="team-link align-left" href="/team/{{ g.away_seo }}">{{ rank_prefix(g.away_rank, g.away_prev_rank) }}{{ team_label(g.away_name, g.away_seo, g.away_conference) }}</a>
+            <a class="team-link align-left" href="/team/{{ g.away_seo }}">{{ rank_prefix(g.away_rank, g.away_prev_rank) }}{{ team_label_responsive(g.away_name_short, g.away_name, g.away_seo, g.away_conference) }}</a>
             <a class="score-link" href="/game/{{ g.id }}">{% if g.away_score is none and g.home_score is none %}&ndash;{% else %}{{ g.away_score }} &ndash; {{ g.home_score }}{% endif %}</a>
-            <a class="team-link align-right" href="/team/{{ g.home_seo }}">{{ rank_prefix(g.home_rank, g.home_prev_rank) }}{{ team_label(g.home_name, g.home_seo, g.home_conference) }}</a>
+            <a class="team-link align-right" href="/team/{{ g.home_seo }}">{{ rank_prefix(g.home_rank, g.home_prev_rank) }}{{ team_label_responsive(g.home_name_short, g.home_name, g.home_seo, g.home_conference) }}</a>
             <div class="cell-status">
                 {% if g.is_upset %}<span class="pill pill-upset" title="A ranked team lost to a lower-ranked or unranked opponent">🔥 Upset</span>{% endif %}
                 <span class="pill status-{{ g.status }}">

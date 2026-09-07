@@ -10,9 +10,9 @@ from . import config, validate
 # name always stored on the game row itself.
 _GAME_COLUMNS = """
     g.id, g.date, g.start_time, g.start_epoch, g.status, g.current_period,
-    g.home_seo, COALESCE(th.name_full, g.home_name) AS home_name,
+    g.home_seo, COALESCE(th.name_full, g.home_name) AS home_name, g.home_name AS home_name_short,
     g.home_score, g.home_conference,
-    g.away_seo, COALESCE(ta.name_full, g.away_name) AS away_name,
+    g.away_seo, COALESCE(ta.name_full, g.away_name) AS away_name, g.away_name AS away_name_short,
     g.away_score, g.away_conference,
     g.network, g.url, g.updated_at
 """

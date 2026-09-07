@@ -31,6 +31,7 @@ async def _security_headers(request: Request, call_next):
 app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
 templates.env.globals["team_label"] = reference_data.get_team_label
+templates.env.globals["team_label_responsive"] = reference_data.get_team_label_responsive
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 templates.env.filters["name_case"] = reference_data.title_case_name
@@ -405,6 +406,7 @@ def player_detail(request: Request, team: str, first: str, last: str):
         "last_name": rows[0]["last_name"],
         "team_seo": team,
         "team_name": rows[0]["home_name"] if is_home else rows[0]["away_name"],
+        "team_name_short": rows[0]["home_name_short"] if is_home else rows[0]["away_name_short"],
         "team_conference": rows[0]["home_conference"] if is_home else rows[0]["away_conference"],
         "position": latest["position"],
         "number": latest["number"],
