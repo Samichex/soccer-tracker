@@ -5,3 +5,4 @@ data/*.db*
 logs/
 *.log
 .pytest_cache/
+.claude/settings.local.json
