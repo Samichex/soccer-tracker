@@ -9,7 +9,7 @@ NCAA_API_BASE = os.environ.get("NCAA_API_BASE", "https://ncaa-api.henrygd.me")
 
 SPORT_PATH = "soccer-men/d1"
 
-DB_PATH = BASE_DIR / "data" / "soccer.db"
+DB_PATH = Path(os.environ.get("DB_PATH", str(BASE_DIR / "data" / "soccer.db")))
 
 # How far around "today" to keep synced live (scores/times here can change,
 # so this window is re-pulled on every sync cycle and on manual refresh).
