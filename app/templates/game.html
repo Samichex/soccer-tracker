@@ -66,7 +66,7 @@
                 <tr>
                     <td>{{ p.number }}</td>
                     <td>{{ p.first_name | name_case }} {{ p.last_name | name_case }}</td>
-                    <td>{{ p.position }}</td>
+                    <td>{{ p.position | position_short }}</td>
                     <td class="num">{{ p.minutes_played }}</td>
                     <td class="num">{{ p.goals }}</td>
                     <td class="num">{{ p.assists }}</td>

@@ -41,7 +41,6 @@
     <table class="sortable">
         <thead>
             <tr>
-                <th class="num" data-sort="number" data-sort-default="asc">#</th>
                 <th data-sort="name" data-sort-default="asc">Player</th>
                 <th data-sort="team" data-sort-default="asc">Team</th>
                 <th data-sort="pos" data-sort-default="asc">Pos</th>
@@ -59,14 +58,13 @@
         <tbody>
         {% for p in roster %}
             <tr>
-                <td class="num" data-sort-key="number" data-sort-value="{{ p.number }}">{{ p.number }}</td>
                 <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">
                     <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>
                 </td>
                 <td data-sort-key="team" data-sort-value="{{ p.team_name }}">
                     <a href="/team/{{ p.team_seo }}">{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</a>
                 </td>
-                <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position }}</td>
+                <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position | position_short }}</td>
                 <td class="num" data-sort-key="gp" data-sort-value="{{ p.games_played }}">{{ p.games_played }}</td>
                 <td class="num" data-sort-key="min" data-sort-value="{{ p.avg_minutes }}">{{ p.avg_minutes }}</td>
                 <td class="num" data-sort-key="g" data-sort-value="{{ p.goals }}">{{ p.goals }}</td>

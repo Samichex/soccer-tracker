@@ -50,7 +50,7 @@
             <tr>
                 <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                 <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) if p.team_name else '' }}</td>
-                <td>{{ p.position or '' }}</td>
+                <td>{{ p.position | position_short }}</td>
             </tr>
         {% endfor %}
         </tbody>
