@@ -51,8 +51,18 @@ writes to the same SQLite file, multiplying upstream load and increasing the
 odds of write contention. For uvicorn this means no `--workers N>1`; for a
 hosting platform, no autoscaling/horizontal scaling for this service.
 
-Put a reverse proxy (nginx, Caddy, or your host's built-in one) in front for
-TLS — the app itself only speaks plain HTTP.
+Currently deployed on [Render](https://render.com) (Starter instance, no
+autoscaling available at that tier anyway):
+
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- A 1 GB persistent disk mounted at `/var/data`, with the `DB_PATH` env var
+  set to `/var/data/soccer.db` so the database survives redeploys
+- `PYTHON_VERSION` env var pinned to match local dev (see `.venv/pyvenv.cfg`)
+- TLS and auto-deploy-on-push to `main` are handled by Render itself — no
+  reverse proxy needed on this host. If you deploy elsewhere without that
+  built in, put one (nginx, Caddy, etc.) in front for TLS, since the app
+  itself only speaks plain HTTP.
 
 The site and its JSON endpoints are intentionally open with no
 authentication (read-only public scores/stats). The one write-triggering
