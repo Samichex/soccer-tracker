@@ -43,7 +43,6 @@
             <tr>
                 <th data-sort="name" data-sort-default="asc">Player</th>
                 <th data-sort="team" data-sort-default="asc">Team</th>
-                <th data-sort="pos" data-sort-default="asc">Pos</th>
                 <th class="num" data-sort="gp" data-sort-default="desc">GP</th>
                 <th class="num" data-sort="min" data-sort-default="desc">MIN</th>
                 <th class="num sort-desc" data-sort="g" data-sort-default="desc">G</th>
@@ -51,20 +50,17 @@
                 <th class="num" data-sort="s" data-sort-default="desc">S</th>
                 <th class="num" data-sort="sot" data-sort-default="desc">SOT</th>
                 <th class="num" data-sort="sav" data-sort-default="desc">SAV</th>
-                <th class="num" data-sort="yc" data-sort-default="desc">YC</th>
-                <th class="num" data-sort="rc" data-sort-default="desc">RC</th>
             </tr>
         </thead>
         <tbody>
         {% for p in roster %}
             <tr>
                 <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">
-                    <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>
+                    <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>{% if p.position %} ({{ p.position | position_short }}){% endif %}
                 </td>
                 <td data-sort-key="team" data-sort-value="{{ p.team_name }}">
                     <a href="/team/{{ p.team_seo }}">{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</a>
                 </td>
-                <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position | position_short }}</td>
                 <td class="num" data-sort-key="gp" data-sort-value="{{ p.games_played }}">{{ p.games_played }}</td>
                 <td class="num" data-sort-key="min" data-sort-value="{{ p.avg_minutes }}">{{ p.avg_minutes }}</td>
                 <td class="num" data-sort-key="g" data-sort-value="{{ p.goals }}">{{ p.goals }}</td>
@@ -72,8 +68,6 @@
                 <td class="num" data-sort-key="s" data-sort-value="{{ p.shots }}">{{ p.shots }}</td>
                 <td class="num" data-sort-key="sot" data-sort-value="{{ p.shots_on_goal }}">{{ p.shots_on_goal }}</td>
                 <td class="num" data-sort-key="sav" data-sort-value="{{ p.saves }}">{{ p.saves }}</td>
-                <td class="num" data-sort-key="yc" data-sort-value="{{ p.yellow_cards }}">{{ p.yellow_cards }}</td>
-                <td class="num" data-sort-key="rc" data-sort-value="{{ p.red_cards }}">{{ p.red_cards }}</td>
             </tr>
         {% endfor %}
         </tbody>
