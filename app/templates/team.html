@@ -22,25 +22,33 @@
         Overall: {{ record.overall_w }}-{{ record.overall_l }}-{{ record.overall_d }}
     </p>
 
-    <div class="card-list">
-    {% for r in rows %}
-        <div class="card-row history">
-            <div class="cell-date">{{ r.game.date | pretty_date }}</div>
-            <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}</div>
-            <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
-            <a class="score-link" href="/game/{{ r.game.id }}">
-                {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
-                {% else %}{{ r.game.start_time }}
-                {% endif %}
-            </a>
-            <div class="cell-result">
-                {% if r.result == 'w' %}<span class="pill result-w">W</span>
-                {% elif r.result == 'l' %}<span class="pill result-l">L</span>
-                {% elif r.result == 'd' %}<span class="pill result-d">D</span>
-                {% endif %}
+    <div class="toggle-section">
+        <div class="card-list">
+        {% for r in rows %}
+            <div class="card-row history{% if not r.recent %} extra-row{% endif %}">
+                <div class="cell-date">{{ r.game.date | pretty_date }}</div>
+                <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}</div>
+                <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
+                <a class="score-link" href="/game/{{ r.game.id }}">
+                    {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
+                    {% else %}{{ r.game.start_time }}
+                    {% endif %}
+                </a>
+                <div class="cell-result">
+                    {% if r.result == 'w' %}<span class="pill result-w">W</span>
+                    {% elif r.result == 'l' %}<span class="pill result-l">L</span>
+                    {% elif r.result == 'd' %}<span class="pill result-d">D</span>
+                    {% endif %}
+                </div>
             </div>
+        {% endfor %}
         </div>
-    {% endfor %}
+        {% if rows | rejectattr('recent') | list | length > 0 %}
+        <button type="button" class="leaders-toggle" aria-expanded="false" data-collapse-label="Show recent only">
+            <span class="leaders-toggle-label">Show full schedule</span>
+            <span class="leaders-toggle-arrow">&rarr;</span>
+        </button>
+        {% endif %}
     </div>
 
     {% if rank_history %}
@@ -114,6 +122,8 @@
     </div>
     <script src="/static/sort-table.js"></script>
     {% endif %}
+    <script src="/static/toggle-leaders.js"></script>
     {% endif %}
 </body>
+
 </html>

@@ -176,6 +176,16 @@ def build_team_schedule(games, seo: str, conference: str | None = None):
     record["overall_l"] = record["conf_l"] + record["nc_l"]
     record["overall_d"] = record["conf_d"] + record["nc_d"]
 
+    # Flag the games worth showing without expanding: the last few results,
+    # the next few fixtures, and anything in progress right now.
+    RECENT_WINDOW = 3
+    played_idxs = [i for i, r in enumerate(rows) if r["game"]["status"] == "final"]
+    upcoming_idxs = [i for i, r in enumerate(rows) if r["game"]["status"] != "final"]
+    live_idxs = [i for i, r in enumerate(rows) if r["game"]["status"] == "live"]
+    recent_idxs = set(played_idxs[-RECENT_WINDOW:]) | set(upcoming_idxs[:RECENT_WINDOW]) | set(live_idxs)
+    for i, r in enumerate(rows):
+        r["recent"] = i in recent_idxs
+
     return rows, record
 
 
