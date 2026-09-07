@@ -31,3 +31,23 @@ On startup it runs a full sync (today +/- a few days) and repeats every
   if the public one becomes unreliable or rate limits are an issue.
 - `DAYS_BACK` / `DAYS_FORWARD` — sync window around today (default 3 / 7).
 - `SYNC_INTERVAL_MINUTES` — background sync frequency (default 30).
+
+## Deploying
+
+Run as a **single process/instance**, not multiple workers or autoscaled
+replicas. The background sync loop (`app/main.py`'s `_background_sync_loop`)
+is an in-process thread with no cross-instance coordination — running more
+than one copy means every copy independently polls the upstream NCAA API and
+writes to the same SQLite file, multiplying upstream load and increasing the
+odds of write contention. For uvicorn this means no `--workers N>1`; for a
+hosting platform, no autoscaling/horizontal scaling for this service.
+
+Put a reverse proxy (nginx, Caddy, or your host's built-in one) in front for
+TLS — the app itself only speaks plain HTTP.
+
+The site and its JSON endpoints are intentionally open with no
+authentication (read-only public scores/stats). The one write-triggering
+route, `POST /api/sync-now`, is throttled to at most once a minute so a
+public caller can't hammer the upstream NCAA API feed, but it's still an
+unauthenticated way to nudge the app to hit an external service — remove it
+or gate it behind a shared secret if that becomes a concern.

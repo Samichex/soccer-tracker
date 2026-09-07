@@ -18,7 +18,7 @@ def build_conference_table(games, conference: str):
 
         is_conf_game = g["home_conference"] == conference and g["away_conference"] == conference
 
-        for side, opp_side in (("home", "away"), ("away", "home")):
+        for side in ("home", "away"):
             if g[f"{side}_conference"] != conference:
                 continue
 
@@ -83,7 +83,7 @@ def build_all_teams_table(games):
             g["home_conference"] and g["home_conference"] == g["away_conference"]
         )
 
-        for side, opp_side in (("home", "away"), ("away", "home")):
+        for side in ("home", "away"):
             conference = g[f"{side}_conference"]
             if not conference:
                 continue

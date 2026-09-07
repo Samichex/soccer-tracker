@@ -67,6 +67,10 @@ CREATE TABLE IF NOT EXISTS player_stats (
     PRIMARY KEY (game_id, team_id, number, last_name, first_name)
 );
 
+-- Speeds up per-team lookups (team page roster, player game log) as this
+-- table grows past a season's worth of box scores.
+CREATE INDEX IF NOT EXISTS idx_player_stats_team_seo ON player_stats(team_seo);
+
 CREATE TABLE IF NOT EXISTS team_rankings (
     observed_date TEXT NOT NULL,   -- date of the sync that captured this, not a poll-release date
     school TEXT NOT NULL,          -- raw name as printed in the poll; may not match games.*_name exactly
@@ -117,6 +121,11 @@ def get_conn():
     config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(config.DB_PATH)
     conn.row_factory = sqlite3.Row
+    # WAL lets page requests read while the background sync thread writes,
+    # instead of blocking behind it; busy_timeout retries briefly on the
+    # rare write/write collision instead of raising "database is locked".
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
         conn.commit()

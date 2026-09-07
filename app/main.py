@@ -5,6 +5,7 @@ import time
 from urllib.parse import quote
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -15,6 +16,18 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("soccer-tracker")
 
 app = FastAPI(title="Full Time")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+
+@app.middleware("http")
+async def _security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "same-origin"
+    return response
+
+
 app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
 templates.env.globals["team_label"] = reference_data.get_team_label
@@ -436,7 +449,18 @@ def api_boxscore(game_id: str):
     return JSONResponse([dict(s) for s in stats])
 
 
+_last_manual_sync: dt.datetime | None = None
+_MANUAL_SYNC_COOLDOWN = dt.timedelta(minutes=1)
+
+
 @app.post("/api/sync-now")
 def api_sync_now():
+    """Unauthenticated by design (read-only site, nothing to protect), but
+    throttled so a public caller can't hammer the upstream NCAA API feed."""
+    global _last_manual_sync
+    now = dt.datetime.now(dt.timezone.utc)
+    if _last_manual_sync and now - _last_manual_sync < _MANUAL_SYNC_COOLDOWN:
+        return JSONResponse({"status": "throttled"}, status_code=429)
+    _last_manual_sync = now
     sync.run_full_sync()
     return {"status": "ok"}
