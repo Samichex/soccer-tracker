@@ -5,10 +5,10 @@
         <input type="text" name="q" placeholder="Search teams or players..." value="{{ q or '' }}">
     </form>
     <div class="topnav-links">
-        <a href="/">Matches</a>
-        <a href="/teams">Teams</a>
-        <a href="/players">Players</a>
-        <a href="/stats">Stats</a>
+        <a href="/" {% if request.url.path == '/' %}class="active" aria-current="page"{% endif %}>Matches</a>
+        <a href="/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
+        <a href="/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
+        <a href="/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>
     </div>
 </div>
 {% set sync = last_synced() %}

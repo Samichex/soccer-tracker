@@ -3,15 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Players &mdash; Full Time</title>
+    <title>FT: Players</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     {% include "_nav.html" %}
-
-    <h1>Players</h1>
 
     <form method="get" action="/players" class="conference-filter">
         <select name="conference" onchange="this.form.submit()">
