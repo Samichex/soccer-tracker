@@ -399,12 +399,15 @@ def player_detail(request: Request, team: str, first: str, last: str):
         )
     log, totals = standings.build_player_game_log(rows)
     is_home = bool(rows[0]["is_home"])
+    latest = rows[-1]
     player = {
         "first_name": rows[0]["first_name"],
         "last_name": rows[0]["last_name"],
         "team_seo": team,
         "team_name": rows[0]["home_name"] if is_home else rows[0]["away_name"],
         "team_conference": rows[0]["home_conference"] if is_home else rows[0]["away_conference"],
+        "position": latest["position"],
+        "number": latest["number"],
     }
     return templates.TemplateResponse(
         "player.html",

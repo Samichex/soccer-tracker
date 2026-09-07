@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS player_stats (
     saves TEXT,
     yellow_cards TEXT,
     red_cards TEXT,
+    fouls TEXT,
+    green_cards TEXT,
+    game_winning_goals TEXT,
+    penalty_goals TEXT,
     participated INTEGER,
     PRIMARY KEY (game_id, team_id, number, last_name, first_name)
 );
@@ -139,6 +143,9 @@ def init_db():
         cols = {row["name"] for row in conn.execute("PRAGMA table_info(player_stats)")}
         if "participated" not in cols:
             conn.execute("ALTER TABLE player_stats ADD COLUMN participated INTEGER")
+        for col in ("fouls", "green_cards", "game_winning_goals", "penalty_goals"):
+            if col not in cols:
+                conn.execute(f"ALTER TABLE player_stats ADD COLUMN {col} TEXT")
 
 
 def upsert_game(conn, game: dict, date_str: str):
@@ -263,8 +270,9 @@ def replace_player_stats(conn, game_id: str, rows: list[dict]):
         INSERT INTO player_stats (
             game_id, team_id, team_seo, is_home, first_name, last_name, number,
             position, starter, minutes_played, goals, assists, shots,
-            shots_on_goal, saves, yellow_cards, red_cards, participated
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            shots_on_goal, saves, yellow_cards, red_cards, fouls, green_cards,
+            game_winning_goals, penalty_goals, participated
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         [
             (
@@ -285,6 +293,10 @@ def replace_player_stats(conn, game_id: str, rows: list[dict]):
                 r["saves"],
                 r["yellow_cards"],
                 r["red_cards"],
+                r["fouls"],
+                r["green_cards"],
+                r["game_winning_goals"],
+                r["penalty_goals"],
                 r["participated"],
             )
             for r in rows

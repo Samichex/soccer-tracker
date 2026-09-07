@@ -34,6 +34,7 @@ def _rows_from_boxscore(box: dict) -> list[dict]:
         team_rows = []
         for p in team_box.get("playerStats", []):
             penalties = p.get("penalties") or {}
+            goal_types = p.get("goalTypes") or {}
             team_rows.append(
                 {
                     "team_id": team_id,
@@ -52,6 +53,10 @@ def _rows_from_boxscore(box: dict) -> list[dict]:
                     "saves": p.get("saves"),
                     "yellow_cards": penalties.get("yellowCards"),
                     "red_cards": penalties.get("redCards"),
+                    "fouls": penalties.get("fouls"),
+                    "green_cards": penalties.get("greenCards"),
+                    "game_winning_goals": goal_types.get("gameWinningGoals"),
+                    "penalty_goals": p.get("penaltyShotGoals"),
                     "participated": 1 if p.get("participated", True) else 0,
                 }
             )

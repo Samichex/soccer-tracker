@@ -42,10 +42,18 @@ def get_conference_tag(conference_seo: str | None) -> str | None:
     return _get_non_d1()["conferences"].get(conference_seo)
 
 
-def get_team_label(name: str, seo: str | None, conference_seo: str | None = None) -> str:
+def get_team_label(name: str | None, seo: str | None, conference_seo: str | None = None) -> str:
     """Team display name, with a '(CA)'/'(CA, D2)'/'(D3)'/'(NAIA)'/'(NCCAA)' suffix
     combining the school's state and, when the school itself or its conference
-    isn't NCAA D1, its division tag."""
+    isn't NCAA D1, its division tag.
+
+    `name` can be missing when a team has no resolvable SEO slug (some small
+    non-D1 opponents show up in the scoreboard feed without one), so nothing
+    ever gets written for it into the teams table; fall back to the seo or a
+    placeholder rather than erroring.
+    """
+    if not name:
+        name = seo or "Unknown Team"
     data = _get_non_d1()
     tag = data["schools"].get(seo) if seo else None
     if not tag:

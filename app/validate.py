@@ -20,7 +20,8 @@ MAX_PLAUSIBLE_MINUTES = 130
 
 NONNEGATIVE_STAT_FIELDS = [
     "goals", "assists", "shots", "shots_on_goal", "saves",
-    "yellow_cards", "red_cards",
+    "yellow_cards", "red_cards", "fouls", "green_cards",
+    "game_winning_goals", "penalty_goals",
 ]
 
 KNOWN_GAME_STATUSES = {"pre", "live", "final"}

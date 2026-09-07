@@ -5,6 +5,13 @@ def _to_int(value):
         return None
 
 
+def _to_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def build_conference_table(games, conference: str):
     """Compute conference and non-conference W-L-D records for every team
     in `conference`, from a list of final games involving that conference."""
@@ -193,7 +200,11 @@ def build_player_game_log(rows):
     """Turn a player's per-game player_stats+games rows into a display-ready
     log plus season totals."""
     log = []
-    totals = {"games": 0, "goals": 0, "assists": 0, "shots": 0, "shots_on_goal": 0}
+    totals = {
+        "games": 0, "minutes": 0, "goals": 0, "assists": 0, "shots": 0,
+        "shots_on_goal": 0, "fouls": 0, "yellow_cards": 0, "red_cards": 0,
+        "game_winning_goals": 0, "penalty_goals": 0, "hat_tricks": 0,
+    }
 
     for r in rows:
         is_home = bool(r["is_home"])
@@ -201,12 +212,37 @@ def build_player_game_log(rows):
         assists = _to_int(r["assists"]) or 0
         shots = _to_int(r["shots"]) or 0
         shots_on_goal = _to_int(r["shots_on_goal"]) or 0
+        minutes = _to_float(r["minutes_played"]) or 0
+        fouls = _to_int(r["fouls"]) or 0
+        yellow_cards = _to_int(r["yellow_cards"]) or 0
+        red_cards = _to_int(r["red_cards"]) or 0
+        game_winning_goals = _to_int(r["game_winning_goals"]) or 0
+        penalty_goals = _to_int(r["penalty_goals"]) or 0
+        is_hat_trick = goals >= 3
+
+        team_score = _to_int(r["home_score"] if is_home else r["away_score"])
+        opp_score = _to_int(r["away_score"] if is_home else r["home_score"])
+        result = None
+        if r["status"] == "final" and team_score is not None and opp_score is not None:
+            if team_score > opp_score:
+                result = "w"
+            elif team_score < opp_score:
+                result = "l"
+            else:
+                result = "d"
 
         totals["games"] += 1
+        totals["minutes"] += minutes
         totals["goals"] += goals
         totals["assists"] += assists
         totals["shots"] += shots
         totals["shots_on_goal"] += shots_on_goal
+        totals["fouls"] += fouls
+        totals["yellow_cards"] += yellow_cards
+        totals["red_cards"] += red_cards
+        totals["game_winning_goals"] += game_winning_goals
+        totals["penalty_goals"] += penalty_goals
+        totals["hat_tricks"] += 1 if is_hat_trick else 0
 
         log.append(
             {
@@ -217,15 +253,25 @@ def build_player_game_log(rows):
                 "opponent_seo": r["away_seo"] if is_home else r["home_seo"],
                 "opponent_conference": r["away_conference"] if is_home else r["home_conference"],
                 "status": r["status"],
+                "team_score": team_score,
+                "opp_score": opp_score,
+                "result": result,
+                "starter": bool(r["starter"]),
                 "minutes_played": r["minutes_played"],
                 "goals": goals,
                 "assists": assists,
                 "shots": shots,
                 "shots_on_goal": shots_on_goal,
                 "saves": r["saves"],
+                "fouls": fouls,
                 "yellow_cards": r["yellow_cards"],
                 "red_cards": r["red_cards"],
+                "game_winning_goal": game_winning_goals > 0,
+                "penalty_goal": penalty_goals > 0,
+                "hat_trick": is_hat_trick,
             }
         )
+
+    totals["avg_minutes"] = round(totals["minutes"] / totals["games"], 1) if totals["games"] else 0
 
     return log, totals

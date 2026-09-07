@@ -14,24 +14,45 @@
     {% if not player %}
     <p class="empty">Player not found.</p>
     {% else %}
-    <h1>{{ player.first_name }} {{ player.last_name }}</h1>
+    <div class="player-head">
+        <h1>{{ player.first_name | name_case }} {{ player.last_name | name_case }}</h1>
+        {% if player.position %}<span class="badge pos">{{ player.position }}</span>{% endif %}
+        {% if player.number %}<span class="badge">#{{ player.number }}</span>{% endif %}
+    </div>
     <p class="team-meta"><a href="/team/{{ player.team_seo }}">{{ team_label(player.team_name, player.team_seo, player.team_conference) }}</a></p>
-    <p class="team-meta">
-        {{ totals.games }} games &middot;
-        {{ totals.goals }} goals &middot;
-        {{ totals.assists }} assists &middot;
-        {{ totals.shots }} shots ({{ totals.shots_on_goal }} on target)
-    </p>
 
     <div class="boxscore-card">
+        <h2>Season</h2>
+        <div class="stat-tiles">
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.games }}</div><div class="stat-tile-label">GP</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.avg_minutes }}</div><div class="stat-tile-label">Min</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.goals }}</div><div class="stat-tile-label">G</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.assists }}</div><div class="stat-tile-label">A</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.shots }}</div><div class="stat-tile-label">Shots</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.shots_on_goal }}</div><div class="stat-tile-label">SOT</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.yellow_cards }}</div><div class="stat-tile-label">YC</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ totals.red_cards }}</div><div class="stat-tile-label">RC</div></div>
+        </div>
+        {% if totals.game_winning_goals or totals.penalty_goals or totals.hat_tricks %}
+        <div class="highlight-line">
+            <span class="hl-label">Highlights</span>
+            {% if totals.game_winning_goals %}<span class="chip"><b>{{ totals.game_winning_goals }}</b> game-winner{{ 's' if totals.game_winning_goals != 1 }}</span>{% endif %}
+            {% if totals.penalty_goals %}<span class="chip"><b>{{ totals.penalty_goals }}</b> penalty goal{{ 's' if totals.penalty_goals != 1 }}</span>{% endif %}
+            {% if totals.hat_tricks %}<span class="chip"><b>{{ totals.hat_tricks }}</b> hat trick{{ 's' if totals.hat_tricks != 1 }}</span>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="boxscore-card">
+    <h2>Game Log</h2>
     <div class="table-scroll">
     <table>
         <thead>
             <tr>
-                <th>Date</th><th></th><th>Opponent</th>
+                <th>Date</th><th></th><th>Opponent</th><th>Result</th><th>Role</th>
                 <th class="num">Min</th><th class="num">G</th><th class="num">A</th>
-                <th class="num">S</th><th class="num">SOT</th><th class="num">SAV</th>
-                <th class="num">YC</th><th class="num">RC</th>
+                <th class="num">S</th><th class="num">SOT</th><th class="num">F</th>
+                <th class="num">YC</th><th class="num">RC</th><th>Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -40,19 +61,36 @@
                 <td><a href="/game/{{ r.game_id }}">{{ r.date | pretty_date }}</a></td>
                 <td>{{ 'vs' if r.is_home else '@' }}</td>
                 <td><a href="/team/{{ r.opponent_seo }}">{{ team_label(r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a></td>
+                <td>
+                    {% if r.result == 'w' %}<span class="pill result-w">W {{ r.team_score }}-{{ r.opp_score }}</span>
+                    {% elif r.result == 'l' %}<span class="pill result-l">L {{ r.team_score }}-{{ r.opp_score }}</span>
+                    {% elif r.result == 'd' %}<span class="pill result-d">D {{ r.team_score }}-{{ r.opp_score }}</span>
+                    {% endif %}
+                </td>
+                <td>{% if not r.starter %}<span class="pill role-sub">SUB</span>{% endif %}</td>
                 <td class="num">{{ r.minutes_played }}</td>
                 <td class="num">{{ r.goals }}</td>
                 <td class="num">{{ r.assists }}</td>
                 <td class="num">{{ r.shots }}</td>
                 <td class="num">{{ r.shots_on_goal }}</td>
-                <td class="num">{{ r.saves }}</td>
+                <td class="num">{{ r.fouls }}</td>
                 <td class="num">{{ r.yellow_cards }}</td>
                 <td class="num">{{ r.red_cards }}</td>
+                <td>
+                    {% if r.game_winning_goal or r.penalty_goal or r.hat_trick %}
+                    <div class="note-pills">
+                        {% if r.game_winning_goal %}<span class="note-pill">GW</span>{% endif %}
+                        {% if r.penalty_goal %}<span class="note-pill">PK</span>{% endif %}
+                        {% if r.hat_trick %}<span class="note-pill">HT</span>{% endif %}
+                    </div>
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
     </div>
+    <p class="glossary">GP games played &middot; Min average minutes &middot; S shots &middot; SOT shots on target &middot; F fouls &middot; YC/RC cards &middot; SUB entered as a substitute &middot; GW game-winning goal &middot; PK penalty goal &middot; HT hat trick</p>
     </div>
     {% endif %}
 </body>

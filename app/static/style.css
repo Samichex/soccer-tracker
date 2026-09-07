@@ -229,6 +229,7 @@ h2 {
 .pill.result-d { background: var(--draw-bg); color: var(--draw); }
 .pill.pill-upset { background: var(--live-bg); color: var(--live); }
 .pill.pill-standout { background: var(--accent-soft); color: var(--accent); }
+.pill.role-sub { background: var(--neutral-soft); color: var(--muted-2); font-weight: 600; }
 
 .card-row.standout { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .standout-player { font-weight: 600; font-size: 0.92rem; color: var(--text); flex: 1 1 140px; }
@@ -242,6 +243,76 @@ h2 {
 
 .team-meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
 .team-meta a { color: var(--accent); font-weight: 600; }
+
+/* Player header badges */
+.player-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 1.5rem 0 0.35rem; }
+.player-head h1 { margin: 0; }
+.badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.22rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--neutral-soft);
+    color: var(--muted);
+}
+.badge.pos { background: var(--accent-soft); color: var(--accent); }
+
+/* Season stat tiles */
+.stat-tiles { display: grid; grid-template-columns: repeat(8, 1fr); }
+.stat-tile { text-align: center; padding: 0 0.4rem; border-left: 1px solid var(--border); }
+.stat-tile:first-child { border-left: none; }
+.stat-tile-value { font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 700; line-height: 1.1; }
+.stat-tile-label {
+    margin-top: 0.35rem;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+}
+
+.highlight-line {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+}
+.highlight-line .hl-label { font-size: 0.72rem; font-weight: 600; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.05em; }
+.chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--neutral-soft);
+    color: var(--text);
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+}
+.chip b { font-variant-numeric: tabular-nums; color: var(--accent); font-size: 0.92rem; }
+
+.note-pills { display: flex; gap: 4px; flex-wrap: nowrap; }
+.note-pill {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.16rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+@media (max-width: 700px) {
+    .stat-tiles { grid-template-columns: repeat(4, 1fr); }
+    .stat-tile { border-left: none; border-top: 1px solid var(--border); padding-top: 0.6rem; margin-top: 0.6rem; }
+    .stat-tile:nth-child(-n+4) { border-top: none; margin-top: 0; padding-top: 0; }
+}
 
 /* Game / box score */
 .game-header { padding: 0.75rem 0 0.25rem; }

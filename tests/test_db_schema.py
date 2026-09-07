@@ -93,7 +93,9 @@ def _player_row(**overrides):
         "first_name": "John", "last_name": "Smith", "number": "10",
         "position": "GK", "starter": 1, "minutes_played": "90",
         "goals": "0", "assists": "0", "shots": "0", "shots_on_goal": "0",
-        "saves": "0", "yellow_cards": "0", "red_cards": "0", "participated": 1,
+        "saves": "0", "yellow_cards": "0", "red_cards": "0",
+        "fouls": "0", "green_cards": "0", "game_winning_goals": "0",
+        "penalty_goals": "0", "participated": 1,
     }
     row.update(overrides)
     return row
