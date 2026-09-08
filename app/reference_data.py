@@ -111,29 +111,36 @@ def rank_arrow(rank: int | None, prev_rank: str | None) -> Markup:
     return Markup("")
 
 
+_RANKING_KEY_FIELDS = ("rank", "prev_rank", "points", "first_place_votes", "record")
+
+
 def group_rankings_by_week(rows) -> list[dict]:
-    """Collapse daily `team_rankings` snapshot rows into one row per ISO week.
+    """Collapse daily `team_rankings` snapshot rows into one row per poll update.
 
     `rows` must be ascending by observed_date (as returned by
-    db.get_ranking_history). Within each ISO week, keeps the chronologically
-    LAST row seen — a mid-week resync can pick up a newly-released poll
-    before the week's later days do, so "last" is the freshest data
-    regardless of which day of the week the poll actually updates.
-
-    Uses Python's isocalendar() rather than SQLite's strftime('%W', ...),
-    which is not ISO-8601 compliant near year boundaries.
+    db.get_ranking_history). The rankings feed only ever exposes the
+    *current* poll (see sync.sync_rankings), so a plain daily snapshot just
+    repeats the same values every day until United Soccer Coaches publishes
+    the next one, typically Tuesdays. Group consecutive snapshots with
+    identical rank/points/votes/record into a single entry labeled with the
+    date that run *started* -- i.e. the day that poll's data actually
+    appeared, not whichever day happened to sync it. This also means a new
+    entry only shows up once the new poll has actually landed, rather than
+    the moment the calendar rolls into a new week.
     """
-    weeks: dict[tuple[int, int], dict] = {}
-    order: list[tuple[int, int]] = []
+    runs: list[dict] = []
     for row in rows:
-        iso_year, iso_week, _ = dt.date.fromisoformat(row["observed_date"]).isocalendar()
-        key = (iso_year, iso_week)
-        if key not in weeks:
-            order.append(key)
-        merged = dict(row)
-        merged["week_start"] = dt.date.fromisocalendar(iso_year, iso_week, 1).isoformat()
-        weeks[key] = merged
-    return [weeks[key] for key in order]
+        key = tuple(row[f] for f in _RANKING_KEY_FIELDS)
+        if runs and runs[-1]["_key"] == key:
+            runs[-1]["_row"] = row  # keep the freshest capture of this run
+        else:
+            runs.append({"_key": key, "_first_date": row["observed_date"], "_row": row})
+    result = []
+    for run in runs:
+        merged = dict(run["_row"])
+        merged["week_start"] = run["_first_date"]
+        result.append(merged)
+    return result
 
 
 def conference_display_name(conference_seo: str | None) -> str:
