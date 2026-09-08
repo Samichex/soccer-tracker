@@ -273,6 +273,9 @@ h2 {
 .team-meta a { color: var(--accent); font-weight: 600; }
 
 /* Team header row: name + conference link */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.section-link { font-size: 0.78rem; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.section-link:hover { text-decoration: underline; }
 .team-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 1.5rem 0 1.1rem; flex-wrap: wrap; }
 .team-head h1 { margin: 0; }
 .head-coach { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.9rem; }
