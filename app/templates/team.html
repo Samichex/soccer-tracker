@@ -85,7 +85,7 @@
                 <td>{{ r.week_start | pretty_date }}</td>
                 <td class="num">#{{ r.rank }}</td>
                 <td class="num">{{ r.prev_rank or 'NR' }}</td>
-                <td>{{ r.record }}</td>
+                <td>{{ r.record or '—' }}</td>
             </tr>
         {% endfor %}
         </tbody>

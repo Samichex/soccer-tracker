@@ -259,6 +259,11 @@ def team_detail(request: Request, seo: str):
         current_rank, current_prev_rank = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
     rows, record = standings.build_team_schedule(games, seo, team["conference"] if team else None)
     team_totals = standings.build_team_totals(roster, rows)
+    if rank_history and rank_history[0]["record"] is None:
+        # Latest poll snapshot hasn't been backfilled with a record yet --
+        # use the team's actual current record instead of leaving it blank.
+        rank_history[0] = dict(rank_history[0])
+        rank_history[0]["record"] = f"{record['overall_w']}-{record['overall_l']}-{record['overall_d']}"
     return templates.TemplateResponse(
         "team.html",
         {
