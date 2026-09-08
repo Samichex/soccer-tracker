@@ -1,0 +1,19 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Matches Row — Final", "x": 0, "y": 0, "w": 660, "h": 780, "page": "final" },
+    { "file": "SketchA.dc.html", "title": "Sketch A — Left Badge, Standard Density", "x": 0, "y": 0, "w": 660, "h": 860, "page": "sketches" },
+    { "file": "SketchB.dc.html", "title": "Sketch B — Left Badge, Dense (rust live)", "x": 760, "y": 0, "w": 660, "h": 780, "page": "sketches" },
+    { "file": "SketchC.dc.html", "title": "Sketch C — Live Minute Clock", "x": 1520, "y": 0, "w": 660, "h": 860, "page": "sketches" }
+  ],
+  "annotations": [
+    { "id": "note-final", "x": 0, "y": -160, "w": 320, "text": "Final direction: Sketch B's dense spacing, with the live half indicator (1ST/2ND/HT) recolored to the site's forest-green accent instead of rust. Red-card tick above the score stays red — that's a distinct signal from match status.", "page": "final" },
+    { "id": "note-a", "x": 0, "y": -160, "w": 320, "text": "Sketch A — Left Badge, Standard Density\nBadge moves to a slim 36px column at the left edge: FT / 1ST / 2ND / HT. Kickoff time sits where the score goes pre-match. Red tick above the score marks a red card.", "page": "sketches" },
+    { "id": "note-b", "x": 760, "y": -160, "w": 320, "text": "Sketch B — Left Badge, Dense\nSame structure as A, tightened padding/gaps/type for a denser list. This density was picked as final — see the Final page for the recolored version.", "page": "sketches" },
+    { "id": "note-c", "x": 1520, "y": -160, "w": 320, "text": "Sketch C — Live Minute Clock\nLive matches show a running minute (\"24’\") in forest green instead of 1ST/2ND text. Not picked, but its green live color carried over into the Final.", "page": "sketches" }
+  ],
+  "pages": [
+    { "id": "final", "name": "Final" },
+    { "id": "sketches", "name": "Sketches" }
+  ],
+  "launch": { "view": "canvas", "page": "final" }
+}

@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --border: #ece8e1;
+      --text: #201f1d;
+      --muted: #767267;
+      --muted-2: #9c9890;
+      --accent: #2f6f4f;
+      --accent-soft: #eaf3ee;
+      --neutral-soft: #f1efe9;
+      --live-bg: #fbeae4;
+      --live: #c1573c;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { text-decoration: none; color: inherit; }
+
+    .mc-page {
+      background: var(--bg);
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      color: var(--text);
+      padding: 28px 32px 40px;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    .mc-topnav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .mc-brand { font-weight: 700; font-size: 1.05rem; }
+    .mc-navlinks { display: flex; gap: 18px; margin-left: auto; }
+    .mc-navlinks a { font-weight: 600; font-size: 0.82rem; color: var(--muted); }
+    .mc-navlinks a.active { color: var(--accent); }
+
+    .mc-datebar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 18px 0 14px;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .mc-datebar span { color: var(--muted-2); font-weight: 400; font-size: 0.8rem; }
+
+    /* Dense list: tighter row gap + smaller row height (Direction B) */
+    .mc-list { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+
+    .mc-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto 1fr;
+      align-items: center;
+      gap: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.45rem 0.8rem;
+    }
+
+    .mc-badge {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 0.16rem 0;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .mc-badge.b-final { background: var(--neutral-soft); color: var(--muted); }
+    /* Live half indicator now uses the site's forest-green accent instead of rust */
+    .mc-badge.b-live {
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .mc-badge.b-live::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: mc-pulse 1.6s ease-in-out infinite;
+    }
+    .mc-badge.b-ht { background: var(--accent-soft); color: var(--accent); }
+    .mc-badge.b-empty { visibility: hidden; }
+    @keyframes mc-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    .mc-team { font-weight: 600; font-size: 0.82rem; }
+    .mc-team.left { text-align: left; }
+    .mc-team.right { text-align: right; }
+    .mc-team:hover { color: var(--accent); }
+
+    .mc-center { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 52px; }
+    .mc-cardrow { display: flex; justify-content: space-between; width: 20px; height: 7px; }
+    .mc-cardmark {
+      width: 5px;
+      height: 7px;
+      border-radius: 1px;
+      background: var(--live);
+      opacity: 0;
+    }
+    .mc-cardmark.show { opacity: 1; }
+    .mc-score { font-weight: 700; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+    .mc-time { font-size: 0.74rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .mc-time .tz { color: var(--muted-2); font-weight: 500; font-size: 0.66rem; }
+
+    .mc-mobile-wrap { margin-top: 34px; }
+    .mc-mobile-label { font-size: 0.72rem; color: var(--muted-2); font-weight: 600; letter-spacing: 0.02em; margin-bottom: 10px; }
+    .mc-mobile-frame {
+      width: 340px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .mc-mobile-frame .mc-list { gap: 3px; margin-top: 0; }
+    .mc-mobile-frame .mc-row { grid-template-columns: 24px 1fr auto 1fr; gap: 6px; padding: 0.42rem 0.6rem; }
+    .mc-mobile-frame .mc-team { font-size: 0.78rem; }
+  </style>
+</helmet>
+
+<div class="mc-page">
+  <div class="mc-topnav">
+    <div class="mc-brand">Full Time</div>
+    <div class="mc-navlinks">
+      <a class="active">Matches</a>
+      <a>Teams</a>
+      <a>Players</a>
+      <a>Stats</a>
+    </div>
+  </div>
+
+  <div class="mc-datebar">Today <span>Sun 7 Sep</span></div>
+
+  <div class="mc-list">
+    <div class="mc-row">
+      <div class="mc-badge b-final">FT</div>
+      <a class="mc-team left">Getafe</a>
+      <div class="mc-center">
+        <div class="mc-cardrow">
+          <div class="mc-cardmark show"></div>
+          <div class="mc-cardmark"></div>
+        </div>
+        <a class="mc-score">1 &ndash; 1</a>
+      </div>
+      <a class="mc-team right">Celta Vigo</a>
+    </div>
+
+    <div class="mc-row">
+      <div class="mc-badge b-live">1ST</div>
+      <a class="mc-team left">Villarreal</a>
+      <div class="mc-center">
+        <div class="mc-cardrow"></div>
+        <a class="mc-score">1 &ndash; 1</a>
+      </div>
+      <a class="mc-team right">Sevilla</a>
+    </div>
+
+    <div class="mc-row">
+      <div class="mc-badge b-live">2ND</div>
+      <a class="mc-team left">Elche</a>
+      <div class="mc-center">
+        <div class="mc-cardrow"></div>
+        <a class="mc-score">0 &ndash; 2</a>
+      </div>
+      <a class="mc-team right">Real Sociedad</a>
+    </div>
+
+    <div class="mc-row">
+      <div class="mc-badge b-ht">HT</div>
+      <a class="mc-team left">Alav&eacute;s</a>
+      <div class="mc-center">
+        <div class="mc-cardrow"></div>
+        <a class="mc-score">0 &ndash; 0</a>
+      </div>
+      <a class="mc-team right">Osasuna</a>
+    </div>
+
+    <div class="mc-row">
+      <div class="mc-badge b-empty">FT</div>
+      <a class="mc-team left">Inter Miami</a>
+      <div class="mc-center">
+        <div class="mc-cardrow"></div>
+        <div class="mc-time">7:30 PM <span class="tz">ET</span></div>
+      </div>
+      <a class="mc-team right">Orlando City</a>
+    </div>
+
+    <div class="mc-row">
+      <div class="mc-badge b-empty">FT</div>
+      <a class="mc-team left">Barracas Central</a>
+      <div class="mc-center">
+        <div class="mc-cardrow"></div>
+        <div class="mc-time">6:00 PM</div>
+      </div>
+      <a class="mc-team right">Argentinos Jrs.</a>
+    </div>
+  </div>
+
+  <div class="mc-mobile-wrap">
+    <div class="mc-mobile-label">AT ~340PX: ET SUFFIX DROPPED</div>
+    <div class="mc-mobile-frame">
+      <div class="mc-list">
+        <div class="mc-row">
+          <div class="mc-badge b-final">FT</div>
+          <a class="mc-team left">Getafe</a>
+          <div class="mc-center">
+            <div class="mc-cardrow">
+              <div class="mc-cardmark show"></div>
+              <div class="mc-cardmark"></div>
+            </div>
+            <a class="mc-score">1 &ndash; 1</a>
+          </div>
+          <a class="mc-team right">Celta Vigo</a>
+        </div>
+        <div class="mc-row">
+          <div class="mc-badge b-empty">FT</div>
+          <a class="mc-team left">Inter Miami</a>
+          <div class="mc-center">
+            <div class="mc-cardrow"></div>
+            <div class="mc-time">7:30 PM</div>
+          </div>
+          <a class="mc-team right">Orlando City</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

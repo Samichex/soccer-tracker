@@ -170,6 +170,20 @@ def _leaderboard(rows, key: str, n: int = 5) -> list[dict]:
     return ordered
 
 
+def _match_badge(g: dict) -> tuple[str, str] | None:
+    """(css_class, label) for the compact left-edge status badge, or None
+    for a scheduled match, whose slot in the row shows the kickoff time
+    instead."""
+    if g["status"] == "final":
+        return "b-final", "FT"
+    if g["status"] == "live":
+        label = reference_data.period_short(g["current_period"])
+        if label == "HT":
+            return "b-ht", "HT"
+        return "b-live", label
+    return None
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, date: str | None = None, conference: str | None = None):
     day = _parse_date(date)
@@ -181,6 +195,9 @@ def index(request: Request, date: str | None = None, conference: str | None = No
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
         g["is_upset"] = _is_upset(g)
+        badge = _match_badge(g)
+        g["badge_class"], g["badge_label"] = badge if badge else ("", "")
+        g["start_time_main"], g["start_time_tz"] = reference_data.split_time_tz(g["start_time"])
     return templates.TemplateResponse(
         "index.html",
         {

@@ -193,6 +193,39 @@ def position_short(value: str | None) -> str:
     return _POSITION_SHORT.get(value, value[:1])
 
 
+_TIME_ZONE_ABBREVIATIONS = {"ET", "CT", "MT", "PT", "AT"}
+
+
+def split_time_tz(value: str | None) -> tuple[str, str]:
+    """Split a kickoff time like "7:00 PM ET" into ("7:00 PM", "ET") so the
+    timezone can be hidden separately on narrow screens. Returns the value
+    unchanged with an empty tz when there's no recognized suffix."""
+    if not value:
+        return value or "", ""
+    parts = value.rsplit(" ", 1)
+    if len(parts) == 2 and parts[1].upper() in _TIME_ZONE_ABBREVIATIONS:
+        return parts[0], parts[1].upper()
+    return value, ""
+
+
+def period_short(value: str | None) -> str:
+    """Compact badge label for a live game's current_period, e.g.
+    "1st Half" -> "1ST", "2nd Half" -> "2ND", "Half" -> "HT". current_period
+    is passed through verbatim from NCAA's feed, so anything unrecognized
+    (an overtime period, etc.) falls back to an uppercased 3-letter
+    abbreviation rather than guessing at a format we haven't seen."""
+    if not value:
+        return "LIVE"
+    v = value.strip().lower()
+    if v.startswith("1st"):
+        return "1ST"
+    if v.startswith("2nd"):
+        return "2ND"
+    if "half" in v:
+        return "HT"
+    return value.strip()[:3].upper()
+
+
 def _format_local_time(local: dt.datetime, with_year: bool) -> str:
     # Avoid %-d/%-I (no-leading-zero) strftime codes: they're a Unix/glibc
     # extension and raise on Windows.
