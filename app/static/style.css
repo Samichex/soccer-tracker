@@ -272,6 +272,40 @@ h2 {
 .team-meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
 .team-meta a { color: var(--accent); font-weight: 600; }
 
+/* Team header row: name + conference link */
+.team-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 1.5rem 0 1.1rem; flex-wrap: wrap; }
+.team-head h1 { margin: 0; }
+.conf-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* Team season record + stat tiles */
+.record-row { display: grid; grid-template-columns: repeat(3, 1fr); }
+.record-tile { text-align: center; padding: 0 0.6rem; border-left: 1px solid var(--border); }
+.record-tile:first-child { border-left: none; }
+.record-tile-value { font-variant-numeric: tabular-nums; font-size: 1.55rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.record-tile-label {
+    margin-top: 0.35rem;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+}
+
+.stat-divider { border-top: 1px solid var(--border); margin: 1rem 0; }
+
+.stat-tiles.team-stat-tiles { grid-template-columns: repeat(7, 1fr); }
+
 /* Player header badges */
 .player-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 1.5rem 0 0.35rem; }
 .player-head h1 { margin: 0; }
@@ -337,9 +371,10 @@ h2 {
 }
 
 @media (max-width: 700px) {
-    .stat-tiles { grid-template-columns: repeat(4, 1fr); }
+    .stat-tiles, .stat-tiles.team-stat-tiles { grid-template-columns: repeat(4, 1fr); }
     .stat-tile { border-left: none; border-top: 1px solid var(--border); padding-top: 0.6rem; margin-top: 0.6rem; }
     .stat-tile:nth-child(-n+4) { border-top: none; margin-top: 0; padding-top: 0; }
+    .record-tile-value { font-size: 1.25rem; }
 }
 
 /* Game / box score */

@@ -14,13 +14,29 @@
     {% if not team %}
     <p class="empty">Team not found.</p>
     {% else %}
-    <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
-    <p class="team-meta">
-        {% if team.conference %}<a href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a> &middot; {% endif %}
-        Conference: {{ record.conf_w }}-{{ record.conf_l }}-{{ record.conf_d }} &middot;
-        Non-Conference: {{ record.nc_w }}-{{ record.nc_l }}-{{ record.nc_d }} &middot;
-        Overall: {{ record.overall_w }}-{{ record.overall_l }}-{{ record.overall_d }}
-    </p>
+    <div class="team-head">
+        <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
+        {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
+    </div>
+
+    <div class="boxscore-card">
+        <h2>Season</h2>
+        <div class="record-row">
+            <div class="record-tile"><div class="record-tile-value">{{ record.conf_w }}-{{ record.conf_l }}-{{ record.conf_d }}</div><div class="record-tile-label">Conference</div></div>
+            <div class="record-tile"><div class="record-tile-value">{{ record.nc_w }}-{{ record.nc_l }}-{{ record.nc_d }}</div><div class="record-tile-label">Non-Conference</div></div>
+            <div class="record-tile"><div class="record-tile-value">{{ record.overall_w }}-{{ record.overall_l }}-{{ record.overall_d }}</div><div class="record-tile-label">Overall</div></div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-tiles team-stat-tiles">
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.goals }}</div><div class="stat-tile-label">G</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.assists }}</div><div class="stat-tile-label">A</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.shots }}</div><div class="stat-tile-label">Shots</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.shots_on_goal }}</div><div class="stat-tile-label">SOT</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.saves }}</div><div class="stat-tile-label">SAV</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.yellow_cards }}</div><div class="stat-tile-label">YC</div></div>
+            <div class="stat-tile"><div class="stat-tile-value">{{ team_totals.red_cards }}</div><div class="stat-tile-label">RC</div></div>
+        </div>
+    </div>
 
     <div class="toggle-section">
         <div class="card-list">
