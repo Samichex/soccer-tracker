@@ -3,6 +3,7 @@ import logging
 import threading
 import time
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -17,6 +18,12 @@ log = logging.getLogger("soccer-tracker")
 
 app = FastAPI(title="Full Time")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+EASTERN = ZoneInfo("America/New_York")
+
+
+def _today_eastern() -> dt.date:
+    return dt.datetime.now(EASTERN).date()
 
 
 @app.middleware("http")
@@ -87,11 +94,11 @@ def on_startup():
 
 def _parse_date(date_str: str | None) -> dt.date:
     if not date_str:
-        return dt.date.today()
+        return _today_eastern()
     try:
         return dt.date.fromisoformat(date_str)
     except ValueError:
-        return dt.date.today()
+        return _today_eastern()
 
 
 def _conference_label(seo: str, full: bool = False) -> str:
@@ -203,7 +210,7 @@ def index(request: Request, date: str | None = None, conference: str | None = No
         {
             "request": request,
             "day": day,
-            "is_today": day == dt.date.today(),
+            "is_today": day == _today_eastern(),
             "prev_day": day - dt.timedelta(days=1),
             "next_day": day + dt.timedelta(days=1),
             "games": games,
@@ -382,7 +389,7 @@ def players_list(
 
 @app.get("/stats", response_class=HTMLResponse)
 def stats_page(request: Request):
-    today = dt.date.today()
+    today = _today_eastern()
     since_date = today - dt.timedelta(days=6)
 
     with db.get_conn() as conn:
