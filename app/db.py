@@ -675,13 +675,36 @@ def get_ranking_history(conn, seo: str):
 
 
 def get_latest_rankings(conn):
-    return conn.execute(
+    """Most recent day's poll snapshot, with `prev_rank` backfilled from the
+    prior snapshot's rank when the feed hasn't reported it yet -- e.g. right
+    after a new poll drops, before United Soccer Coaches backfills that
+    detail. Without this, rank-change arrows and "prev rank" displays would
+    show nothing/NR for every team on the day a new poll lands."""
+    rows = [dict(r) for r in conn.execute(
         """
         SELECT * FROM team_rankings
         WHERE observed_date = (SELECT MAX(observed_date) FROM team_rankings)
         ORDER BY rank
         """
-    ).fetchall()
+    )]
+    missing = [r for r in rows if r["prev_rank"] in (None, "")]
+    if rows and missing:
+        prior_date = conn.execute(
+            "SELECT MAX(observed_date) AS d FROM team_rankings WHERE observed_date < ?",
+            (rows[0]["observed_date"],),
+        ).fetchone()["d"]
+        if prior_date:
+            prior_ranks = {
+                r["seo"]: r["rank"]
+                for r in conn.execute(
+                    "SELECT seo, rank FROM team_rankings WHERE observed_date = ?", (prior_date,)
+                )
+                if r["seo"]
+            }
+            for r in missing:
+                if r["seo"] in prior_ranks:
+                    r["prev_rank"] = str(prior_ranks[r["seo"]])
+    return rows
 
 
 def set_last_synced(conn, when: str):

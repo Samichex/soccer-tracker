@@ -136,35 +136,52 @@ def rank_arrow(rank: int | None, prev_rank: str | None) -> Markup:
     return Markup("")
 
 
-_RANKING_KEY_FIELDS = ("rank", "prev_rank", "points", "first_place_votes", "record")
+def _poll_week_start(observed_date: str) -> str:
+    """Tuesday on/before `observed_date` -- United Soccer Coaches publishes
+    weekly on Tuesdays, so this is the release date of whichever poll was
+    current as of that snapshot."""
+    d = dt.date.fromisoformat(observed_date)
+    days_since_tuesday = (d.weekday() - 1) % 7  # Mon=0 ... Tue=1 ... Sun=6
+    return (d - dt.timedelta(days=days_since_tuesday)).isoformat()
 
 
 def group_rankings_by_week(rows) -> list[dict]:
-    """Collapse daily `team_rankings` snapshot rows into one row per poll update.
+    """Collapse daily `team_rankings` snapshot rows into one row per poll week.
 
     `rows` must be ascending by observed_date (as returned by
     db.get_ranking_history). The rankings feed only ever exposes the
     *current* poll (see sync.sync_rankings), so a plain daily snapshot just
     repeats the same values every day until United Soccer Coaches publishes
-    the next one, typically Tuesdays. Group consecutive snapshots with
-    identical rank/points/votes/record into a single entry labeled with the
-    date that run *started* -- i.e. the day that poll's data actually
-    appeared, not whichever day happened to sync it. This also means a new
-    entry only shows up once the new poll has actually landed, rather than
-    the moment the calendar rolls into a new week.
+    the next one, on Tuesdays. Bucket rows by the Tuesday they fall under
+    (Monday still belongs to the *previous* Tuesday's poll, since the new
+    one hasn't landed yet) and merge same-week snapshots, preferring the
+    latest non-null value for each field -- the feed can take a day or two
+    to backfill details like points/record for a just-published poll, and a
+    later sync shouldn't be treated as a distinct entry just because it
+    fills in a gap the first capture missed.
+
+    Finally, if a week's `prev_rank` never got backfilled by the feed, fall
+    back to the previous week's rank -- that's what "previous rank" means
+    by construction, and is a safe substitute for an upstream gap.
     """
-    runs: list[dict] = []
+    weeks: dict[str, dict] = {}
+    order: list[str] = []
     for row in rows:
-        key = tuple(row[f] for f in _RANKING_KEY_FIELDS)
-        if runs and runs[-1]["_key"] == key:
-            runs[-1]["_row"] = row  # keep the freshest capture of this run
+        key = _poll_week_start(row["observed_date"])
+        if key not in weeks:
+            order.append(key)
+            weeks[key] = dict(row)
         else:
-            runs.append({"_key": key, "_first_date": row["observed_date"], "_row": row})
-    result = []
-    for run in runs:
-        merged = dict(run["_row"])
-        merged["week_start"] = run["_first_date"]
-        result.append(merged)
+            merged = weeks[key]
+            for field in row.keys():
+                if row[field] is not None:
+                    merged[field] = row[field]
+        weeks[key]["week_start"] = key
+
+    result = [weeks[key] for key in order]
+    for i, entry in enumerate(result):
+        if entry["prev_rank"] in (None, "") and i > 0:
+            entry["prev_rank"] = str(result[i - 1]["rank"])
     return result
 
 
