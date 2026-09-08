@@ -197,6 +197,18 @@ def build_team_schedule(games, seo: str, conference: str | None = None):
     return rows, record
 
 
+def build_team_totals(roster):
+    """Sum a team's roster stat rows into season totals."""
+    totals = {
+        "goals": 0, "assists": 0, "shots": 0, "shots_on_goal": 0,
+        "saves": 0, "yellow_cards": 0, "red_cards": 0,
+    }
+    for p in roster:
+        for key in totals:
+            totals[key] += _to_int(p[key]) or 0
+    return totals
+
+
 def build_player_game_log(rows):
     """Turn a player's per-game player_stats+games rows into a display-ready
     log plus season totals."""
