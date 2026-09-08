@@ -15,7 +15,10 @@
     <p class="empty">Team not found.</p>
     {% else %}
     <div class="team-head">
-        <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
+        <div>
+            <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
+            {% if head_coach %}<p class="head-coach">Head Coach: {{ head_coach }}</p>{% endif %}
+        </div>
         {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
     </div>
 
