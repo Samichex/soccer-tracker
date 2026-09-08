@@ -258,7 +258,7 @@ def team_detail(request: Request, seo: str):
         rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
         current_rank, current_prev_rank = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
     rows, record = standings.build_team_schedule(games, seo, team["conference"] if team else None)
-    team_totals = standings.build_team_totals(roster)
+    team_totals = standings.build_team_totals(roster, rows)
     return templates.TemplateResponse(
         "team.html",
         {

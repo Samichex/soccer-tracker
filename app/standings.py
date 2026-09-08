@@ -197,8 +197,9 @@ def build_team_schedule(games, seo: str, conference: str | None = None):
     return rows, record
 
 
-def build_team_totals(roster):
-    """Sum a team's roster stat rows into season totals."""
+def build_team_totals(roster, schedule_rows):
+    """Sum a team's roster stat rows into season totals, plus goals
+    against tallied from the team's completed games."""
     totals = {
         "goals": 0, "assists": 0, "shots": 0, "shots_on_goal": 0,
         "saves": 0, "yellow_cards": 0, "red_cards": 0,
@@ -206,6 +207,10 @@ def build_team_totals(roster):
     for p in roster:
         for key in totals:
             totals[key] += _to_int(p[key]) or 0
+
+    totals["goals_against"] = sum(
+        r["opp_score"] for r in schedule_rows if r["game"]["status"] == "final" and r["opp_score"] is not None
+    )
     return totals
 
 
