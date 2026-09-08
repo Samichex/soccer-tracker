@@ -304,7 +304,9 @@ h2 {
 
 .stat-divider { border-top: 1px solid var(--border); margin: 1rem 0; }
 
-.stat-tiles.team-stat-tiles { grid-template-columns: repeat(7, 1fr); }
+.stat-tiles.team-stat-tiles { grid-template-columns: repeat(4, 1fr); }
+.stat-tiles.team-stat-tiles .stat-tile:nth-child(4n+1) { border-left: none; }
+.stat-tiles.team-stat-tiles .stat-tile:nth-child(n+5) { border-top: 1px solid var(--border); padding-top: 0.6rem; margin-top: 0.6rem; }
 
 /* Player header badges */
 .player-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 1.5rem 0 0.35rem; }
