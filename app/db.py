@@ -360,18 +360,36 @@ def get_team_stats(conn, game_id: str):
     return result
 
 
+_RED_CARD_JOINS = """
+    LEFT JOIN (
+        SELECT game_id, SUM(CAST(red_cards AS INTEGER)) AS red_cards
+        FROM player_stats WHERE is_home = 1 GROUP BY game_id
+    ) rh ON rh.game_id = g.id
+    LEFT JOIN (
+        SELECT game_id, SUM(CAST(red_cards AS INTEGER)) AS red_cards
+        FROM player_stats WHERE is_home = 0 GROUP BY game_id
+    ) ra ON ra.game_id = g.id
+"""
+_GAME_COLUMNS_WITH_CARDS = f"""
+    {_GAME_COLUMNS},
+    COALESCE(rh.red_cards, 0) AS home_red_cards,
+    COALESCE(ra.red_cards, 0) AS away_red_cards
+"""
+
+
 def get_games_for_date(conn, date_str: str, conference: str | None = None):
+    joins = f"{_GAME_JOINS} {_RED_CARD_JOINS}"
     if conference:
         return conn.execute(
             f"""
-            SELECT {_GAME_COLUMNS} {_GAME_JOINS}
+            SELECT {_GAME_COLUMNS_WITH_CARDS} {joins}
             WHERE g.date = ? AND (g.home_conference = ? OR g.away_conference = ?)
             ORDER BY g.start_epoch
             """,
             (date_str, conference, conference),
         ).fetchall()
     return conn.execute(
-        f"SELECT {_GAME_COLUMNS} {_GAME_JOINS} WHERE g.date = ? ORDER BY g.start_epoch",
+        f"SELECT {_GAME_COLUMNS_WITH_CARDS} {joins} WHERE g.date = ? ORDER BY g.start_epoch",
         (date_str,),
     ).fetchall()
 
