@@ -1,3 +1,6 @@
+from . import reference_data
+
+
 def _to_int(value):
     try:
         return int(value)
@@ -138,6 +141,22 @@ def build_all_teams_table(games):
 
     rows.sort(key=lambda t: t["name"])
     return rows
+
+
+def top_teams_by_record(games, n: int = 30) -> set[str]:
+    """Seo set of the top n D1 teams by overall record (3/1/0 points),
+    extended to include every team tied with the team at the cutoff.
+    Non-D1 (D2/D3/NAIA/NCCAA) teams are excluded from the pool since their
+    records are often padded against weaker competition."""
+    table = build_all_teams_table(games)
+    table = [t for t in table if reference_data.is_d1(t["seo"], t["conference"])]
+    for t in table:
+        t["_pts"] = t["overall_w"] * 3 + t["overall_d"]
+    ordered = sorted(table, key=lambda t: -t["_pts"])
+    if len(ordered) > n:
+        cutoff = ordered[n - 1]["_pts"]
+        ordered = [t for t in ordered if t["_pts"] >= cutoff]
+    return {t["seo"] for t in ordered}
 
 
 def build_team_schedule(games, seo: str, conference: str | None = None):

@@ -177,6 +177,25 @@ def _leaderboard(rows, key: str, n: int = 5) -> list[dict]:
     return ordered
 
 
+def _is_featured(g: dict, top30_seos: set[str]) -> bool:
+    """True if two currently-ranked teams are playing each other, or a
+    currently-ranked team is playing a team in the top 30 overall records.
+    Never true if either side is a non-D1 (D2/D3/NAIA/NCCAA) program."""
+    if not reference_data.is_d1(g["away_seo"], g["away_conference"]):
+        return False
+    if not reference_data.is_d1(g["home_seo"], g["home_conference"]):
+        return False
+    away_ranked = g["away_rank"] is not None
+    home_ranked = g["home_rank"] is not None
+    if away_ranked and home_ranked:
+        return True
+    if away_ranked and g["home_seo"] in top30_seos:
+        return True
+    if home_ranked and g["away_seo"] in top30_seos:
+        return True
+    return False
+
+
 def _match_badge(g: dict) -> tuple[str, str] | None:
     """(css_class, label) for the compact left-edge status badge, or None
     for a scheduled match, whose slot in the row shows the kickoff time
@@ -198,6 +217,7 @@ def index(request: Request, date: str | None = None, conference: str | None = No
         games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference)]
         conferences = db.get_conferences(conn)
         rank_map = _rank_map(db.get_latest_rankings(conn))
+        top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn))
     for g in games:
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
@@ -205,6 +225,8 @@ def index(request: Request, date: str | None = None, conference: str | None = No
         badge = _match_badge(g)
         g["badge_class"], g["badge_label"] = badge if badge else ("", "")
         g["start_time_main"], g["start_time_tz"] = reference_data.split_time_tz(g["start_time"])
+    featured_games = [g for g in games if _is_featured(g, top30_seos)]
+    games = [g for g in games if not _is_featured(g, top30_seos)]
     return templates.TemplateResponse(
         "index.html",
         {
@@ -214,6 +236,7 @@ def index(request: Request, date: str | None = None, conference: str | None = No
             "prev_day": day - dt.timedelta(days=1),
             "next_day": day + dt.timedelta(days=1),
             "games": games,
+            "featured_games": featured_games,
             "conferences": conferences,
             "selected_conference": conference,
             "conference_label": _conference_label,
