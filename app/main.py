@@ -41,6 +41,19 @@ templates.env.globals["team_label"] = reference_data.get_team_label
 templates.env.globals["team_label_responsive"] = reference_data.get_team_label_responsive
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
+
+
+def _querystring_with(request: Request, **overrides) -> str:
+    params = dict(request.query_params)
+    for key, value in overrides.items():
+        if value in (None, ""):
+            params.pop(key, None)
+        else:
+            params[key] = str(value)
+    return "?" + "&".join(f"{quote(k)}={quote(v)}" for k, v in params.items())
+
+
+templates.env.globals["querystring_with"] = _querystring_with
 templates.env.filters["name_case"] = reference_data.title_case_name
 templates.env.filters["position_short"] = reference_data.position_short
 
@@ -384,12 +397,30 @@ def teams_list(request: Request, conference: str | None = None, state: str | Non
     )
 
 
+PLAYERS_PER_PAGE = 50
+
+_PLAYER_SORT_KEYS = {
+    "name": lambda p: (p["last_name"] or "", p["first_name"] or ""),
+    "team": lambda p: p["team_name"] or "",
+    "gp": lambda p: p["games_played"] or 0,
+    "min": lambda p: p["avg_minutes"] or 0,
+    "g": lambda p: p["goals"] or 0,
+    "a": lambda p: p["assists"] or 0,
+    "s": lambda p: p["shots"] or 0,
+    "sot": lambda p: p["shots_on_goal"] or 0,
+    "sav": lambda p: p["saves"] or 0,
+}
+
+
 @app.get("/players", response_class=HTMLResponse)
 def players_list(
     request: Request,
     conference: str | None = None,
     team: str | None = None,
     state: str | None = None,
+    sort: str | None = None,
+    dir: str | None = None,
+    page: int = 1,
 ):
     with db.get_conn() as conn:
         roster = [dict(r) for r in db.get_all_players_roster_stats(conn)]
@@ -412,13 +443,23 @@ def players_list(
     if state:
         roster = [p for p in roster if p["state"] == state]
 
-    roster.sort(key=lambda p: p["goals"] or 0, reverse=True)
+    if sort not in _PLAYER_SORT_KEYS:
+        sort = "g"
+    if dir not in ("asc", "desc"):
+        dir = "desc" if sort == "g" else "asc"
+    roster.sort(key=_PLAYER_SORT_KEYS[sort], reverse=(dir == "desc"))
+
+    total = len(roster)
+    total_pages = max(1, -(-total // PLAYERS_PER_PAGE))
+    page = min(max(page, 1), total_pages)
+    start = (page - 1) * PLAYERS_PER_PAGE
+    roster_page = roster[start : start + PLAYERS_PER_PAGE]
 
     return templates.TemplateResponse(
         "players.html",
         {
             "request": request,
-            "roster": roster,
+            "roster": roster_page,
             "conference_label_fn": _conference_label,
             "conferences": conferences,
             "teams": teams,
@@ -426,6 +467,10 @@ def players_list(
             "selected_conference": conference,
             "selected_team": team,
             "selected_state": state,
+            "sort": sort,
+            "dir": dir,
+            "page": page,
+            "total_pages": total_pages,
         },
     )
 

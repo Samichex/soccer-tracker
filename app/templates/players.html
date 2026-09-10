@@ -12,6 +12,9 @@
     {% include "_nav.html" %}
 
     <form method="get" action="/players" class="conference-filter">
+        <input type="hidden" name="page" value="1">
+        <input type="hidden" name="sort" value="{{ sort or '' }}">
+        <input type="hidden" name="dir" value="{{ dir or '' }}">
         <select name="conference" onchange="this.form.submit()">
             <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
             {% for c in conferences %}
@@ -41,40 +44,46 @@
     <table class="sortable">
         <thead>
             <tr>
-                <th data-sort="name" data-sort-default="asc">Player</th>
-                <th data-sort="team" data-sort-default="asc">Team</th>
-                <th class="num" data-sort="gp" data-sort-default="desc">GP</th>
-                <th class="num" data-sort="min" data-sort-default="desc">MIN</th>
-                <th class="num sort-desc" data-sort="g" data-sort-default="desc">G</th>
-                <th class="num" data-sort="a" data-sort-default="desc">A</th>
-                <th class="num" data-sort="s" data-sort-default="desc">S</th>
-                <th class="num" data-sort="sot" data-sort-default="desc">SOT</th>
-                <th class="num" data-sort="sav" data-sort-default="desc">SAV</th>
+                {% for key, label, numeric in [("name", "Player", false), ("team", "Team", false), ("gp", "GP", true), ("min", "MIN", true), ("g", "G", true), ("a", "A", true), ("s", "S", true), ("sot", "SOT", true), ("sav", "SAV", true)] %}
+                <th data-sort="{{ key }}" class="{{ 'num ' if numeric }}{{ 'sort-asc' if sort == key and dir == 'asc' else 'sort-desc' if sort == key and dir == 'desc' }}">
+                    <a href="{{ querystring_with(request, sort=key, dir='asc' if sort == key and dir == 'desc' else 'desc', page=1) }}">{{ label }}</a>
+                </th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
         {% for p in roster %}
             <tr>
-                <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">
+                <td>
                     <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>{% if p.position %} ({{ p.position | position_short }}){% endif %}
                 </td>
-                <td data-sort-key="team" data-sort-value="{{ p.team_name }}">
+                <td>
                     <a href="/team/{{ p.team_seo }}">{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</a>
                 </td>
-                <td class="num" data-sort-key="gp" data-sort-value="{{ p.games_played }}">{{ p.games_played }}</td>
-                <td class="num" data-sort-key="min" data-sort-value="{{ p.avg_minutes }}">{{ p.avg_minutes }}</td>
-                <td class="num" data-sort-key="g" data-sort-value="{{ p.goals }}">{{ p.goals }}</td>
-                <td class="num" data-sort-key="a" data-sort-value="{{ p.assists }}">{{ p.assists }}</td>
-                <td class="num" data-sort-key="s" data-sort-value="{{ p.shots }}">{{ p.shots }}</td>
-                <td class="num" data-sort-key="sot" data-sort-value="{{ p.shots_on_goal }}">{{ p.shots_on_goal }}</td>
-                <td class="num" data-sort-key="sav" data-sort-value="{{ p.saves }}">{{ p.saves }}</td>
+                <td class="num">{{ p.games_played }}</td>
+                <td class="num">{{ p.avg_minutes }}</td>
+                <td class="num">{{ p.goals }}</td>
+                <td class="num">{{ p.assists }}</td>
+                <td class="num">{{ p.shots }}</td>
+                <td class="num">{{ p.shots_on_goal }}</td>
+                <td class="num">{{ p.saves }}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
     </div>
     </div>
-    <script src="/static/sort-table.js"></script>
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ querystring_with(request, page=page-1) }}">&laquo; Prev</a>
+        {% endif %}
+        <span>Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="{{ querystring_with(request, page=page+1) }}">Next &raquo;</a>
+        {% else %}
+        <span class="disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
     {% endif %}
 </body>
 </html>
