@@ -1,0 +1,10 @@
+<script>
+(function () {
+    try {
+        var stored = localStorage.getItem('ftTheme');
+        if (stored === 'dark' || stored === 'light') {
+            document.documentElement.setAttribute('data-theme', stored);
+        }
+    } catch (e) {}
+})();
+</script>

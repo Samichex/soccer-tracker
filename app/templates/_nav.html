@@ -24,7 +24,24 @@
         <a href="/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
         <a href="/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
         <a href="/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>
+
+        <div class="menu" id="ft-menu">
+            <button type="button" class="menu-toggle" id="ft-menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="ft-menu-panel" aria-label="Open menu">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="menu-panel" id="ft-menu-panel">
+                <div class="menu-section">
+                    <div class="menu-row">
+                        <span>Theme</span>
+                        <button type="button" class="theme-switch" id="ft-theme-switch" role="switch" aria-checked="false" aria-label="Dark mode">
+                            <span class="theme-switch-thumb"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% set sync = last_synced() %}
 <p class="sync-status" title="{{ sync.title }}">Synced {{ sync.label }}</p>
+<script src="/static/nav-menu.js"></script>
