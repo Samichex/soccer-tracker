@@ -52,7 +52,7 @@
                 <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label_responsive(r.opponent_name_short, r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
                 <a class="score-link" href="/game/{{ r.game.id }}">
                     {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
-                    {% else %}{{ r.game.start_time }}
+                    {% else %}<span data-epoch="{{ r.game.start_epoch or '' }}">{{ r.game.start_time }}</span>
                     {% endif %}
                 </a>
                 <div class="cell-result">
