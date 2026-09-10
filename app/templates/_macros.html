@@ -12,7 +12,7 @@
             <span class="match-cardmark{% if g.home_red_cards %} show{% endif %}"></span>
         </div>
         {% if g.status == 'pre' %}
-        <span class="match-time">{{ g.start_time_main }}{% if g.start_time_tz %} <span class="tz">{{ g.start_time_tz }}</span>{% endif %}</span>{{ conference_tag(g.conference_match) }}
+        <span class="match-time" data-epoch="{{ g.start_epoch or '' }}">{{ g.start_time_main }}{% if g.start_time_tz %} <span class="tz">{{ g.start_time_tz }}</span>{% endif %}</span>{{ conference_tag(g.conference_match) }}
         {% else %}
         <a class="score-link" href="/game/{{ g.id }}">{% if g.away_score is none and g.home_score is none %}&ndash;{% else %}{{ g.away_score }} &ndash; {{ g.home_score }}{% endif %}</a>{{ conference_tag(g.conference_match) }}
         {% endif %}
