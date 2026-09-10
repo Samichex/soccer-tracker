@@ -30,16 +30,16 @@
 
     <form method="get" action="/" class="conference-filter">
         <input type="hidden" name="date" value="{{ day.isoformat() }}">
-        <label class="conf-only-toggle">
-            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
-            Conf. matchups
-        </label>
         <select name="conference" onchange="this.form.submit()">
             <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
             {% for c in conferences %}
             <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label(c) }}</option>
             {% endfor %}
         </select>
+        <label class="conf-only-toggle">
+            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
+            Conf. matchups
+        </label>
         <noscript><button type="submit">Go</button></noscript>
     </form>
 
