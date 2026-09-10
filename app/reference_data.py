@@ -9,12 +9,10 @@ from . import config
 _TEAM_STATES_PATH = config.BASE_DIR / "app" / "data" / "team_states.json"
 _NON_D1_PATH = config.BASE_DIR / "app" / "data" / "non_d1.json"
 _CONFERENCES_PATH = config.BASE_DIR / "app" / "data" / "conferences.json"
-_COACHES_PATH = config.BASE_DIR / "app" / "data" / "coaches.json"
 
 _cache: dict | None = None
 _non_d1_cache: dict | None = None
 _conferences_cache: dict | None = None
-_coaches_cache: dict | None = None
 
 
 def get_team_states() -> dict:
@@ -42,29 +40,6 @@ def get_conference_tag(conference_seo: str | None) -> str | None:
     if not conference_seo:
         return None
     return _get_non_d1()["conferences"].get(conference_seo)
-
-
-def get_head_coach(seo: str | None) -> str | None:
-    """Head coach name for a team, e.g. "Carlos Somoano (13th season)".
-
-    Sourced from a one-off Wikipedia pull (see pull_coaches.py) -- only
-    ~73% of teams matched, so most callers should be prepared for None.
-    """
-    global _coaches_cache
-    if _coaches_cache is None:
-        if _COACHES_PATH.exists():
-            _coaches_cache = json.loads(_COACHES_PATH.read_text())
-        else:
-            _coaches_cache = {}
-    if not seo:
-        return None
-    entry = _coaches_cache.get(seo)
-    if not entry or entry.get("status") != "ok" or not entry.get("coach"):
-        return None
-    tenure = (entry.get("tenure") or "").rstrip(".")
-    if tenure:
-        return f"{entry['coach']} ({tenure} season)"
-    return entry["coach"]
 
 
 def get_team_label(name: str | None, seo: str | None, conference_seo: str | None = None) -> str:
