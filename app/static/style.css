@@ -79,8 +79,41 @@ h2 {
     border-bottom: 1px solid var(--border);
     margin-bottom: 0.4rem;
 }
-.topnav .brand { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.topnav .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+}
 .topnav .brand:hover { color: var(--text); }
+.brand-mark {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    overflow: visible;
+}
+.brand-mark path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: brand-draw 0.7s ease-out 0.15s forwards;
+}
+.brand-word {
+    display: inline-block;
+    clip-path: inset(0 100% 0 0);
+    animation: brand-wipe 0.55s cubic-bezier(.4, .6, .2, 1) 0.55s forwards;
+}
+@keyframes brand-draw { to { stroke-dashoffset: 0; } }
+@keyframes brand-wipe { to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) {
+    .brand-mark path { animation: none; stroke-dashoffset: 0; }
+    .brand-word { animation: none; clip-path: inset(0 0 0 0); }
+}
 .topnav-search {
     display: flex;
     align-items: center;
