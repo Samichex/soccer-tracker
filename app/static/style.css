@@ -190,6 +190,9 @@ h2 {
 
 .matches-list { gap: 4px; }
 
+.featured-heading { margin-top: 1.2rem; margin-bottom: 0; }
+.featured-list .card-row.matches { border-left: 3px solid var(--accent); }
+
 .match-badge {
     font-size: 0.62rem;
     font-weight: 700;

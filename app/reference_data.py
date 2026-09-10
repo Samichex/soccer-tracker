@@ -42,6 +42,17 @@ def get_conference_tag(conference_seo: str | None) -> str | None:
     return _get_non_d1()["conferences"].get(conference_seo)
 
 
+def is_d1(seo: str | None, conference_seo: str | None = None) -> bool:
+    """False if the school itself or its conference is a known non-D1
+    (D2/D3/NAIA/NCCAA) program; True otherwise (D1 is the default for any
+    school/conference not listed in non_d1.json)."""
+    data = _get_non_d1()
+    tag = data["schools"].get(seo) if seo else None
+    if not tag:
+        tag = get_conference_tag(conference_seo)
+    return tag is None
+
+
 def get_team_label(name: str | None, seo: str | None, conference_seo: str | None = None) -> str:
     """Team display name, with a '(CA)'/'(CA, D2)'/'(D3)'/'(NAIA)'/'(NCCAA)' suffix
     combining the school's state and, when the school itself or its conference

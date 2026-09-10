@@ -1,0 +1,19 @@
+{% macro match_row(g) %}
+<div class="card-row matches">
+    <div class="match-badge {{ g.badge_class }}">{{ g.badge_label }}</div>
+    <a class="team-link align-left" href="/team/{{ g.away_seo }}">{{ rank_prefix(g.away_rank, g.away_prev_rank) }}{{ team_label_responsive(g.away_name_short, g.away_name, g.away_seo, g.away_conference) }}</a>
+    <div class="match-center">
+        <div class="match-cardrow">
+            <span class="match-cardmark{% if g.away_red_cards %} show{% endif %}"></span>
+            <span class="match-cardmark{% if g.home_red_cards %} show{% endif %}"></span>
+        </div>
+        {% if g.status == 'pre' %}
+        <span class="match-time">{{ g.start_time_main }}{% if g.start_time_tz %} <span class="tz">{{ g.start_time_tz }}</span>{% endif %}</span>
+        {% else %}
+        <a class="score-link" href="/game/{{ g.id }}">{% if g.away_score is none and g.home_score is none %}&ndash;{% else %}{{ g.away_score }} &ndash; {{ g.home_score }}{% endif %}</a>
+        {% endif %}
+    </div>
+    <a class="team-link align-right" href="/team/{{ g.home_seo }}">{{ rank_prefix(g.home_rank, g.home_prev_rank) }}{{ team_label_responsive(g.home_name_short, g.home_name, g.home_seo, g.home_conference) }}</a>
+    {% if g.is_upset %}<span class="pill pill-upset match-upset" title="A ranked team lost to a lower-ranked or unranked opponent">🔥 Upset</span>{% endif %}
+</div>
+{% endmacro %}
