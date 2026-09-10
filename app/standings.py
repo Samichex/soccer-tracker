@@ -193,6 +193,9 @@ def build_team_schedule(games, seo: str, conference: str | None = None):
                 "opponent_name_short": g["away_name_short"] if is_home else g["home_name_short"],
                 "opponent_seo": g["away_seo"] if is_home else g["home_seo"],
                 "opponent_conference": opponent_conference,
+                "conference_match": reference_data.conference_short_name(conference)
+                if conference and opponent_conference == conference
+                else "",
                 "team_score": team_score,
                 "opp_score": opp_score,
                 "result": result,
