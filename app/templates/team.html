@@ -10,6 +10,7 @@
 </head>
 <body>
     {% include "_nav.html" %}
+    {% from "_macros.html" import conference_tag %}
 
     {% if not team %}
     <p class="empty">Team not found.</p>
@@ -46,7 +47,7 @@
         {% for r in rows %}
             <div class="card-row history{% if not r.recent %} extra-row{% endif %}">
                 <div class="cell-date">{{ r.game.date | pretty_date }}</div>
-                <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}</div>
+                <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}{{ conference_tag(r.conference_match) }}</div>
                 <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label_responsive(r.opponent_name_short, r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
                 <a class="score-link" href="/game/{{ r.game.id }}">
                     {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}

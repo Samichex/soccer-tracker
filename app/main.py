@@ -211,7 +211,12 @@ def _match_badge(g: dict) -> tuple[str, str] | None:
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request, date: str | None = None, conference: str | None = None):
+def index(
+    request: Request,
+    date: str | None = None,
+    conference: str | None = None,
+    conf_only: bool = False,
+):
     day = _parse_date(date)
     with db.get_conn() as conn:
         games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference)]
@@ -222,9 +227,16 @@ def index(request: Request, date: str | None = None, conference: str | None = No
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
         g["is_upset"] = _is_upset(g)
+        g["conference_match"] = (
+            reference_data.conference_short_name(g["home_conference"])
+            if g["home_conference"] and g["home_conference"] == g["away_conference"]
+            else ""
+        )
         badge = _match_badge(g)
         g["badge_class"], g["badge_label"] = badge if badge else ("", "")
         g["start_time_main"], g["start_time_tz"] = reference_data.split_time_tz(g["start_time"])
+    if conf_only:
+        games = [g for g in games if g["conference_match"]]
     featured_games = [g for g in games if _is_featured(g, top30_seos)]
     games = [g for g in games if not _is_featured(g, top30_seos)]
     return templates.TemplateResponse(
@@ -239,6 +251,7 @@ def index(request: Request, date: str | None = None, conference: str | None = No
             "featured_games": featured_games,
             "conferences": conferences,
             "selected_conference": conference,
+            "conf_only": conf_only,
             "conference_label": _conference_label,
         },
     )
