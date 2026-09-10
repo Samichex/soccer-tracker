@@ -278,7 +278,6 @@ def team_detail(request: Request, seo: str):
             "current_prev_rank": current_prev_rank,
             "rank_history": rank_history,
             "conference_label_fn": _conference_label,
-            "head_coach": reference_data.get_head_coach(seo),
         },
     )
 
