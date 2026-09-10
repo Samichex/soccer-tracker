@@ -1,3 +1,15 @@
+<script>
+(function () {
+    try {
+        var path = window.location.pathname.split('/')[1] || '';
+        var section = { team: 'teams', teams: 'teams', player: 'players', players: 'players', stats: 'stats' }[path] || 'matches';
+        if (window.sessionStorage.getItem('ftBrandSection') === section) {
+            document.documentElement.classList.add('brand-no-anim');
+        }
+        window.sessionStorage.setItem('ftBrandSection', section);
+    } catch (e) {}
+})();
+</script>
 <div class="topnav">
     <a class="brand" href="/" aria-label="Full Time home">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16 H30 M22 16 A6 6 0 0 1 10 16 A6 6 0 0 1 22 16" pathlength="1"></path></svg>
