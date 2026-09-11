@@ -42,15 +42,44 @@ def get_conference_tag(conference_seo: str | None) -> str | None:
     return _get_non_d1()["conferences"].get(conference_seo)
 
 
-def is_d1(seo: str | None, conference_seo: str | None = None) -> bool:
-    """False if the school itself or its conference is a known non-D1
-    (D2/D3/NAIA/NCCAA) program; True otherwise (D1 is the default for any
-    school/conference not listed in non_d1.json)."""
+def _non_d1_tag(seo: str | None, conference_seo: str | None) -> str | None:
+    """The non_d1.json tag for a school (school-level entry wins over its
+    conference's), or None if neither says it isn't D1. Shared by is_d1,
+    get_team_division, and get_team_label so they agree on which source
+    wins."""
     data = _get_non_d1()
     tag = data["schools"].get(seo) if seo else None
     if not tag:
         tag = get_conference_tag(conference_seo)
-    return tag is None
+    return tag
+
+
+def is_d1(seo: str | None, conference_seo: str | None = None) -> bool:
+    """False if the school itself or its conference is a known non-D1
+    (D2/D3/NAIA/NCCAA) program; True otherwise (D1 is the default for any
+    school/conference not listed in non_d1.json)."""
+    return _non_d1_tag(seo, conference_seo) is None
+
+
+def get_team_division(
+    seo: str | None, conference_seo: str | None = None, stored_division: str | None = None
+) -> str:
+    """Effective division key ("d1"/"d2"/"d3"/"naia"/"nccaa") for a school,
+    for callers that need to filter/group by division rather than just
+    render a display suffix (see get_team_label for that).
+
+    Preference order:
+    1. `stored_division` -- the authoritative `teams.division` column,
+       when the caller has it (set only by the NCAA directory backfill,
+       see app/backfill_ncaa_directory.py).
+    2. The hand-maintained non_d1.json tag (school, then conference).
+    3. "d1" -- the same default every other division check in this module
+       uses for anything not proven otherwise.
+    """
+    if stored_division:
+        return stored_division
+    tag = _non_d1_tag(seo, conference_seo)
+    return tag.lower() if tag else "d1"
 
 
 def get_team_label(
@@ -71,10 +100,7 @@ def get_team_label(
     """
     if not name:
         name = seo or "Unknown Team"
-    data = _get_non_d1()
-    tag = data["schools"].get(seo) if seo else None
-    if not tag:
-        tag = get_conference_tag(conference_seo)
+    tag = _non_d1_tag(seo, conference_seo)
     state = get_team_states().get(seo) if seo else None
     # Some source names already disambiguate with a trailing "(ST)", e.g.
     # "St. Thomas (MN)" for the Minnesota school vs. "St. Thomas (FL)".

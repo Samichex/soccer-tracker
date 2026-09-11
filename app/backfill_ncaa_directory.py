@@ -1,33 +1,43 @@
 """One-off backfill of NCAA directory data (orgid, athletic_url,
-website_url) for every D1 men's soccer team already in the `teams` table.
+website_url, division) for every team already in the `teams` table, one
+division at a time.
 
 Source: https://web3.ncaa.org/directory/api/directory/memberList?type=12&division=I&sportCode=MSO
 (a public, unauthenticated bulk JSON endpoint), first inspected 2026-09-10.
-It returned all 213 current D1 men's soccer member schools in one response.
-This is a point-in-time snapshot -- directory membership can change year to
-year (conference realignment, new/departing programs), so re-run this
-periodically (with --force to refresh already-matched rows) rather than
-treating it as a one-time truth.
+It returned all 213 current D1 men's soccer member schools in one response;
+swapping division=I for division=III returns D3's ~100+ in the same shape
+(see config.NCAA_DIRECTORY_DIVISIONS). This is a point-in-time snapshot --
+directory membership can change year to year (conference realignment,
+new/departing programs), so re-run this periodically (with --force to
+refresh already-matched rows) rather than treating it as a one-time truth.
 
 Matching `teams.name_full` against the directory's `nameOfficial` got a
-213/213 match when this was prototyped, using the normalize+exact-first
-algorithm below. The one real risk found: naive normalization can make two
-different schools collide (e.g. "Boston College" and "Boston University"
-both reduce to "Boston" once generic words are stripped) -- build_crosswalk
-never guesses on a collision, it reports it as ambiguous instead.
+213/213 match for D1 when this was prototyped, using the
+normalize+exact-first algorithm below. The one real risk found: naive
+normalization can make two different schools collide (e.g. "Boston College"
+and "Boston University" both reduce to "Boston" once generic words are
+stripped) -- build_crosswalk never guesses on a collision, it reports it as
+ambiguous instead.
+
+Note a D3 run only has something to match against once D3 games have
+actually been synced (config.ENABLED_DIVISIONS) and populated `teams` rows
+via upsert_game/upsert_team_basic -- run against a D1-only database, every
+D3 directory entry just comes back "unmatched_directory" (harmless, but not
+useful yet).
 
 This also runs two log-only sanity-check reports (no files are edited):
 - Compares the directory's state per school against app/data/team_states.json,
   so any drift/gaps can be copy-pasted in by hand.
-- Flags any team the app currently treats as D1 (reference_data.is_d1) that
-  the directory doesn't list, as a possible app/data/non_d1.json gap.
+- For a D1 run only: flags any team the app currently treats as D1
+  (reference_data.is_d1) that the directory doesn't list, as a possible
+  app/data/non_d1.json gap.
 """
 
 import argparse
 import logging
 import re
 
-from . import db, ncaa_directory_client, reference_data
+from . import config, db, ncaa_directory_client, reference_data
 
 log = logging.getLogger("soccer-tracker.backfill_ncaa_directory")
 
@@ -144,8 +154,9 @@ def _report_d1_classification_gaps(conn, crosswalk: dict):
             )
 
 
-def backfill_ncaa_directory(conn, force: bool = False):
-    directory_entries = ncaa_directory_client.get_member_list()
+def backfill_ncaa_directory(conn, division: str = "d1", force: bool = False):
+    directory_division = config.NCAA_DIRECTORY_DIVISIONS[division]
+    directory_entries = ncaa_directory_client.get_member_list(division=directory_division)
     entries_by_orgid = {e["orgId"]: e for e in directory_entries}
     local_teams = conn.execute(
         "SELECT seo, name_full FROM teams WHERE name_full IS NOT NULL"
@@ -160,26 +171,34 @@ def backfill_ncaa_directory(conn, force: bool = False):
             if existing and existing["orgid"]:
                 continue
         e = entries_by_orgid[orgid]
-        db.upsert_team_directory(conn, seo, orgid, e.get("athleticWebUrl"), e.get("webSiteUrl"))
+        db.upsert_team_directory(
+            conn, seo, orgid, e.get("athleticWebUrl"), e.get("webSiteUrl"), division=division
+        )
         written += 1
 
     log.info(
-        "matched %s/%s directory schools (%s newly written, %s ambiguous, %s unmatched directory entries)",
-        len(crosswalk["matched"]), len(directory_entries), written,
+        "[%s] matched %s/%s directory schools (%s newly written, %s ambiguous, %s unmatched directory entries)",
+        division, len(crosswalk["matched"]), len(directory_entries), written,
         len(crosswalk["ambiguous"]), len(crosswalk["unmatched_directory"]),
     )
     if crosswalk["unmatched_directory"]:
         log.info(
-            "unmatched directory schools: %s",
+            "[%s] unmatched directory schools: %s",
+            division,
             [entries_by_orgid[o]["nameOfficial"] for o in crosswalk["unmatched_directory"]],
         )
 
     _report_state_mismatches(crosswalk, entries_by_orgid)
-    _report_d1_classification_gaps(conn, crosswalk)
+    if division == "d1":
+        _report_d1_classification_gaps(conn, crosswalk)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--division", default="d1", choices=[*config.DIVISIONS.keys(), "all"],
+        help="which division's NCAA directory to backfill (default: d1)",
+    )
     parser.add_argument(
         "--force", action="store_true",
         help="overwrite teams that already have an orgid set",
@@ -188,5 +207,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     db.init_db()
+    divisions = list(config.DIVISIONS.keys()) if args.division == "all" else [args.division]
     with db.get_conn() as conn:
-        backfill_ncaa_directory(conn, force=args.force)
+        for division in divisions:
+            backfill_ncaa_directory(conn, division=division, force=args.force)

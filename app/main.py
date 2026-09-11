@@ -44,6 +44,47 @@ templates.env.globals["team_label_responsive"] = reference_data.get_team_label_r
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 
+# Division switcher: only meaningful (and only rendered by _nav.html) once
+# more than one division is enabled. With ENABLED_DIVISIONS at its default
+# (["d1"]) this list always has length 1, so the nav never shows a switcher
+# and every route below always resolves to "d1" -- unchanged from before
+# division support existed.
+templates.env.globals["enabled_divisions"] = config.ENABLED_DIVISIONS
+templates.env.globals["division_label"] = lambda d: {"d1": "D1", "d3": "D3"}.get(d, d.upper())
+
+
+def _current_path(request: Request) -> str:
+    return request.url.path + (f"?{request.url.query}" if request.url.query else "")
+
+
+templates.env.globals["current_path"] = _current_path
+
+
+def _resolve_division(request: Request, division: str | None = None) -> str:
+    """Effective division for this request: an explicit `division` query
+    param wins if valid, else the `division` cookie set by /set-division,
+    else the first ENABLED_DIVISIONS entry. At the default
+    ENABLED_DIVISIONS=["d1"] this always returns "d1" -- the cookie/switcher
+    path is inert until a second division is enabled."""
+    if division in config.ENABLED_DIVISIONS:
+        return division
+    cookie_value = request.cookies.get("division")
+    if cookie_value in config.ENABLED_DIVISIONS:
+        return cookie_value
+    return config.ENABLED_DIVISIONS[0]
+
+
+@app.get("/set-division/{division}")
+def set_division(division: str, next: str = "/"):
+    """Persists the nav switcher's choice in a cookie (see _resolve_division)
+    and bounces back to whatever page the switcher was clicked from.
+    `next` is never trusted as an absolute/off-site redirect target."""
+    redirect_to = next if next.startswith("/") and not next.startswith("//") else "/"
+    response = RedirectResponse(redirect_to)
+    if division in config.DIVISIONS:
+        response.set_cookie("division", division, max_age=60 * 60 * 24 * 365, samesite="lax")
+    return response
+
 
 def _querystring_with(request: Request, **overrides) -> str:
     params = dict(request.query_params)
@@ -247,13 +288,15 @@ def index(
     date: str | None = None,
     conference: str | None = None,
     conf_only: bool = False,
+    division: str | None = None,
 ):
     day = _parse_date(date)
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference)]
-        conferences = db.get_conferences(conn)
-        rank_map = _rank_map(db.get_latest_rankings(conn))
-        top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn))
+        games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference, division)]
+        conferences = db.get_conferences(conn, division)
+        rank_map = _rank_map(db.get_latest_rankings(conn, division))
+        top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn, division))
     for g in games:
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
@@ -290,13 +333,24 @@ def index(
 
 @app.get("/search", response_class=HTMLResponse)
 def search(request: Request, q: str = ""):
+    division = _resolve_division(request)
     team_results = []
     player_results = []
     if q.strip():
         query = q.strip()
         with db.get_conn() as conn:
-            team_results = db.search_teams(conn, query)
-            player_results = db.search_players(conn, query)
+            # search_teams/search_players aren't division-filtered in SQL
+            # (teams.division isn't reliably backfilled yet -- see their
+            # docstrings), so over-fetch and filter by effective division
+            # here, same fallback logic the rest of the app uses.
+            team_results = [
+                r for r in db.search_teams(conn, query, limit=100)
+                if reference_data.get_team_division(r["seo"], r["conference"], r["division"]) == division
+            ][:20]
+            player_results = [
+                r for r in db.search_players(conn, query, limit=100)
+                if reference_data.get_team_division(r["team_seo"], r["team_conference"], r["team_division"]) == division
+            ][:20]
         if len(team_results) + len(player_results) == 1:
             if team_results:
                 return RedirectResponse(f"/team/{team_results[0]['seo']}")
@@ -350,11 +404,12 @@ def team_detail(request: Request, seo: str):
 
 
 @app.get("/conference/{conference}", response_class=HTMLResponse)
-def conference_detail(request: Request, conference: str):
+def conference_detail(request: Request, conference: str, division: str | None = None):
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        conferences = db.get_conferences(conn)
-        games = db.get_conference_games(conn, conference)
-        rank_map = _rank_map(db.get_latest_rankings(conn))
+        conferences = db.get_conferences(conn, division)
+        games = db.get_conference_games(conn, conference, division)
+        rank_map = _rank_map(db.get_latest_rankings(conn, division))
     table = standings.build_conference_table(games, conference)
     team_states = reference_data.get_team_states()
     for t in table:
@@ -376,11 +431,17 @@ def conference_detail(request: Request, conference: str):
 
 
 @app.get("/teams", response_class=HTMLResponse)
-def teams_list(request: Request, conference: str | None = None, state: str | None = None):
+def teams_list(
+    request: Request,
+    conference: str | None = None,
+    state: str | None = None,
+    division: str | None = None,
+):
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        games = db.get_all_final_games(conn)
-        conferences = db.get_conferences(conn)
-        rank_map = _rank_map(db.get_latest_rankings(conn))
+        games = db.get_all_final_games(conn, division)
+        conferences = db.get_conferences(conn, division)
+        rank_map = _rank_map(db.get_latest_rankings(conn, division))
     table = standings.build_all_teams_table(games)
     team_states = reference_data.get_team_states()
     for t in table:
@@ -416,9 +477,10 @@ def teams_list(request: Request, conference: str | None = None, state: str | Non
 
 
 @app.get("/rank-history", response_class=HTMLResponse)
-def rank_history_page(request: Request):
+def rank_history_page(request: Request, division: str | None = None):
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        rows = db.get_all_ranking_history(conn)
+        rows = db.get_all_ranking_history(conn, division)
     history = reference_data.build_rank_history(rows)
     week_index = {w: i for i, w in enumerate(history["weeks"])}
     chart_data = {
@@ -467,10 +529,12 @@ def players_list(
     sort: str | None = None,
     dir: str | None = None,
     page: int = 1,
+    division: str | None = None,
 ):
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn)]
-        conferences = db.get_conferences(conn)
+        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division)]
+        conferences = db.get_conferences(conn, division)
 
     team_states = reference_data.get_team_states()
     for p in roster:
@@ -522,16 +586,18 @@ def players_list(
 
 
 @app.get("/stats", response_class=HTMLResponse)
-def stats_page(request: Request):
+def stats_page(request: Request, division: str | None = None):
+    division = _resolve_division(request, division)
     today = _today_eastern()
     since_date = today - dt.timedelta(days=6)
 
     with db.get_conn() as conn:
         standouts = [
-            dict(s) for s in db.get_weekly_standouts(conn, since_date.isoformat(), today.isoformat())
+            dict(s)
+            for s in db.get_weekly_standouts(conn, since_date.isoformat(), today.isoformat(), division)
         ]
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn)]
-        clean_sheets = [dict(r) for r in db.get_clean_sheet_leaders(conn)]
+        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division)]
+        clean_sheets = [dict(r) for r in db.get_clean_sheet_leaders(conn, division)]
 
     for s in standouts:
         s["label"] = _weekly_standout_label(s)
@@ -615,10 +681,11 @@ def game_detail(request: Request, game_id: str):
 
 
 @app.get("/api/games")
-def api_games(date: str | None = None):
+def api_games(request: Request, date: str | None = None, division: str | None = None):
     day = _parse_date(date)
+    division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        games = db.get_games_for_date(conn, day.isoformat())
+        games = db.get_games_for_date(conn, day.isoformat(), division=division)
     return JSONResponse([dict(g) for g in games])
 
 

@@ -35,6 +35,20 @@
                         <span>Rank History</span>
                     </a>
                 </div>
+                {% if enabled_divisions|length > 1 %}
+                {% set current_division = request.cookies.get('division') %}
+                {% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
+                <div class="menu-section">
+                    <div class="menu-row">
+                        <span>Division</span>
+                    </div>
+                    <div class="pill-list">
+                        {% for d in enabled_divisions %}
+                        <a class="pill{% if d == current_division %} active{% endif %}" href="/set-division/{{ d }}?next={{ current_path(request) | urlencode }}">{{ division_label(d) }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
                 <div class="menu-section">
                     <div class="menu-row">
                         <span>Theme</span>

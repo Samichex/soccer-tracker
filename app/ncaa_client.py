@@ -8,8 +8,8 @@ _session = requests.Session()
 _session.headers.update({"User-Agent": "soccer-tracker/0.1 (local personal use)"})
 
 
-def get_scoreboard(date: dt.date) -> dict:
-    url = f"{config.NCAA_API_BASE}/scoreboard/{config.SPORT_PATH}/{date:%Y/%m/%d}"
+def get_scoreboard(date: dt.date, sport_path: str = config.DIVISIONS["d1"]) -> dict:
+    url = f"{config.NCAA_API_BASE}/scoreboard/{sport_path}/{date:%Y/%m/%d}"
     resp = _session.get(url, timeout=15)
     resp.raise_for_status()
     return resp.json()
@@ -22,8 +22,8 @@ def get_boxscore(game_id: str) -> dict:
     return resp.json()
 
 
-def get_rankings(poll: str = "") -> dict:
-    path = f"{config.SPORT_PATH}/{poll}".rstrip("/")
+def get_rankings(sport_path: str = config.DIVISIONS["d1"], poll: str = "") -> dict:
+    path = f"{sport_path}/{poll}".rstrip("/")
     url = f"{config.NCAA_API_BASE}/rankings/{path}"
     resp = _session.get(url, timeout=15)
     resp.raise_for_status()
