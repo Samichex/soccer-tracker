@@ -58,6 +58,8 @@ def _querystring_with(request: Request, **overrides) -> str:
 templates.env.globals["querystring_with"] = _querystring_with
 templates.env.filters["name_case"] = reference_data.title_case_name
 templates.env.filters["position_short"] = reference_data.position_short
+templates.env.filters["site_domain"] = reference_data.site_domain
+templates.env.filters["site_href"] = reference_data.site_href
 
 
 def _pretty_date(date_str: str | None) -> str:

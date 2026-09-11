@@ -20,7 +20,11 @@
         <div>
             <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
         </div>
-        {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
+        <div class="chip-row">
+            {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
+            {% if team.head_coach %}<span class="chip-neutral">Coach &middot; {{ team.head_coach }}</span>{% endif %}
+            {% if team.athletic_url %}<a class="chip-neutral" href="{{ team.athletic_url | site_href }}" target="_blank" rel="noopener noreferrer">{{ team.athletic_url | site_domain }}<svg class="icon-ext" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>{% endif %}
+        </div>
     </div>
 
     <div class="boxscore-card">
