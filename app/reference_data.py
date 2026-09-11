@@ -53,7 +53,9 @@ def is_d1(seo: str | None, conference_seo: str | None = None) -> bool:
     return tag is None
 
 
-def get_team_label(name: str | None, seo: str | None, conference_seo: str | None = None) -> str:
+def get_team_label(
+    name: str | None, seo: str | None, conference_seo: str | None = None, *, hideable_suffix: bool = False
+) -> str:
     """Team display name, with a '(CA)'/'(CA, D2)'/'(D3)'/'(NAIA)'/'(NCCAA)' suffix
     combining the school's state and, when the school itself or its conference
     isn't NCAA D1, its division tag.
@@ -62,6 +64,10 @@ def get_team_label(name: str | None, seo: str | None, conference_seo: str | None
     non-D1 opponents show up in the scoreboard feed without one), so nothing
     ever gets written for it into the teams table; fall back to the seo or a
     placeholder rather than erroring.
+
+    `hideable_suffix` wraps the suffix in a `.team-state` span so a page can
+    hide it via CSS (e.g. on narrow screens); leave off when the result is
+    used somewhere HTML markup can't go, like an `<option>` label.
     """
     if not name:
         name = seo or "Unknown Team"
@@ -77,7 +83,12 @@ def get_team_label(name: str | None, seo: str | None, conference_seo: str | None
     if existing and existing.group(2) == state:
         name = existing.group(1)
     parts = [p for p in (state, tag) if p]
-    return f"{name} ({', '.join(parts)})" if parts else name
+    if not parts:
+        return name
+    suffix = f"({', '.join(parts)})"
+    if hideable_suffix:
+        return Markup('{} <span class="team-state">{}</span>').format(name, suffix)
+    return f"{name} {suffix}"
 
 
 def get_team_label_responsive(
@@ -86,9 +97,11 @@ def get_team_label_responsive(
     """Team display name that shows the full name on wide screens and the
     short scoreboard name (e.g. "NC State" instead of "North Carolina State
     University") on narrow ones, via CSS toggling `.name-full`/`.name-short`.
+    The state/division suffix is wrapped in `.team-state` so a page can hide
+    it separately (e.g. narrow-screen tables tight on space).
     """
-    full_label = get_team_label(full_name or short_name, seo, conference_seo)
-    short_label = get_team_label(short_name or full_name, seo, conference_seo)
+    full_label = get_team_label(full_name or short_name, seo, conference_seo, hideable_suffix=True)
+    short_label = get_team_label(short_name or full_name, seo, conference_seo, hideable_suffix=True)
     return Markup('<span class="name-full">{}</span><span class="name-short">{}</span>').format(
         full_label, short_label
     )
