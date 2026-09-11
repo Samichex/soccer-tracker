@@ -171,6 +171,63 @@ def group_rankings_by_week(rows) -> list[dict]:
     return result
 
 
+def build_rank_history(rows) -> dict:
+    """Pivot flat team_rankings rows (db.get_all_ranking_history output,
+    ordered by seo then observed_date) into a per-team weekly series for
+    every team ever ranked:
+
+    {"weeks": [week_start, ...] (sorted, every week any team was ranked),
+     "teams": [{"seo", "name", "conference", "current_rank",
+                "series": [{"week_start", "rank", "prev_rank"}, ...],
+                "ranks_by_week": {week_start: {"rank", "prev_rank"}}}, ...]}
+
+    `series`/`ranks_by_week` simply omit weeks a team wasn't ranked --
+    no interpolation. `teams` is sorted by current (most recent week's)
+    rank ascending, with teams unranked in the most recent week pushed
+    below the ranked ones, alphabetically by name.
+    """
+    by_seo: dict[str, list] = {}
+    order: list[str] = []
+    for row in rows:
+        seo = row["seo"]
+        if seo not in by_seo:
+            order.append(seo)
+            by_seo[seo] = []
+        by_seo[seo].append(row)
+
+    all_weeks: set[str] = set()
+    teams = []
+    for seo in order:
+        team_rows = by_seo[seo]
+        weekly = group_rankings_by_week(team_rows)
+        last = team_rows[-1]
+        name = last["team_name_full"] or last["team_name"] or last["school"]
+        if not any(w["rank"] for w in weekly):
+            continue
+        all_weeks.update(w["week_start"] for w in weekly)
+        teams.append({
+            "seo": seo,
+            "name": name,
+            "conference": last["team_conference"],
+            "series": [
+                {"week_start": w["week_start"], "rank": w["rank"], "prev_rank": w["prev_rank"]}
+                for w in weekly
+            ],
+            "ranks_by_week": {
+                w["week_start"]: {"rank": w["rank"], "prev_rank": w["prev_rank"]} for w in weekly
+            },
+        })
+
+    weeks = sorted(all_weeks)
+    latest_week = weeks[-1] if weeks else None
+    for t in teams:
+        current = t["ranks_by_week"].get(latest_week) if latest_week else None
+        t["current_rank"] = current["rank"] if current else None
+
+    teams.sort(key=lambda t: (0, t["current_rank"]) if t["current_rank"] is not None else (1, t["name"]))
+    return {"weeks": weeks, "teams": teams}
+
+
 def conference_display_name(conference_seo: str | None) -> str:
     """Readable conference name from its seo slug, e.g. 'great-midwest' -> 'Great Midwest'."""
     if not conference_seo:

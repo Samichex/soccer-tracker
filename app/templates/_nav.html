@@ -2,7 +2,7 @@
 (function () {
     try {
         var path = window.location.pathname.split('/')[1] || '';
-        var section = { team: 'teams', teams: 'teams', player: 'players', players: 'players', stats: 'stats' }[path] || 'matches';
+        var section = { team: 'teams', teams: 'teams', player: 'players', players: 'players', stats: 'stats', 'rank-history': 'rank-history' }[path] || 'matches';
         if (window.sessionStorage.getItem('ftBrandSection') === section) {
             document.documentElement.classList.add('brand-no-anim');
         }
@@ -30,6 +30,11 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
             <div class="menu-panel" id="ft-menu-panel">
+                <div class="menu-section">
+                    <a class="menu-row menu-link{% if request.url.path == '/rank-history' %} active{% endif %}" href="/rank-history"{% if request.url.path == '/rank-history' %} aria-current="page"{% endif %}>
+                        <span>Rank History</span>
+                    </a>
+                </div>
                 <div class="menu-section">
                     <div class="menu-row">
                         <span>Theme</span>

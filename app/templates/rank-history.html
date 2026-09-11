@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FT: Rank History</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    {% include "_theme-init.html" %}
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    <h1>Rank History</h1>
+    <p class="team-meta">US Coaches Top 25 &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d1/united-soccer-coaches" target="_blank" rel="noopener noreferrer">NCAA D1 2026 Season</a></p>
+
+    {% if not teams %}
+    <p class="empty">No ranking data yet.</p>
+    {% else %}
+    <div class="boxscore-card">
+        <div id="rank-history-chart" class="rank-chart">
+            <div id="rank-history-tooltip" class="rank-chart-tooltip" hidden></div>
+        </div>
+    </div>
+    <script type="application/json" id="rank-history-data">{{ chart_data | tojson }}</script>
+
+    <div class="boxscore-card">
+    <div class="table-scroll">
+    <table class="sortable rank-history-table" id="rank-history-table">
+        <thead>
+            <tr>
+                <th data-sort="team" data-sort-default="asc">Team</th>
+                {% for w in weeks %}
+                <th class="num" data-sort="w{{ loop.index0 }}" data-sort-default="asc">{{ w | pretty_date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in teams %}
+            <tr data-seo="{{ t.seo }}">
+                <td data-sort-key="team" data-sort-value="{{ t.name }}">
+                    <span class="rank-history-swatch" data-seo="{{ t.seo }}"></span>
+                    <a href="/team/{{ t.seo }}">{{ team_label(t.name, t.seo, t.conference) }}</a>
+                </td>
+                {% for w in weeks %}
+                {% set cell = t.ranks_by_week.get(w) %}
+                <td class="num" data-sort-key="w{{ loop.index0 }}" data-sort-value="{{ cell.rank if cell else 999 }}">
+                    {% if cell %}{{ rank_arrow(cell.rank, cell.prev_rank) }}{{ cell.rank }}{% else %}<span class="muted-cell">&mdash;</span>{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    <script src="/static/rank-history.js"></script>
+    <script src="/static/sort-table.js"></script>
+    {% endif %}
+</body>
+</html>
