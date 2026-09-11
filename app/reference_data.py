@@ -288,6 +288,24 @@ def title_case_name(value: str | None) -> str:
     return re.sub(r"[A-Za-z]+", lambda m: m.group(0)[:1].upper() + m.group(0)[1:].lower(), value)
 
 
+def site_domain(url: str | None) -> str:
+    """Display form of a stored website URL, stripping the scheme and any
+    trailing slash, e.g. 'https://gocrimson.com/' -> 'gocrimson.com'."""
+    if not url:
+        return ""
+    return re.sub(r"^https?://", "", url).rstrip("/")
+
+
+def site_href(url: str | None) -> str:
+    """Absolute href for a stored website URL that may or may not already
+    include a scheme, e.g. 'gozips.com' -> 'https://gozips.com'."""
+    if not url:
+        return ""
+    if url.startswith(("http://", "https://")):
+        return url
+    return f"https://{url}"
+
+
 _POSITION_SHORT = {"GK": "G", "DEF": "D", "MID": "M", "ATK": "F"}
 
 
