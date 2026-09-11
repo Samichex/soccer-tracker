@@ -83,7 +83,12 @@ def get_team_division(
 
 
 def get_team_label(
-    name: str | None, seo: str | None, conference_seo: str | None = None, *, hideable_suffix: bool = False
+    name: str | None,
+    seo: str | None,
+    conference_seo: str | None = None,
+    *,
+    hideable_suffix: bool = False,
+    viewing_division: str | None = None,
 ) -> str:
     """Team display name, with a '(CA)'/'(CA, D2)'/'(D3)'/'(NAIA)'/'(NCCAA)' suffix
     combining the school's state and, when the school itself or its conference
@@ -97,10 +102,18 @@ def get_team_label(
     `hideable_suffix` wraps the suffix in a `.team-state` span so a page can
     hide it via CSS (e.g. on narrow screens); leave off when the result is
     used somewhere HTML markup can't go, like an `<option>` label.
+
+    `viewing_division` suppresses the division tag when it matches the
+    division of the page being rendered -- e.g. no point labeling every team
+    "(D3)" while already on the D3-scoped view of a page; the tag still
+    earns its keep flagging a team from a *different* division showing up
+    there (a cross-division non-conference opponent).
     """
     if not name:
         name = seo or "Unknown Team"
     tag = _non_d1_tag(seo, conference_seo)
+    if tag and viewing_division and tag.lower() == viewing_division:
+        tag = None
     state = get_team_states().get(seo) if seo else None
     # Some source names already disambiguate with a trailing "(ST)", e.g.
     # "St. Thomas (MN)" for the Minnesota school vs. "St. Thomas (FL)".
@@ -118,16 +131,26 @@ def get_team_label(
 
 
 def get_team_label_responsive(
-    short_name: str | None, full_name: str | None, seo: str | None, conference_seo: str | None = None
+    short_name: str | None,
+    full_name: str | None,
+    seo: str | None,
+    conference_seo: str | None = None,
+    viewing_division: str | None = None,
 ) -> Markup:
     """Team display name that shows the full name on wide screens and the
     short scoreboard name (e.g. "NC State" instead of "North Carolina State
     University") on narrow ones, via CSS toggling `.name-full`/`.name-short`.
     The state/division suffix is wrapped in `.team-state` so a page can hide
     it separately (e.g. narrow-screen tables tight on space).
+
+    See get_team_label for `viewing_division`.
     """
-    full_label = get_team_label(full_name or short_name, seo, conference_seo, hideable_suffix=True)
-    short_label = get_team_label(short_name or full_name, seo, conference_seo, hideable_suffix=True)
+    full_label = get_team_label(
+        full_name or short_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division
+    )
+    short_label = get_team_label(
+        short_name or full_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division
+    )
     return Markup('<span class="name-full">{}</span><span class="name-short">{}</span>').format(
         full_label, short_label
     )

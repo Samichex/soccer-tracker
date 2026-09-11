@@ -11,6 +11,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2 import pass_context
 from markupsafe import Markup
 
 from . import config, db, reference_data, standings, sync
@@ -39,8 +40,6 @@ async def _security_headers(request: Request, call_next):
 
 app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
-templates.env.globals["team_label"] = reference_data.get_team_label
-templates.env.globals["team_label_responsive"] = reference_data.get_team_label_responsive
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 
@@ -72,6 +71,39 @@ def _resolve_division(request: Request, division: str | None = None) -> str:
     if cookie_value in config.ENABLED_DIVISIONS:
         return cookie_value
     return config.ENABLED_DIVISIONS[0]
+
+
+# team_label/team_label_responsive are registered as context functions (not
+# plain globals) so every one of their ~16 call sites across templates
+# automatically suppresses a team's division tag when it matches the page's
+# own viewing division -- e.g. no redundant "(D3)" on every row of a page
+# already scoped to D3 -- without having to thread `division` through each
+# template call site by hand. A macro imported without `with context` (see
+# index.html's `match_row`) doesn't carry `request` into its own scope, so
+# `context.get` degrades to the pre-division-support behavior (no
+# suppression) there instead of raising, rather than relying on every
+# macro import site getting `with context` right forever.
+def _viewing_division(context) -> str | None:
+    request = context.get("request")
+    return _resolve_division(request) if request else None
+
+
+@pass_context
+def _team_label(context, name, seo, conference_seo=None, **kwargs):
+    division = _viewing_division(context)
+    return reference_data.get_team_label(name, seo, conference_seo, viewing_division=division, **kwargs)
+
+
+@pass_context
+def _team_label_responsive(context, short_name, full_name, seo, conference_seo=None):
+    division = _viewing_division(context)
+    return reference_data.get_team_label_responsive(
+        short_name, full_name, seo, conference_seo, viewing_division=division
+    )
+
+
+templates.env.globals["team_label"] = _team_label
+templates.env.globals["team_label_responsive"] = _team_label_responsive
 
 
 @app.get("/set-division/{division}")
@@ -501,6 +533,7 @@ def rank_history_page(request: Request, division: str | None = None):
             "weeks": history["weeks"],
             "teams": history["teams"],
             "chart_data": chart_data,
+            "rankings_supported": division in config.RANKINGS_SUPPORTED_DIVISIONS,
         },
     )
 
