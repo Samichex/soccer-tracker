@@ -124,10 +124,20 @@ h2 {
     stroke-dashoffset: 1;
     animation: brand-draw 0.7s ease-out 0.15s forwards;
 }
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
 .brand-word {
     display: inline-block;
     clip-path: inset(0 100% 0 0);
     animation: brand-wipe 0.55s cubic-bezier(.4, .6, .2, 1) 0.55s forwards;
+}
+.brand-sub {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--muted);
 }
 @keyframes brand-draw { to { stroke-dashoffset: 0; } }
 @keyframes brand-wipe { to { clip-path: inset(0 0 0 0); } }
@@ -217,6 +227,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .menu-panel .menu-section + .menu-section { border-top: 1px solid var(--border); }
 .menu-row.menu-link { text-decoration: none; }
 .menu-row.menu-link:hover, .menu-row.menu-link.active { color: var(--accent); }
+.menu-row.menu-link.is-disabled { color: var(--muted-2); cursor: default; pointer-events: none; }
 
 .theme-switch {
     position: relative;

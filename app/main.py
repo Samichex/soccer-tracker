@@ -50,6 +50,7 @@ templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 # division support existed.
 templates.env.globals["enabled_divisions"] = config.ENABLED_DIVISIONS
 templates.env.globals["division_label"] = lambda d: {"d1": "D1", "d3": "D3"}.get(d, d.upper())
+templates.env.globals["rankings_supported_divisions"] = config.RANKINGS_SUPPORTED_DIVISIONS
 
 
 def _current_path(request: Request) -> str:
