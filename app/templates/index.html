@@ -11,7 +11,7 @@
 </head>
 <body>
     {% include "_nav.html" %}
-    {% from "_macros.html" import match_row %}
+    {% from "_macros.html" import match_row with context %}
 
     <div class="datebar">
         <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}">
