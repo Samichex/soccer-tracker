@@ -53,29 +53,38 @@
     <div class="boxscore-card">
         <h2>{{ team_name }}</h2>
         <div class="table-scroll">
-        <table>
+        <table class="sortable">
             <thead>
                 <tr>
-                    <th>#</th><th>Player</th><th>Pos</th>
-                    <th class="num">Min</th><th class="num">G</th><th class="num">A</th>
-                    <th class="num">S</th><th class="num">SOT</th><th class="num">SAV</th>
-                    <th class="num">YC</th><th class="num">RC</th>
+                    <th class="num" data-sort="number" data-sort-default="asc">#</th>
+                    <th data-sort="name" data-sort-default="asc">Player</th>
+                    <th data-sort="pos" data-sort-default="asc">Pos</th>
+                    <th data-sort="role" data-sort-default="desc"></th>
+                    <th class="num" data-sort="min" data-sort-default="desc">Min</th>
+                    <th class="num" data-sort="g" data-sort-default="desc">G</th>
+                    <th class="num" data-sort="a" data-sort-default="desc">A</th>
+                    <th class="num" data-sort="s" data-sort-default="desc">S</th>
+                    <th class="num" data-sort="sot" data-sort-default="desc">SOT</th>
+                    <th class="num" data-sort="sav" data-sort-default="desc">SAV</th>
+                    <th class="num" data-sort="yc" data-sort-default="desc">YC</th>
+                    <th class="num" data-sort="rc" data-sort-default="desc">RC</th>
                 </tr>
             </thead>
             <tbody>
             {% for p in stats %}
                 <tr>
-                    <td>{{ p.number }}</td>
-                    <td>{{ p.first_name | name_case }} {{ p.last_name | name_case }}</td>
-                    <td>{{ p.position | position_short }}</td>
-                    <td class="num">{{ p.minutes_played }}</td>
-                    <td class="num">{{ p.goals }}</td>
-                    <td class="num">{{ p.assists }}</td>
-                    <td class="num">{{ p.shots }}</td>
-                    <td class="num">{{ p.shots_on_goal }}</td>
-                    <td class="num">{{ p.saves }}</td>
-                    <td class="num">{{ p.yellow_cards }}</td>
-                    <td class="num">{{ p.red_cards }}</td>
+                    <td class="num" data-sort-key="number" data-sort-value="{{ p.number }}">{{ p.number }}</td>
+                    <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</td>
+                    <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position | position_short }}</td>
+                    <td data-sort-key="role" data-sort-value="{{ p.starter }}">{% if not p.starter %}<span class="pill role-sub">SUB</span>{% endif %}</td>
+                    <td class="num" data-sort-key="min" data-sort-value="{{ p.minutes_played }}">{{ p.minutes_played }}</td>
+                    <td class="num" data-sort-key="g" data-sort-value="{{ p.goals }}">{{ p.goals }}</td>
+                    <td class="num" data-sort-key="a" data-sort-value="{{ p.assists }}">{{ p.assists }}</td>
+                    <td class="num" data-sort-key="s" data-sort-value="{{ p.shots }}">{{ p.shots }}</td>
+                    <td class="num" data-sort-key="sot" data-sort-value="{{ p.shots_on_goal }}">{{ p.shots_on_goal }}</td>
+                    <td class="num" data-sort-key="sav" data-sort-value="{{ p.saves }}">{{ p.saves }}</td>
+                    <td class="num" data-sort-key="yc" data-sort-value="{{ p.yellow_cards }}">{{ p.yellow_cards }}</td>
+                    <td class="num" data-sort-key="rc" data-sort-value="{{ p.red_cards }}">{{ p.red_cards }}</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -83,6 +92,7 @@
         </div>
     </div>
     {% endfor %}
+    <script src="/static/sort-table.js"></script>
     {% endif %}
     {% endif %}
 </body>

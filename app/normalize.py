@@ -55,6 +55,21 @@ def titlecase_name(raw: str) -> str:
     return raw.strip().title() if raw else raw
 
 
+def fix_mojibake(text: str | None) -> str | None:
+    """Repair names the NCAA feed occasionally serves double-decoded --
+    each UTF-8 byte read back as its own Latin-1 codepoint, e.g. "Peña"
+    arriving as "PeÃ±a". Re-encoding as Latin-1 recovers the original
+    UTF-8 bytes; if that round-trip isn't valid UTF-8, the text wasn't
+    mangled this way and is left untouched.
+    """
+    if not text:
+        return text
+    try:
+        return text.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return text
+
+
 def canonical_name(conn, team_seo: str, first_name: str, last_name: str) -> tuple[str, str]:
     """Return the best-known casing for a player.
 
@@ -63,6 +78,8 @@ def canonical_name(conn, team_seo: str, first_name: str, last_name: str) -> tupl
     name match). Falls back to Title-casing when no reference exists.
     Names that aren't ALL-CAPS are trusted as-is.
     """
+    first_name = fix_mojibake(first_name)
+    last_name = fix_mojibake(last_name)
     if not first_name or not last_name or not last_name.isupper():
         return first_name, last_name
 
