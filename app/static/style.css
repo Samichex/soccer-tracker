@@ -474,6 +474,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 }
 a.chip-neutral:hover { color: var(--accent); }
 .icon-ext { vertical-align: -1px; margin-left: 4px; }
+.chip-icon { padding: 0.32rem; }
 
 /* Team season record + stat tiles */
 .record-row { display: grid; grid-template-columns: repeat(3, 1fr); }

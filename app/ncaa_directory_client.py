@@ -14,8 +14,8 @@ _ORG_DETAIL_URL = "https://web3.ncaa.org/directory/orgDetail"
 def get_member_list(sport_code: str = "MSO", division: str = "I", type_: int = 12) -> list[dict]:
     """All member schools for the given sport/division in one response,
     e.g. 213 rows for D1 men's soccer. Each row includes orgId,
-    nameOfficial, conferenceName, webSiteUrl, athleticWebUrl, and
-    memberOrgAddress.state."""
+    nameOfficial, conferenceName, webSiteUrl, athleticWebUrl,
+    memberOrgAddress.state, and privateFlag ("Y"/"N")."""
     resp = _session.get(
         _MEMBER_LIST_URL,
         params={"type": type_, "division": division, "sportCode": sport_code},
