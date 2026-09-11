@@ -94,10 +94,13 @@ CREATE TABLE IF NOT EXISTS sync_meta (
     value TEXT
 );
 
--- Team identity, built up from two sources that arrive at different times:
+-- Team identity, built up from three sources that arrive at different times:
 -- the scoreboard feed (name, conference) as soon as a game is scheduled,
--- and the boxscore feed (team_id, name_full, mascot, color) only once a
--- game goes final. Either upsert leaves columns it doesn't know about alone.
+-- the boxscore feed (team_id, name_full, mascot, color) only once a game
+-- goes final, and the NCAA directory backfill (orgid, athletic_url,
+-- website_url, head_coach -- see app/backfill_ncaa_directory.py and
+-- app/backfill_coaches.py) run manually, separately from live sync. Each
+-- upsert leaves columns it doesn't know about alone.
 CREATE TABLE IF NOT EXISTS teams (
     seo TEXT PRIMARY KEY,
     team_id TEXT,
@@ -146,6 +149,16 @@ def init_db():
         for col in ("fouls", "green_cards", "game_winning_goals", "penalty_goals"):
             if col not in cols:
                 conn.execute(f"ALTER TABLE player_stats ADD COLUMN {col} TEXT")
+
+        team_cols = {row["name"] for row in conn.execute("PRAGMA table_info(teams)")}
+        for col, coltype in (
+            ("orgid", "INTEGER"),
+            ("athletic_url", "TEXT"),
+            ("website_url", "TEXT"),
+            ("head_coach", "TEXT"),
+        ):
+            if col not in team_cols:
+                conn.execute(f"ALTER TABLE teams ADD COLUMN {col} {coltype}")
 
 
 def upsert_game(conn, game: dict, date_str: str):
@@ -246,6 +259,54 @@ def upsert_team_detail(
         """,
         (seo, team_id, name_full, mascot, name6_char, color),
     )
+
+
+def upsert_team_directory(
+    conn,
+    seo: str | None,
+    orgid: int | None,
+    athletic_url: str | None,
+    website_url: str | None,
+):
+    """Fill in what the NCAA directory backfill knows (see
+    app/backfill_ncaa_directory.py). Never touches name/conference
+    (upsert_team_basic) or name_full/mascot/name6_char/color
+    (upsert_team_detail)."""
+    if not seo:
+        return
+    conn.execute(
+        """
+        INSERT INTO teams (seo, orgid, athletic_url, website_url, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(seo) DO UPDATE SET
+            orgid=excluded.orgid,
+            athletic_url=excluded.athletic_url,
+            website_url=excluded.website_url,
+            updated_at=excluded.updated_at
+        """,
+        (seo, orgid, athletic_url, website_url),
+    )
+
+
+def set_head_coach(conn, seo: str | None, head_coach: str | None):
+    """Fill in the Men's Soccer head coach scraped by
+    app/backfill_coaches.py. A plain UPDATE, not an upsert -- a row must
+    already exist with an `orgid` (from upsert_team_directory) for there to
+    be anything meaningful to attach this to."""
+    if not seo:
+        return
+    conn.execute(
+        "UPDATE teams SET head_coach = ?, updated_at = datetime('now') WHERE seo = ?",
+        (head_coach, seo),
+    )
+
+
+def get_teams_with_orgid(conn):
+    """seo/orgid pairs for app/backfill_coaches.py to iterate -- only teams
+    already matched to the NCAA directory by upsert_team_directory."""
+    return conn.execute(
+        "SELECT seo, orgid FROM teams WHERE orgid IS NOT NULL ORDER BY seo"
+    ).fetchall()
 
 
 def games_missing_boxscore(conn):

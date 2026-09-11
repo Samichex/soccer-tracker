@@ -117,6 +117,57 @@ def test_player_stats_primary_key_rejects_exact_duplicate(conn):
         db.replace_player_stats(conn, "g1", [_player_row(), _player_row()])
 
 
+def test_teams_table_has_directory_columns(conn):
+    cols = {row["name"] for row in conn.execute("PRAGMA table_info(teams)")}
+    assert {"orgid", "athletic_url", "website_url", "head_coach"} <= cols
+
+
+def test_upsert_team_directory_is_idempotent(conn):
+    db.upsert_team_directory(conn, "duke", 123, "goduke.com", "duke.edu")
+    db.upsert_team_directory(conn, "duke", 123, "goduke.com", "duke.edu")
+    rows = conn.execute("SELECT * FROM teams WHERE seo = 'duke'").fetchall()
+    assert len(rows) == 1
+    assert rows[0]["orgid"] == 123
+    assert rows[0]["athletic_url"] == "goduke.com"
+    assert rows[0]["website_url"] == "duke.edu"
+
+
+def test_upsert_team_directory_does_not_clobber_other_sources_columns(conn):
+    db.upsert_team_basic(conn, "duke", "Duke", "acc")
+    db.upsert_team_detail(conn, "duke", "1", "Duke University", "Blue Devils", "DUKE", "#003087")
+    db.upsert_team_directory(conn, "duke", 123, "goduke.com", "duke.edu")
+
+    row = conn.execute("SELECT * FROM teams WHERE seo = 'duke'").fetchone()
+    assert row["name"] == "Duke"
+    assert row["conference"] == "acc"
+    assert row["name_full"] == "Duke University"
+    assert row["mascot"] == "Blue Devils"
+    assert row["orgid"] == 123
+    assert row["athletic_url"] == "goduke.com"
+    assert row["website_url"] == "duke.edu"
+
+
+def test_set_head_coach_updates_existing_row_only(conn):
+    db.set_head_coach(conn, "nonexistent", "Some Coach")
+    row = conn.execute("SELECT * FROM teams WHERE seo = 'nonexistent'").fetchone()
+    assert row is None
+
+    db.upsert_team_directory(conn, "duke", 123, "goduke.com", "duke.edu")
+    db.set_head_coach(conn, "duke", "John Kerr")
+    row = conn.execute("SELECT head_coach FROM teams WHERE seo = 'duke'").fetchone()
+    assert row["head_coach"] == "John Kerr"
+
+
+def test_get_teams_with_orgid_only_returns_matched_teams(conn):
+    db.upsert_team_basic(conn, "duke", "Duke", "acc")
+    db.upsert_team_directory(conn, "duke", 123, "goduke.com", "duke.edu")
+    db.upsert_team_basic(conn, "unc", "UNC", "acc")
+
+    rows = db.get_teams_with_orgid(conn)
+    assert [r["seo"] for r in rows] == ["duke"]
+    assert rows[0]["orgid"] == 123
+
+
 def test_player_stats_pk_does_not_catch_same_player_under_two_jersey_numbers(conn, caplog):
     # Known gap (see the two confirmed real-world instances found in
     # data/soccer.db, e.g. game 6616816 "Callum Lugton" as both #10 and
