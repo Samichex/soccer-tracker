@@ -23,7 +23,8 @@
         <div class="chip-row">
             {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
             {% if team.head_coach %}<span class="chip-neutral">Coach &middot; {{ team.head_coach }}</span>{% endif %}
-            {% if team.athletic_url %}<a class="chip-neutral" href="{{ team.athletic_url | site_href }}" target="_blank" rel="noopener noreferrer">{{ team.athletic_url | site_domain }}<svg class="icon-ext" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>{% endif %}
+            {% if team.is_private is not none %}<span class="chip-neutral">{{ "Private" if team.is_private else "Public" }}</span>{% endif %}
+            {% if team.athletic_url %}<a class="chip-neutral chip-icon" href="{{ team.athletic_url | site_href }}" target="_blank" rel="noopener noreferrer" title="{{ team.athletic_url | site_domain }}" aria-label="{{ team.athletic_url | site_domain }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>{% endif %}
         </div>
     </div>
 

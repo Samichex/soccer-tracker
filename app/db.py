@@ -156,6 +156,9 @@ def init_db():
             ("athletic_url", "TEXT"),
             ("website_url", "TEXT"),
             ("head_coach", "TEXT"),
+            # Public/private status from the NCAA directory's `privateFlag`
+            # ("Y"/"N"), stored as 1/0. NULL until the directory backfill runs.
+            ("is_private", "INTEGER"),
             # Authoritative division tag, populated only by the NCAA
             # directory backfill (a team's true division, independent of
             # which scoreboard feed happened to surface it -- see
@@ -326,6 +329,7 @@ def upsert_team_directory(
     athletic_url: str | None,
     website_url: str | None,
     division: str | None = None,
+    is_private: bool | None = None,
 ):
     """Fill in what the NCAA directory backfill knows (see
     app/backfill_ncaa_directory.py). Never touches name/conference
@@ -342,16 +346,17 @@ def upsert_team_directory(
         return
     conn.execute(
         """
-        INSERT INTO teams (seo, orgid, athletic_url, website_url, division, updated_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now'))
+        INSERT INTO teams (seo, orgid, athletic_url, website_url, division, is_private, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(seo) DO UPDATE SET
             orgid=excluded.orgid,
             athletic_url=excluded.athletic_url,
             website_url=excluded.website_url,
             division=COALESCE(excluded.division, teams.division),
+            is_private=excluded.is_private,
             updated_at=excluded.updated_at
         """,
-        (seo, orgid, athletic_url, website_url, division),
+        (seo, orgid, athletic_url, website_url, division, is_private),
     )
 
 

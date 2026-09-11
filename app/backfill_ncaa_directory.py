@@ -1,6 +1,6 @@
 """One-off backfill of NCAA directory data (orgid, athletic_url,
-website_url, division) for every team already in the `teams` table, one
-division at a time.
+website_url, division, is_private) for every team already in the `teams`
+table, one division at a time.
 
 Source: https://web3.ncaa.org/directory/api/directory/memberList?type=12&division=I&sportCode=MSO
 (a public, unauthenticated bulk JSON endpoint), first inspected 2026-09-10.
@@ -171,8 +171,11 @@ def backfill_ncaa_directory(conn, division: str = "d1", force: bool = False):
             if existing and existing["orgid"]:
                 continue
         e = entries_by_orgid[orgid]
+        private_flag = e.get("privateFlag")
+        is_private = {"Y": True, "N": False}.get(private_flag)
         db.upsert_team_directory(
-            conn, seo, orgid, e.get("athleticWebUrl"), e.get("webSiteUrl"), division=division
+            conn, seo, orgid, e.get("athleticWebUrl"), e.get("webSiteUrl"),
+            division=division, is_private=is_private,
         )
         written += 1
 
