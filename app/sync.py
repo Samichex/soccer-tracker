@@ -146,10 +146,10 @@ def _parse_rankings(data: dict) -> list[dict]:
             {
                 "school": (entry.get("SCHOOL") or "").strip(),
                 "rank": rank,
-                "prev_rank": entry.get("PREV"),
-                "points": entry.get("TOTAL POINTS"),
-                "first_place_votes": entry.get("1ST VOTES"),
-                "record": entry.get("W-L-T"),
+                "prev_rank": entry.get("PREVIOUS"),
+                "points": entry.get("POINTS"),
+                "first_place_votes": entry.get("FIRST-PLACE VOTES"),
+                "record": entry.get("RECORD"),
             }
         )
     return rows
