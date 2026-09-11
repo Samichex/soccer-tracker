@@ -1,4 +1,5 @@
 import datetime as dt
+import json
 import logging
 import threading
 import time
@@ -10,6 +11,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from markupsafe import Markup
 
 from . import config, db, reference_data, standings, sync
 
@@ -68,6 +70,20 @@ def _pretty_date(date_str: str | None) -> str:
 
 
 templates.env.filters["pretty_date"] = _pretty_date
+
+
+def _tojson(value) -> Markup:
+    """Serialize for embedding in a <script type="application/json"> block
+    -- also escape the sequences that would otherwise break out of it."""
+    return Markup(
+        json.dumps(value)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
+
+
+templates.env.filters["tojson"] = _tojson
 
 
 def _last_synced():
@@ -393,6 +409,34 @@ def teams_list(request: Request, conference: str | None = None, state: str | Non
             "states": states,
             "selected_conference": conference,
             "selected_state": state,
+        },
+    )
+
+
+@app.get("/rank-history", response_class=HTMLResponse)
+def rank_history_page(request: Request):
+    with db.get_conn() as conn:
+        rows = db.get_all_ranking_history(conn)
+    history = reference_data.build_rank_history(rows)
+    week_index = {w: i for i, w in enumerate(history["weeks"])}
+    chart_data = {
+        "weeks": history["weeks"],
+        "teams": [
+            {
+                "seo": t["seo"],
+                "name": t["name"],
+                "points": [[week_index[p["week_start"]], p["rank"]] for p in t["series"]],
+            }
+            for t in history["teams"]
+        ],
+    }
+    return templates.TemplateResponse(
+        "rank-history.html",
+        {
+            "request": request,
+            "weeks": history["weeks"],
+            "teams": history["teams"],
+            "chart_data": chart_data,
         },
     )
 

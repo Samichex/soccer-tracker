@@ -136,10 +136,22 @@ def _safe_int(value):
         return None
 
 
+def _parse_rank(value) -> int | None:
+    """The feed denotes a tie for a rank with a "T" prefix, e.g. "T23" --
+    we don't track the tie itself, just the numeric rank, so multiple
+    teams can share a rank the same way they can already share a record.
+    Without stripping it, int() raises and the team is silently dropped
+    from that day's snapshot instead of being stored as rank 23."""
+    text = str(value).strip() if value is not None else ""
+    if text[:1] in ("T", "t"):
+        text = text[1:]
+    return _safe_int(text)
+
+
 def _parse_rankings(data: dict) -> list[dict]:
     rows = []
     for entry in data.get("data", []):
-        rank = _safe_int(entry.get("RANK"))
+        rank = _parse_rank(entry.get("RANK"))
         if rank is None:
             continue
         rows.append(

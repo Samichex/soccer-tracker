@@ -674,6 +674,25 @@ def get_ranking_history(conn, seo: str):
     ).fetchall()
 
 
+def get_all_ranking_history(conn):
+    """Every team_rankings row for every team ever ranked, joined with
+    `teams` for a display name/conference. Ordered by seo then
+    observed_date so callers can group-by-seo and get each team's own
+    snapshots in ascending order (same contract group_rankings_by_week
+    already assumes for a single team). Rows with seo IS NULL are
+    excluded -- no stable id to link/dedupe them to a team page."""
+    return conn.execute(
+        """
+        SELECT tr.*, t.name AS team_name, t.name_full AS team_name_full,
+               t.conference AS team_conference
+        FROM team_rankings tr
+        LEFT JOIN teams t ON t.seo = tr.seo
+        WHERE tr.seo IS NOT NULL
+        ORDER BY tr.seo, tr.observed_date
+        """
+    ).fetchall()
+
+
 def get_latest_rankings(conn):
     """Most recent day's poll snapshot, with `prev_rank` backfilled from the
     prior snapshot's rank when the feed hasn't reported it yet -- e.g. right
