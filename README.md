@@ -29,6 +29,16 @@ On startup it runs a full sync (today +/- a few days) and repeats every
 - `NCAA_API_BASE` — defaults to the public `https://ncaa-api.henrygd.me`.
   Point this at a self-hosted instance (`docker run -p 3000:3000 henrygd/ncaa-api`)
   if the public one becomes unreliable or rate limits are an issue.
+- `ENABLED_DIVISIONS` — comma-separated list of divisions to sync (default `d1`).
+  Setting `d1,d3` syncs D3 games/rosters/standings too; every page and read
+  query is division-scoped (default D1, switchable via the nav's Division
+  pills once more than one division is enabled), so D3 data won't mix into
+  D1 pages. One gap: D3 men's soccer's rankings feed is ten separate
+  *regional* NPI leaderboards, not one national poll like D1's, so it's a
+  different data model this app doesn't support yet — rankings sync is
+  skipped for any division not in `app/config.py`'s
+  `RANKINGS_SUPPORTED_DIVISIONS` (`d1` only today), and D3 pages simply show
+  no ranking badges/history until that's built.
 - `DAYS_BACK` / `DAYS_FORWARD` — live sync window around today (default 3 / 4).
   Scores and game times in this window change, so it's re-pulled every
   `SYNC_INTERVAL_MINUTES` and on manual refresh.

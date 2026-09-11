@@ -14,12 +14,13 @@ def _group_by_team_seo(rows: list[dict]) -> dict[str, list[dict]]:
     return groups
 
 
-def sync_date(conn, date: dt.date):
-    data = ncaa_client.get_scoreboard(date)
+def sync_date(conn, date: dt.date, division: str = "d1", sport_path: str | None = None):
+    sport_path = sport_path or config.DIVISIONS[division]
+    data = ncaa_client.get_scoreboard(date, sport_path)
     games = data.get("games", [])
     for game in games:
-        db.upsert_game(conn, game, date.isoformat())
-    log.info("synced %s games for %s", len(games), date.isoformat())
+        db.upsert_game(conn, game, date.isoformat(), division)
+    log.info("synced %s %s games for %s", len(games), division, date.isoformat())
 
 
 def _rows_from_boxscore(box: dict) -> list[dict]:
@@ -167,7 +168,12 @@ def _parse_rankings(data: dict) -> list[dict]:
     return rows
 
 
-def sync_rankings(conn, observed_date: dt.date | None = None):
+def sync_rankings(
+    conn,
+    division: str = "d1",
+    sport_path: str | None = None,
+    observed_date: dt.date | None = None,
+):
     """Snapshot the current poll under `observed_date` (default: today).
 
     Rankings only change weekly, but this is safe to call every sync cycle:
@@ -177,16 +183,19 @@ def sync_rankings(conn, observed_date: dt.date | None = None):
     the API itself exposes no poll date, only "results through" and no
     week number (see ncaa_client.get_rankings).
     """
+    sport_path = sport_path or config.DIVISIONS[division]
     observed_date = observed_date or dt.date.today()
-    data = ncaa_client.get_rankings()
+    data = ncaa_client.get_rankings(sport_path)
     rows = _parse_rankings(data)
     for r in rows:
         r["seo"] = db.resolve_seo_by_name(conn, r["school"])
-    db.replace_rankings_for_date(conn, observed_date.isoformat(), rows)
+    db.replace_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
     unresolved = [r["school"] for r in rows if not r["seo"]]
     if unresolved:
-        log.warning("could not resolve seo for ranked schools: %s", unresolved)
-    log.info("synced rankings for %s (%s teams)", observed_date.isoformat(), len(rows))
+        log.warning("could not resolve seo for ranked %s schools: %s", division, unresolved)
+    log.info(
+        "synced %s rankings for %s (%s teams)", division, observed_date.isoformat(), len(rows)
+    )
 
 
 def run_full_sync():
@@ -195,16 +204,28 @@ def run_full_sync():
     Scores and game times in this window change, so it's cheap to re-pull on
     every background cycle and safe to trigger from the manual refresh
     endpoint. Days further out belong to sync_far_schedule instead.
+
+    Loops over config.ENABLED_DIVISIONS -- just "d1" by default, so this is
+    unchanged in shape and volume from before D3 support existed unless
+    that's been explicitly opted into.
     """
     today = dt.date.today()
     with db.get_conn() as conn:
-        for offset in range(-config.DAYS_BACK, config.DAYS_FORWARD + 1):
-            sync_date(conn, today + dt.timedelta(days=offset))
+        for division in config.ENABLED_DIVISIONS:
+            sport_path = config.DIVISIONS[division]
+            for offset in range(-config.DAYS_BACK, config.DAYS_FORWARD + 1):
+                sync_date(conn, today + dt.timedelta(days=offset), division, sport_path)
         sync_missing_boxscores(conn)
-        try:
-            sync_rankings(conn)
-        except Exception:
-            log.exception("failed to sync rankings")
+        for division in config.ENABLED_DIVISIONS:
+            if division not in config.RANKINGS_SUPPORTED_DIVISIONS:
+                # See config.RANKINGS_SUPPORTED_DIVISIONS -- this division's
+                # rankings feed isn't a single national poll, so there's
+                # nothing sync_rankings can correctly store for it yet.
+                continue
+            try:
+                sync_rankings(conn, division, config.DIVISIONS[division])
+            except Exception:
+                log.exception("failed to sync rankings for %s", division)
         db.set_last_synced(conn, dt.datetime.utcnow().isoformat())
 
 
@@ -217,8 +238,10 @@ def sync_far_schedule():
     """
     today = dt.date.today()
     with db.get_conn() as conn:
-        for offset in range(config.DAYS_FORWARD + 1, config.SCHEDULE_DAYS_FORWARD + 1):
-            sync_date(conn, today + dt.timedelta(days=offset))
+        for division in config.ENABLED_DIVISIONS:
+            sport_path = config.DIVISIONS[division]
+            for offset in range(config.DAYS_FORWARD + 1, config.SCHEDULE_DAYS_FORWARD + 1):
+                sync_date(conn, today + dt.timedelta(days=offset), division, sport_path)
 
 
 if __name__ == "__main__":

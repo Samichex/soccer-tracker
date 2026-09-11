@@ -156,12 +156,65 @@ def init_db():
             ("athletic_url", "TEXT"),
             ("website_url", "TEXT"),
             ("head_coach", "TEXT"),
+            # Authoritative division tag, populated only by the NCAA
+            # directory backfill (a team's true division, independent of
+            # which scoreboard feed happened to surface it -- see
+            # upsert_game's `division` param, which tags the *game* by
+            # sync source, not the team). Left NULL until that backfill
+            # runs; do not backfill it here, since teams already in this
+            # table can include stray non-D1 opponents picked up from a
+            # D1 game they played, not D1 members themselves.
+            ("division", "TEXT"),
         ):
             if col not in team_cols:
                 conn.execute(f"ALTER TABLE teams ADD COLUMN {col} {coltype}")
 
+        game_cols = {row["name"] for row in conn.execute("PRAGMA table_info(games)")}
+        if "division" not in game_cols:
+            # Which division's scoreboard feed this game was synced from
+            # (see config.DIVISIONS/ENABLED_DIVISIONS). Every game already
+            # in this table was synced before D3 support existed, so 'd1'
+            # is an accurate backfill, not a guess.
+            conn.execute("ALTER TABLE games ADD COLUMN division TEXT")
+            conn.execute("UPDATE games SET division = 'd1' WHERE division IS NULL")
 
-def upsert_game(conn, game: dict, date_str: str):
+        tr_cols = {row["name"] for row in conn.execute("PRAGMA table_info(team_rankings)")}
+        if "division" not in tr_cols:
+            # D3 has its own United Soccer Coaches poll, distinct from D1's,
+            # so the primary key widens to include division alongside
+            # (observed_date, school). SQLite can't ALTER a table's primary
+            # key in place, so rebuild it -- safe here since every existing
+            # row was synced before D3 support existed (same reasoning as
+            # the games.division backfill above).
+            conn.executescript(
+                """
+                ALTER TABLE team_rankings RENAME TO team_rankings_pre_division;
+                CREATE TABLE team_rankings (
+                    observed_date TEXT NOT NULL,
+                    division TEXT NOT NULL DEFAULT 'd1',
+                    school TEXT NOT NULL,
+                    seo TEXT,
+                    rank INTEGER,
+                    prev_rank TEXT,
+                    points TEXT,
+                    first_place_votes TEXT,
+                    record TEXT,
+                    PRIMARY KEY (observed_date, division, school)
+                );
+                INSERT INTO team_rankings (
+                    observed_date, division, school, seo, rank, prev_rank,
+                    points, first_place_votes, record
+                )
+                SELECT observed_date, 'd1', school, seo, rank, prev_rank,
+                       points, first_place_votes, record
+                FROM team_rankings_pre_division;
+                DROP TABLE team_rankings_pre_division;
+                CREATE INDEX IF NOT EXISTS idx_team_rankings_seo ON team_rankings(seo);
+                """
+            )
+
+
+def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
     g = game["game"]
     game_id = g["gameID"]
     status = validate.validate_game_status(game_id, g.get("gameState"))
@@ -173,8 +226,8 @@ def upsert_game(conn, game: dict, date_str: str):
             id, date, start_time, start_epoch, status, current_period,
             home_seo, home_name, home_score, home_conference,
             away_seo, away_name, away_score, away_conference,
-            network, url, updated_at
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
+            network, url, division, updated_at
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
             start_time=excluded.start_time,
             start_epoch=excluded.start_epoch,
@@ -183,6 +236,10 @@ def upsert_game(conn, game: dict, date_str: str):
             home_score=COALESCE(excluded.home_score, games.home_score),
             away_score=COALESCE(excluded.away_score, games.away_score),
             network=excluded.network,
+            -- A cross-division non-conference game can be synced from both
+            -- divisions' scoreboards under the same gameID; keep whichever
+            -- division tagged it first rather than flip-flopping.
+            division=COALESCE(games.division, excluded.division),
             updated_at=datetime('now')
         """,
         (
@@ -202,6 +259,7 @@ def upsert_game(conn, game: dict, date_str: str):
             (g["away"].get("conferences") or [{}])[0].get("conferenceSeo"),
             g.get("network"),
             g.get("url"),
+            division,
         ),
     )
     for side in ("home", "away"):
@@ -267,24 +325,33 @@ def upsert_team_directory(
     orgid: int | None,
     athletic_url: str | None,
     website_url: str | None,
+    division: str | None = None,
 ):
     """Fill in what the NCAA directory backfill knows (see
     app/backfill_ncaa_directory.py). Never touches name/conference
     (upsert_team_basic) or name_full/mascot/name6_char/color
-    (upsert_team_detail)."""
+    (upsert_team_detail).
+
+    `division` is the authoritative division tag (see the `teams.division`
+    column comment in init_db) -- COALESCEd rather than overwritten with
+    NULL, so a caller that doesn't pass it (or an older backfill run) never
+    blows away a value a previous run already set, while a later backfill
+    that *does* pass a division always wins, so reclassification (e.g. a
+    school moving D2 -> D3) still gets picked up."""
     if not seo:
         return
     conn.execute(
         """
-        INSERT INTO teams (seo, orgid, athletic_url, website_url, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now'))
+        INSERT INTO teams (seo, orgid, athletic_url, website_url, division, updated_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(seo) DO UPDATE SET
             orgid=excluded.orgid,
             athletic_url=excluded.athletic_url,
             website_url=excluded.website_url,
+            division=COALESCE(excluded.division, teams.division),
             updated_at=excluded.updated_at
         """,
-        (seo, orgid, athletic_url, website_url),
+        (seo, orgid, athletic_url, website_url, division),
     )
 
 
@@ -438,20 +505,20 @@ _GAME_COLUMNS_WITH_CARDS = f"""
 """
 
 
-def get_games_for_date(conn, date_str: str, conference: str | None = None):
+def get_games_for_date(conn, date_str: str, conference: str | None = None, division: str = "d1"):
     joins = f"{_GAME_JOINS} {_RED_CARD_JOINS}"
     if conference:
         return conn.execute(
             f"""
             SELECT {_GAME_COLUMNS_WITH_CARDS} {joins}
-            WHERE g.date = ? AND (g.home_conference = ? OR g.away_conference = ?)
+            WHERE g.date = ? AND g.division = ? AND (g.home_conference = ? OR g.away_conference = ?)
             ORDER BY g.start_epoch
             """,
-            (date_str, conference, conference),
+            (date_str, division, conference, conference),
         ).fetchall()
     return conn.execute(
-        f"SELECT {_GAME_COLUMNS_WITH_CARDS} {joins} WHERE g.date = ? ORDER BY g.start_epoch",
-        (date_str,),
+        f"SELECT {_GAME_COLUMNS_WITH_CARDS} {joins} WHERE g.date = ? AND g.division = ? ORDER BY g.start_epoch",
+        (date_str, division),
     ).fetchall()
 
 
@@ -461,17 +528,18 @@ def get_game(conn, game_id: str):
     ).fetchone()
 
 
-def get_conferences(conn):
+def get_conferences(conn, division: str = "d1"):
     rows = conn.execute(
         """
         SELECT DISTINCT conference FROM (
-            SELECT home_conference AS conference FROM games
+            SELECT home_conference AS conference FROM games WHERE division = ?
             UNION
-            SELECT away_conference AS conference FROM games
+            SELECT away_conference AS conference FROM games WHERE division = ?
         )
         WHERE conference IS NOT NULL AND conference != ''
         ORDER BY conference
-        """
+        """,
+        (division, division),
     ).fetchall()
     return [r["conference"] for r in rows]
 
@@ -481,6 +549,12 @@ def get_team(conn, seo: str):
 
 
 def search_teams(conn, query: str, limit: int = 20):
+    """Note: not division-filtered at the SQL level -- `teams.division` is
+    only reliably set once the NCAA directory backfill has run for that
+    division, so callers that need to scope by division (see
+    app/main.py's `search`) filter these rows afterward using
+    reference_data.get_team_division, which falls back sensibly when
+    `division` is still NULL."""
     like = f"%{query}%"
     return conn.execute(
         """
@@ -494,12 +568,16 @@ def search_teams(conn, query: str, limit: int = 20):
 
 
 def search_players(conn, query: str, limit: int = 20):
+    """See search_teams's note on division filtering -- `team_division`
+    here is likewise meant to be resolved through
+    reference_data.get_team_division by the caller, not compared directly."""
     like = f"%{query}%"
     return conn.execute(
         """
         SELECT
             ps.first_name, ps.last_name, ps.team_seo,
             COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name, MAX(t.conference) AS team_conference,
+            MAX(t.division) AS team_division,
             MAX(ps.number) AS number,
             MAX(ps.position) AS position
         FROM player_stats ps
@@ -529,24 +607,25 @@ def get_team_games(conn, seo: str):
     ).fetchall()
 
 
-def get_conference_games(conn, conference: str):
+def get_conference_games(conn, conference: str, division: str = "d1"):
     return conn.execute(
         f"""
         SELECT {_GAME_COLUMNS} {_GAME_JOINS}
-        WHERE g.status = 'final' AND (g.home_conference = ? OR g.away_conference = ?)
+        WHERE g.status = 'final' AND g.division = ? AND (g.home_conference = ? OR g.away_conference = ?)
         ORDER BY g.start_epoch
         """,
-        (conference, conference),
+        (division, conference, conference),
     ).fetchall()
 
 
-def get_all_final_games(conn):
+def get_all_final_games(conn, division: str = "d1"):
     return conn.execute(
-        f"SELECT {_GAME_COLUMNS} {_GAME_JOINS} WHERE g.status = 'final' ORDER BY g.start_epoch"
+        f"SELECT {_GAME_COLUMNS} {_GAME_JOINS} WHERE g.status = 'final' AND g.division = ? ORDER BY g.start_epoch",
+        (division,),
     ).fetchall()
 
 
-def get_weekly_standouts(conn, since_date: str, through_date: str):
+def get_weekly_standouts(conn, since_date: str, through_date: str, division: str = "d1"):
     """Standout individual box scores (2+ goals or 2+ assists) from final
     games in the rolling [since_date, through_date] window, ranked by
     whichever is higher for that player: goals or assists."""
@@ -559,7 +638,7 @@ def get_weekly_standouts(conn, since_date: str, through_date: str):
         {_GAME_JOINS}
         JOIN player_stats ps ON ps.game_id = g.id
         LEFT JOIN teams t ON t.seo = ps.team_seo
-        WHERE g.status = 'final' AND g.date BETWEEN ? AND ?
+        WHERE g.status = 'final' AND g.division = ? AND g.date BETWEEN ? AND ?
           AND COALESCE(ps.participated, 1) = 1
           AND (
               CAST(ps.goals AS INTEGER) >= 2
@@ -571,7 +650,7 @@ def get_weekly_standouts(conn, since_date: str, through_date: str):
             CAST(ps.assists AS INTEGER) DESC,
             g.date DESC
         """,
-        (since_date, through_date),
+        (division, since_date, through_date),
     ).fetchall()
 
 
@@ -586,7 +665,7 @@ def get_player_stats(conn, game_id: str):
     ).fetchall()
 
 
-def get_all_players_roster_stats(conn):
+def get_all_players_roster_stats(conn, division: str = "d1"):
     return conn.execute(
         """
         SELECT
@@ -606,15 +685,17 @@ def get_all_players_roster_stats(conn):
             SUM(CAST(ps.yellow_cards AS INTEGER)) AS yellow_cards,
             SUM(CAST(ps.red_cards AS INTEGER)) AS red_cards
         FROM player_stats ps
+        JOIN games g ON g.id = ps.game_id
         LEFT JOIN teams t ON t.seo = ps.team_seo
-        WHERE COALESCE(ps.participated, 1) = 1
+        WHERE COALESCE(ps.participated, 1) = 1 AND g.division = ?
         GROUP BY ps.first_name, ps.last_name, ps.team_seo
         ORDER BY ps.last_name ASC, ps.first_name ASC
-        """
+        """,
+        (division,),
     ).fetchall()
 
 
-def get_clean_sheet_leaders(conn):
+def get_clean_sheet_leaders(conn, division: str = "d1"):
     """Season clean-sheet counts per goalkeeper: a final game they
     participated in where their team conceded 0."""
     return conn.execute(
@@ -630,11 +711,13 @@ def get_clean_sheet_leaders(conn):
         WHERE ps.position = 'GK'
           AND CAST(ps.participated AS INTEGER) = 1
           AND g.status = 'final'
+          AND g.division = ?
           AND ((ps.is_home = 1 AND CAST(g.away_score AS INTEGER) = 0)
             OR (ps.is_home = 0 AND CAST(g.home_score AS INTEGER) = 0))
         GROUP BY ps.team_id, ps.first_name, ps.last_name
         ORDER BY clean_sheets DESC
-        """
+        """,
+        (division,),
     ).fetchall()
 
 
@@ -711,17 +794,21 @@ def resolve_seo_by_name(conn, school_name: str):
     return None
 
 
-def replace_rankings_for_date(conn, observed_date: str, rows: list[dict]):
-    conn.execute("DELETE FROM team_rankings WHERE observed_date = ?", (observed_date,))
+def replace_rankings_for_date(conn, observed_date: str, rows: list[dict], division: str = "d1"):
+    conn.execute(
+        "DELETE FROM team_rankings WHERE observed_date = ? AND division = ?",
+        (observed_date, division),
+    )
     conn.executemany(
         """
         INSERT INTO team_rankings (
-            observed_date, school, seo, rank, prev_rank, points, first_place_votes, record
-        ) VALUES (?,?,?,?,?,?,?,?)
+            observed_date, division, school, seo, rank, prev_rank, points, first_place_votes, record
+        ) VALUES (?,?,?,?,?,?,?,?,?)
         """,
         [
             (
                 observed_date,
+                division,
                 r["school"],
                 r["seo"],
                 r["rank"],
@@ -741,7 +828,7 @@ def get_ranking_history(conn, seo: str):
     ).fetchall()
 
 
-def get_all_ranking_history(conn):
+def get_all_ranking_history(conn, division: str = "d1"):
     """Every team_rankings row for every team ever ranked, joined with
     `teams` for a display name/conference. Ordered by seo then
     observed_date so callers can group-by-seo and get each team's own
@@ -754,36 +841,42 @@ def get_all_ranking_history(conn):
                t.conference AS team_conference
         FROM team_rankings tr
         LEFT JOIN teams t ON t.seo = tr.seo
-        WHERE tr.seo IS NOT NULL
+        WHERE tr.seo IS NOT NULL AND tr.division = ?
         ORDER BY tr.seo, tr.observed_date
-        """
+        """,
+        (division,),
     ).fetchall()
 
 
-def get_latest_rankings(conn):
-    """Most recent day's poll snapshot, with `prev_rank` backfilled from the
-    prior snapshot's rank when the feed hasn't reported it yet -- e.g. right
-    after a new poll drops, before United Soccer Coaches backfills that
-    detail. Without this, rank-change arrows and "prev rank" displays would
-    show nothing/NR for every team on the day a new poll lands."""
+def get_latest_rankings(conn, division: str = "d1"):
+    """Most recent day's poll snapshot for `division`, with `prev_rank`
+    backfilled from the prior snapshot's rank when the feed hasn't reported
+    it yet -- e.g. right after a new poll drops, before United Soccer
+    Coaches backfills that detail. Without this, rank-change arrows and
+    "prev rank" displays would show nothing/NR for every team on the day a
+    new poll lands."""
     rows = [dict(r) for r in conn.execute(
         """
         SELECT * FROM team_rankings
-        WHERE observed_date = (SELECT MAX(observed_date) FROM team_rankings)
+        WHERE division = ? AND observed_date = (
+            SELECT MAX(observed_date) FROM team_rankings WHERE division = ?
+        )
         ORDER BY rank
-        """
+        """,
+        (division, division),
     )]
     missing = [r for r in rows if r["prev_rank"] in (None, "")]
     if rows and missing:
         prior_date = conn.execute(
-            "SELECT MAX(observed_date) AS d FROM team_rankings WHERE observed_date < ?",
-            (rows[0]["observed_date"],),
+            "SELECT MAX(observed_date) AS d FROM team_rankings WHERE division = ? AND observed_date < ?",
+            (division, rows[0]["observed_date"]),
         ).fetchone()["d"]
         if prior_date:
             prior_ranks = {
                 r["seo"]: r["rank"]
                 for r in conn.execute(
-                    "SELECT seo, rank FROM team_rankings WHERE observed_date = ?", (prior_date,)
+                    "SELECT seo, rank FROM team_rankings WHERE division = ? AND observed_date = ?",
+                    (division, prior_date),
                 )
                 if r["seo"]
             }
