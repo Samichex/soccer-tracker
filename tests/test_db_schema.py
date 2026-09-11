@@ -117,6 +117,19 @@ def test_player_stats_primary_key_rejects_exact_duplicate(conn):
         db.replace_player_stats(conn, "g1", [_player_row(), _player_row()])
 
 
+def test_get_player_stats_orders_starters_first_then_subs_by_minutes(conn):
+    db.replace_player_stats(conn, "g1", [
+        _player_row(number="1", last_name="BenchLow", starter=0, minutes_played="5"),
+        _player_row(number="2", last_name="StarterLow", starter=1, minutes_played="45"),
+        _player_row(number="3", last_name="BenchHigh", starter=0, minutes_played="30"),
+        _player_row(number="4", last_name="StarterHigh", starter=1, minutes_played="90"),
+    ])
+    rows = db.get_player_stats(conn, "g1")
+    assert [r["last_name"] for r in rows] == [
+        "StarterHigh", "StarterLow", "BenchHigh", "BenchLow",
+    ]
+
+
 def test_teams_table_has_directory_columns(conn):
     cols = {row["name"] for row in conn.execute("PRAGMA table_info(teams)")}
     assert {"orgid", "athletic_url", "website_url", "head_coach"} <= cols

@@ -282,10 +282,14 @@ def conference_full_name(conference_seo: str | None) -> str:
 
 def title_case_name(value: str | None) -> str:
     """Title-case an ALL-CAPS source name while preserving breaks like apostrophes,
-    e.g. "O'BRIEN" -> "O'Brien". Does not special-case Mc/Mac prefixes."""
+    e.g. "O'BRIEN" -> "O'Brien". Does not special-case Mc/Mac prefixes.
+
+    Matches runs of Unicode letters (not just A-Za-z) so accented names like
+    "PEÑA" title-case to "Peña" instead of splitting at the Ñ and capitalizing
+    the letter after it ("PeñA")."""
     if not value:
         return value or ""
-    return re.sub(r"[A-Za-z]+", lambda m: m.group(0)[:1].upper() + m.group(0)[1:].lower(), value)
+    return re.sub(r"[^\W\d_]+", lambda m: m.group(0)[:1].upper() + m.group(0)[1:].lower(), value)
 
 
 def site_domain(url: str | None) -> str:

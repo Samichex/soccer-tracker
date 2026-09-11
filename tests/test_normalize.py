@@ -69,6 +69,27 @@ def test_canonical_name_all_caps_prefers_existing_properly_cased_spelling():
     assert (first, last) == ("Callum", "Lugton")
 
 
+def test_fix_mojibake_repairs_double_decoded_utf8():
+    assert normalize.fix_mojibake("PeÃ±a") == "Peña"
+    assert normalize.fix_mojibake("MuÃ±oz") == "Muñoz"
+
+
+def test_fix_mojibake_leaves_correct_text_alone():
+    assert normalize.fix_mojibake("João") == "João"
+    assert normalize.fix_mojibake("Pérez") == "Pérez"
+    assert normalize.fix_mojibake("Smith") == "Smith"
+
+
+def test_fix_mojibake_handles_none_and_empty():
+    assert normalize.fix_mojibake(None) is None
+    assert normalize.fix_mojibake("") == ""
+
+
+def test_canonical_name_repairs_mojibake_in_mixed_case_name():
+    first, last = normalize.canonical_name(_FakeConn(), "north-carolina-st", "AdriÃ ", "Erik")
+    assert first == "Adrià"
+
+
 def test_normalize_rows_applies_both_helpers_in_place():
     rows = [
         {"first_name": "JOHN", "last_name": "SMITH", "position": "FORWARD"},

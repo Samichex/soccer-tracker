@@ -577,7 +577,11 @@ def get_weekly_standouts(conn, since_date: str, through_date: str):
 
 def get_player_stats(conn, game_id: str):
     return conn.execute(
-        "SELECT * FROM player_stats WHERE game_id = ? ORDER BY is_home DESC, starter DESC",
+        """
+        SELECT * FROM player_stats
+        WHERE game_id = ?
+        ORDER BY is_home DESC, starter DESC, CAST(minutes_played AS REAL) DESC
+        """,
         (game_id,),
     ).fetchall()
 
