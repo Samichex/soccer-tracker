@@ -10,10 +10,15 @@
     } catch (e) {}
 })();
 </script>
+{% set current_division = request.cookies.get('division') %}
+{% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
 <div class="topnav">
     <a class="brand" href="/" aria-label="Full Time home">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16 H30 M22 16 A6 6 0 0 1 10 16 A6 6 0 0 1 22 16" pathlength="1"></path></svg>
-        <span class="brand-word">Full Time</span>
+        <span class="brand-text">
+            <span class="brand-word">Full Time</span>
+            <span class="brand-sub">{{ 'D3' if current_division == 'd3' else 'D1' }} Men's Soccer</span>
+        </span>
     </a>
     <form class="topnav-search" action="/search" method="get">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -30,14 +35,19 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
             <div class="menu-panel" id="ft-menu-panel">
+                {% set rank_history_enabled = current_division in rankings_supported_divisions %}
                 <div class="menu-section">
+                    {% if rank_history_enabled %}
                     <a class="menu-row menu-link{% if request.url.path == '/rank-history' %} active{% endif %}" href="/rank-history"{% if request.url.path == '/rank-history' %} aria-current="page"{% endif %}>
                         <span>Rank History</span>
                     </a>
+                    {% else %}
+                    <a class="menu-row menu-link is-disabled" aria-disabled="true" role="link">
+                        <span>Rank History</span>
+                    </a>
+                    {% endif %}
                 </div>
                 {% if enabled_divisions|length > 1 %}
-                {% set current_division = request.cookies.get('division') %}
-                {% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
                 <div class="menu-section">
                     <div class="menu-row">
                         <span>Division</span>
