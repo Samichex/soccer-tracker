@@ -526,7 +526,9 @@ def get_all_players_roster_stats(conn):
         """
         SELECT
             ps.first_name, ps.last_name, ps.team_seo,
-            COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name, MAX(t.conference) AS team_conference,
+            COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name,
+            MAX(t.name) AS team_name_short,
+            MAX(t.conference) AS team_conference,
             MAX(ps.number) AS number,
             MAX(ps.position) AS position,
             COUNT(DISTINCT ps.game_id) AS games_played,

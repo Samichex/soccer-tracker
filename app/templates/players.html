@@ -59,7 +59,7 @@
                     <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>{% if p.position %} ({{ p.position | position_short }}){% endif %}
                 </td>
                 <td>
-                    <a href="/team/{{ p.team_seo }}">{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</a>
+                    <a href="/team/{{ p.team_seo }}">{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</a>
                 </td>
                 <td class="num">{{ p.games_played }}</td>
                 <td class="num">{{ p.avg_minutes }}</td>

@@ -729,6 +729,7 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
     .team-link { overflow-wrap: break-word; }
     .name-full { display: none; }
     .name-short { display: inline; }
+    .player-page .team-state { display: none; }
 
     .topnav { flex-wrap: wrap; row-gap: 12px; }
     .topnav-search { order: 3; flex: 1 1 100%; max-width: none; }
