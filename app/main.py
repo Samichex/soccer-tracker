@@ -227,28 +227,30 @@ def _rank_lookup(rank_map: dict, seo: str | None) -> tuple[int | None, str | Non
     return (info["rank"], info["prev_rank"]) if info else (None, None)
 
 
-def _is_upset(g: dict) -> bool:
-    """True if a ranked team lost to a lower-ranked (or unranked) opponent.
+def _upset_winner(g: dict) -> str | None:
+    """"home"/"away" if that side is a ranked team's upset winner, else None.
 
     Uses the *current* poll rather than the rank as of the game's date, so
     this is only meaningful for games from the current week — good enough
     for a scoreboard flag, not for a season-long upset history.
     """
     if g["status"] != "final":
-        return False
+        return None
     try:
         home_score, away_score = int(g["home_score"]), int(g["away_score"])
     except (TypeError, ValueError):
-        return False
+        return None
     if home_score == away_score:
-        return False
+        return None
     if home_score > away_score:
-        winner_rank, loser_rank = g["home_rank"], g["away_rank"]
+        winner_side, winner_rank, loser_rank = "home", g["home_rank"], g["away_rank"]
     else:
-        winner_rank, loser_rank = g["away_rank"], g["home_rank"]
+        winner_side, winner_rank, loser_rank = "away", g["away_rank"], g["home_rank"]
     if loser_rank is None:
-        return False
-    return winner_rank is None or winner_rank > loser_rank
+        return None
+    if winner_rank is None or winner_rank > loser_rank:
+        return winner_side
+    return None
 
 
 def _weekly_standout_label(row) -> str:
@@ -333,7 +335,8 @@ def index(
     for g in games:
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
-        g["is_upset"] = _is_upset(g)
+        g["upset_winner"] = _upset_winner(g)
+        g["is_upset"] = g["upset_winner"] is not None
         g["conference_match"] = (
             reference_data.conference_short_name(g["home_conference"])
             if g["home_conference"] and g["home_conference"] == g["away_conference"]
@@ -346,6 +349,7 @@ def index(
         games = [g for g in games if g["conference_match"]]
     featured_games = [g for g in games if _is_featured(g, top30_seos)]
     games = [g for g in games if not _is_featured(g, top30_seos)]
+    has_upset = any(g["is_upset"] for g in games + featured_games)
     return templates.TemplateResponse(
         "index.html",
         {
@@ -356,6 +360,7 @@ def index(
             "next_day": day + dt.timedelta(days=1),
             "games": games,
             "featured_games": featured_games,
+            "has_upset": has_upset,
             "conferences": conferences,
             "selected_conference": conference,
             "conf_only": conf_only,
