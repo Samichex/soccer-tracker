@@ -9,12 +9,13 @@
     {% include "_theme-init.html" %}
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="wide">
     {% include "_nav.html" %}
 
     {% if not game %}
     <p class="empty">Game not found.</p>
     {% else %}
+    <div class="content-narrow">
     <div class="game-header">
         <h1 class="matchup">
             <div class="matchup-names">
@@ -45,6 +46,7 @@
         </div>
     </div>
     {% endif %}
+    </div>
 
     {% if not away_stats and not home_stats %}
     <p class="empty">No box score available yet{% if game.status != 'final' %} (game not finished){% endif %}.</p>

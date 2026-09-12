@@ -41,6 +41,7 @@ def build_conference_table(games, conference: str):
                 {
                     "seo": seo,
                     "name": g[f"{side}_name"],
+                    "name_short": g[f"{side}_name_short"],
                     "conf_w": 0,
                     "conf_l": 0,
                     "conf_d": 0,
@@ -107,6 +108,7 @@ def build_all_teams_table(games):
                 {
                     "seo": seo,
                     "name": g[f"{side}_name"],
+                    "name_short": g[f"{side}_name_short"],
                     "conference": conference,
                     "conf_w": 0,
                     "conf_l": 0,
