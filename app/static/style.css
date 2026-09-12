@@ -233,31 +233,49 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     color: var(--text);
 }
 .menu-panel .menu-section + .menu-section { border-top: 1px solid var(--border); }
-.menu-row.menu-link { text-decoration: none; }
+.menu-row.menu-link { text-decoration: none; justify-content: flex-end; }
+.menu-row:has(.theme-switch) { justify-content: flex-end; }
 .menu-row.menu-link:hover, .menu-row.menu-link.active { color: var(--accent); }
 .menu-row.menu-link.is-disabled { color: var(--muted-2); cursor: default; pointer-events: none; }
 
 .theme-switch {
     position: relative;
-    width: 38px;
-    height: 22px;
-    padding: 2px;
-    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    width: 56px;
+    height: 28px;
     border-radius: 999px;
     background: var(--neutral-soft);
+    border: 1px solid var(--border);
     cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
+.theme-switch-icon {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    display: flex;
+    color: var(--muted-2);
+}
+.theme-switch-icon .theme-icon-moon { display: none; }
 .theme-switch-thumb {
-    display: block;
-    width: 16px;
-    height: 16px;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: var(--surface);
     box-shadow: 0 1px 2px var(--scroll-shadow);
     transition: transform 0.15s ease;
 }
 .theme-switch.is-dark { background: var(--accent-soft); border-color: var(--accent); }
-.theme-switch.is-dark .theme-switch-thumb { transform: translateX(16px); background: var(--accent); }
+.theme-switch.is-dark .theme-switch-thumb { transform: translateX(28px); background: var(--accent); }
+.theme-switch.is-dark .theme-switch-icon { left: 8px; right: auto; color: #fff; }
+.theme-switch.is-dark .theme-icon-sun { display: none; }
+.theme-switch.is-dark .theme-icon-moon { display: block; }
 
 .brand-sync { font-size: 0.6rem; color: var(--muted-2); }
 
