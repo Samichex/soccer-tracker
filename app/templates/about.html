@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FT: About</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    {% include "_theme-init.html" %}
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% include "_nav.html" %}
+
+    <h1>About</h1>
+
+    <div class="boxscore-card">
+        <p>This site tracks NCAA Division I men's soccer scores, schedules, and stats.</p>
+
+        <h2>Data source</h2>
+        <p>Scores, schedules, and box scores come from the <a class="section-link" href="https://github.com/henrygd/ncaa-api" target="_blank" rel="noopener noreferrer">ncaa-api</a> project, an independent feed built on NCAA.com's own data. This site isn't affiliated with or endorsed by the NCAA.</p>
+
+        <h2>How often it updates</h2>
+        <p>Games in the next few days are refreshed every 30 minutes, and you can hit &ldquo;sync now&rdquo; for an immediate check. Further-out schedule dates update once a day, since they rarely change until much closer to kickoff.</p>
+
+        <h2>A note on accuracy</h2>
+        <p>Occasionally the upstream feed has a garbled name or an odd stat line &mdash; when that happens, this site does its best to clean it up automatically rather than show clearly bad data. If something looks off, it's likely a quirk in the source feed rather than this site.</p>
+    </div>
+</body>
+</html>
