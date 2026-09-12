@@ -9,7 +9,7 @@
     {% include "_theme-init.html" %}
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="wide">
     {% include "_nav.html" %}
 
     <form method="get" action="/teams" class="conference-filter">
@@ -52,7 +52,7 @@
         {% for t in table %}
             <tr>
                 <td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {{ t.rank or '' }}</td>
-                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label(t.name, t.seo, t.conference) }}</a></td>
+                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, t.conference) }}</a></td>
                 <td data-sort-key="conference" data-sort-value="{{ conference_label_fn(t.conference) }}"><a href="/conference/{{ t.conference }}">{{ conference_label_fn(t.conference) }}</a></td>
                 <td class="num" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
                 <td class="num" data-sort-key="pts" data-sort-value="{{ t.conf_pts }}">{{ t.conf_pts }}</td>

@@ -77,6 +77,13 @@ body {
     color: var(--text);
 }
 
+/* Data-dense pages (standings, leaders, box scores, rosters) get a wider
+   column on desktop; card/prose sections within them opt back into the
+   standard reading width via .content-narrow. Harmless on narrow
+   viewports since max-width never forces extra width. */
+body.wide { max-width: 1200px; }
+.content-narrow { max-width: 860px; margin: 0 auto; }
+
 a { color: inherit; text-decoration: none; transition: color 0.15s ease; }
 a:hover { color: var(--accent); }
 
@@ -89,6 +96,12 @@ h2 {
     padding-bottom: 0.5rem;
     color: var(--text);
     border-bottom: 1px solid var(--border);
+}
+h3 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: var(--text);
 }
 
 /* Top nav */
@@ -447,8 +460,19 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .pill.role-sub { background: var(--neutral-soft); color: var(--muted-2); font-weight: 600; }
 
 .card-row.standout { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.standout-player { font-weight: 600; font-size: 0.92rem; color: var(--text); flex: 1 1 140px; }
-.standout-team { color: var(--muted); font-size: 0.82rem; }
+.standout-player {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text);
+    flex: 1 1 140px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.standout-team-group { display: flex; align-items: center; gap: 10px; flex: 1 1 160px; min-width: 0; }
+.standout-team { color: var(--muted); font-size: 0.82rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.standout-team-group .pill { flex: none; }
 .standout-meta { color: var(--muted-2); font-size: 0.78rem; margin-left: auto; text-align: right; }
 
 .rank-move { font-size: 0.72em; font-weight: 700; margin-right: 2px; white-space: nowrap; }
@@ -639,7 +663,7 @@ a.chip-neutral:hover { color: var(--accent); }
     padding: 1.1rem 1.2rem;
     margin-bottom: 1.25rem;
 }
-.boxscore-card h2 { margin-top: 0; border-bottom: none; padding-bottom: 0; }
+.boxscore-card h2, .boxscore-card h3 { margin-top: 0; border-bottom: none; padding-bottom: 0; }
 
 .table-scroll {
     overflow-x: auto;
@@ -671,7 +695,7 @@ td.num, th.num { text-align: right; white-space: nowrap; }
 table.leaders { table-layout: fixed; }
 table.leaders td, table.leaders th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.leaders-grid { display: flex; flex-direction: column; gap: 1.25rem; }
+.leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem; align-items: start; }
 .leaders-grid .boxscore-card { margin-bottom: 0; }
 .leaders-grid table.leaders th:nth-child(1), .leaders-grid table.leaders td:nth-child(1) { width: 6%; }
 .leaders-grid table.leaders th:nth-child(2), .leaders-grid table.leaders td:nth-child(2) { width: 34%; }
@@ -774,9 +798,10 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
     .name-short { display: inline; }
     .player-page .team-state { display: none; }
 
-    .topnav { flex-wrap: wrap; row-gap: 12px; }
+    .topnav { flex-wrap: wrap; row-gap: 12px; position: relative; }
     .topnav-search { order: 3; flex: 1 1 100%; max-width: none; }
     .topnav-links { gap: 14px; margin-left: auto; }
+    .menu { position: static; }
 
     .datebar { gap: 16px; }
     .datebar-title { min-width: 0; }
@@ -792,14 +817,14 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
         table-layout: fixed;
     }
     .standings td, .standings th { padding-left: 0.3rem; padding-right: 0.3rem; }
-    .standings td:nth-child(1), .standings th:nth-child(1) { width: 9%; }
-    .standings td:nth-child(2), .standings th:nth-child(2) { width: 28%; }
+    .standings td:nth-child(1), .standings th:nth-child(1) { width: 13%; }
+    .standings td:nth-child(2), .standings th:nth-child(2) { width: 24%; }
     .standings td:nth-child(3), .standings th:nth-child(3) { width: 15%; }
     .standings td:nth-child(4), .standings th:nth-child(4) { width: 15%; }
     .standings td:nth-child(5), .standings th:nth-child(5) { width: 8%; }
     .standings td:nth-child(7), .standings th:nth-child(7) { width: 25%; }
-    .standings td:nth-child(2), .standings td:nth-child(3),
-    .standings th:nth-child(2), .standings th:nth-child(3) {
+    .standings td:nth-child(1), .standings td:nth-child(2), .standings td:nth-child(3),
+    .standings th:nth-child(1), .standings th:nth-child(2), .standings th:nth-child(3) {
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 

@@ -708,6 +708,7 @@ def get_clean_sheet_leaders(conn, division: str = "d1"):
         SELECT
             ps.first_name, ps.last_name, ps.team_seo,
             COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name,
+            MAX(t.name) AS team_name_short,
             MAX(t.conference) AS team_conference,
             COUNT(*) AS clean_sheets
         FROM player_stats ps

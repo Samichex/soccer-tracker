@@ -9,8 +9,10 @@
     {% include "_theme-init.html" %}
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="wide">
     {% include "_nav.html" %}
+
+    <h1>Stats</h1>
 
     <h2>Weekly Stand Outs</h2>
 
@@ -22,8 +24,10 @@
             {% for n in standouts %}
             <a class="card-row standout{% if loop.index > 5 %} extra-row{% endif %}" href="/game/{{ n.id }}">
                 <span class="standout-player">{{ n.first_name | name_case }} {{ n.last_name | name_case }}</span>
-                <span class="standout-team">{{ n.player_team_name }}</span>
-                <span class="pill pill-standout">{{ n.label }}</span>
+                <span class="standout-team-group">
+                    <span class="standout-team">{{ n.player_team_name }}</span>
+                    <span class="pill pill-standout">{{ n.label }}</span>
+                </span>
                 <span class="standout-meta">vs. {{ n.opponent_name }} &ndash; {{ n.date | pretty_date }}</span>
             </a>
             {% endfor %}
@@ -41,7 +45,7 @@
 
     <div class="leaders-grid">
         <div class="boxscore-card">
-            <h2>Top Goals</h2>
+            <h3>Top Goals</h3>
             {% if not goals_leaders %}
             <p class="empty">No data yet.</p>
             {% else %}
@@ -54,7 +58,7 @@
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
                         <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
-                        <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.goals }}</td>
                     </tr>
                 {% endfor %}
@@ -70,7 +74,7 @@
         </div>
 
         <div class="boxscore-card">
-            <h2>Top Assists</h2>
+            <h3>Top Assists</h3>
             {% if not assists_leaders %}
             <p class="empty">No data yet.</p>
             {% else %}
@@ -83,7 +87,7 @@
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
                         <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
-                        <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.assists }}</td>
                     </tr>
                 {% endfor %}
@@ -99,7 +103,7 @@
         </div>
 
         <div class="boxscore-card">
-            <h2>Clean Sheets</h2>
+            <h3>Clean Sheets</h3>
             {% if not clean_sheet_leaders %}
             <p class="empty">No data yet.</p>
             {% else %}
@@ -112,7 +116,7 @@
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
                         <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
-                        <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.clean_sheets }}</td>
                     </tr>
                 {% endfor %}
@@ -128,7 +132,7 @@
         </div>
 
         <div class="boxscore-card">
-            <h2>Top Cards</h2>
+            <h3>Top Cards</h3>
             {% if not card_leaders %}
             <p class="empty">No data yet.</p>
             {% else %}
@@ -141,7 +145,7 @@
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
                         <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
-                        <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.total_cards }} ({{ p.yellow_cards }}Y, {{ p.red_cards }}R)</td>
                     </tr>
                 {% endfor %}

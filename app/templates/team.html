@@ -9,13 +9,14 @@
     {% include "_theme-init.html" %}
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="wide">
     {% include "_nav.html" %}
     {% from "_macros.html" import conference_tag %}
 
     {% if not team %}
     <p class="empty">Team not found.</p>
     {% else %}
+    <div class="content-narrow">
     <div class="team-head">
         <div>
             <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
@@ -99,6 +100,7 @@
     </div>
     </div>
     {% endif %}
+    </div>
 
     <h2>Roster</h2>
     {% if not roster %}
