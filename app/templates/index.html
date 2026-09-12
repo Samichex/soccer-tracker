@@ -10,18 +10,40 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    {% set filter_panel_html %}
+    <form method="get" action="/" class="filter-form">
+        <input type="hidden" name="date" value="{{ day.isoformat() }}">
+        <select name="conference" onchange="this.form.submit()">
+            <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
+            {% for c in conferences %}
+            <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label(c) }}</option>
+            {% endfor %}
+        </select>
+        <select name="state" onchange="this.form.submit()">
+            <option value="" {% if not selected_state %}selected{% endif %}>State</option>
+            {% for s in states %}
+            <option value="{{ s }}" {% if selected_state == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <label class="conf-only-toggle">
+            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
+            Conference Match
+        </label>
+        <noscript><button type="submit">Go</button></noscript>
+    </form>
+    {% endset %}
     {% include "_nav.html" %}
     {% from "_macros.html" import match_row with context %}
 
     <div class="datebar">
-        <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}">
+        <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
             <span class="arrow-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </span>
             <span class="datebar-label">{{ prev_day.strftime('%a %d %b') }}</span>
         </a>
         <h1 class="datebar-title">{% if is_today %}Today{% else %}{{ day.strftime('%a %d %b') }}{% endif %}</h1>
-        <a class="datebar-side" href="/?date={{ next_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}">
+        <a class="datebar-side" href="/?date={{ next_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
             <span class="arrow-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </span>
@@ -29,23 +51,9 @@
         </a>
     </div>
 
-    <form method="get" action="/" class="conference-filter">
-        <input type="hidden" name="date" value="{{ day.isoformat() }}">
-        <select name="conference" onchange="this.form.submit()">
-            <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
-            {% for c in conferences %}
-            <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label(c) }}</option>
-            {% endfor %}
-        </select>
-        <label class="conf-only-toggle">
-            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
-            Conf. Match
-        </label>
-        {% if has_upset %}
-        <span class="upset-key">🔥 Upset</span>
-        {% endif %}
-        <noscript><button type="submit">Go</button></noscript>
-    </form>
+    {% if has_upset %}
+    <span class="upset-key">🔥 Upset</span>
+    {% endif %}
 
     {% if featured_games %}
     <h2 class="featured-heading">Featured</h2>

@@ -10,32 +10,33 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="wide">
-    {% include "_nav.html" %}
-
-    <form method="get" action="/players" class="conference-filter">
+    {% set filter_panel_html %}
+    <form method="get" action="/players" class="filter-form">
         <input type="hidden" name="page" value="1">
         <input type="hidden" name="sort" value="{{ sort or '' }}">
         <input type="hidden" name="dir" value="{{ dir or '' }}">
         <select name="conference" onchange="this.form.submit()">
-            <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
+            <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
             {% for c in conferences %}
             <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label_fn(c) }}</option>
             {% endfor %}
         </select>
-        <select name="team" onchange="this.form.submit()">
-            <option value="" {% if not selected_team %}selected{% endif %}>All teams</option>
-            {% for seo, name, conf in teams %}
-            <option value="{{ seo }}" {% if selected_team == seo %}selected{% endif %}>{{ team_label(name, seo, conf) }}</option>
-            {% endfor %}
-        </select>
         <select name="state" onchange="this.form.submit()">
-            <option value="" {% if not selected_state %}selected{% endif %}>All states</option>
+            <option value="" {% if not selected_state %}selected{% endif %}>State</option>
             {% for s in states %}
             <option value="{{ s }}" {% if selected_state == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
+        <select name="team" onchange="this.form.submit()">
+            <option value="" {% if not selected_team %}selected{% endif %}>Team</option>
+            {% for seo, name, conf in teams %}
+            <option value="{{ seo }}" {% if selected_team == seo %}selected{% endif %}>{{ team_label(name, seo, conf) }}</option>
+            {% endfor %}
+        </select>
         <noscript><button type="submit">Go</button></noscript>
     </form>
+    {% endset %}
+    {% include "_nav.html" %}
 
     {% if not roster %}
     <p class="empty">No player data yet.</p>

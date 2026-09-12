@@ -10,23 +10,24 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="wide">
-    {% include "_nav.html" %}
-
-    <form method="get" action="/teams" class="conference-filter">
+    {% set filter_panel_html %}
+    <form method="get" action="/teams" class="filter-form">
         <select name="conference" onchange="this.form.submit()">
-            <option value="" {% if not selected_conference %}selected{% endif %}>All conferences</option>
+            <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
             {% for c in conferences %}
             <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label_fn(c) }}</option>
             {% endfor %}
         </select>
         <select name="state" onchange="this.form.submit()">
-            <option value="" {% if not selected_state %}selected{% endif %}>All states</option>
+            <option value="" {% if not selected_state %}selected{% endif %}>State</option>
             {% for s in states %}
             <option value="{{ s }}" {% if selected_state == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
         <noscript><button type="submit">Go</button></noscript>
     </form>
+    {% endset %}
+    {% include "_nav.html" %}
 
     {% if not table %}
     <p class="empty">No final games synced yet.</p>

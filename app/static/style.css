@@ -262,6 +262,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .brand-sync { font-size: 0.6rem; color: var(--muted-2); }
 
 .division-toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 0.6rem 0 1.25rem; }
+.division-toggle-right { display: flex; align-items: center; gap: 0.6rem; }
 .division-switch {
     position: relative;
     display: inline-flex;
@@ -351,11 +352,26 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     font-family: var(--font);
     font-size: 0.85rem;
 }
+
+.filter-panel { width: 240px; }
+.filter-form { display: flex; flex-direction: column; gap: 0.6rem; }
+.filter-form select {
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.85rem;
+}
+
 .conf-only-toggle {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     padding: 0.45rem 0.75rem;
+    width: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -373,6 +389,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     font-size: 0.85rem;
     color: var(--muted);
     white-space: nowrap;
+    margin-bottom: 0.8rem;
 }
 
 /* Card rows (matches, team history) */
@@ -837,7 +854,7 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
     .topnav { flex-wrap: wrap; row-gap: 12px; position: relative; }
     .topnav-search { order: 3; flex: 1 1 100%; max-width: none; }
     .topnav-links { gap: 14px; margin-left: auto; }
-    .menu { position: static; }
+    .topnav .menu { position: static; }
 
     .datebar { gap: 16px; }
     .datebar-title { min-width: 0; }
