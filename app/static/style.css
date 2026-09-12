@@ -147,11 +147,6 @@ h3 {
     clip-path: inset(0 100% 0 0);
     animation: brand-wipe 0.55s cubic-bezier(.4, .6, .2, 1) 0.55s forwards;
 }
-.brand-sub {
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: var(--muted);
-}
 @keyframes brand-draw { to { stroke-dashoffset: 0; } }
 @keyframes brand-wipe { to { clip-path: inset(0 0 0 0); } }
 @media (prefers-reduced-motion: reduce) {
@@ -264,9 +259,9 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .theme-switch.is-dark { background: var(--accent-soft); border-color: var(--accent); }
 .theme-switch.is-dark .theme-switch-thumb { transform: translateX(16px); background: var(--accent); }
 
-.brand-sync { font-size: 0.6rem; color: var(--muted-2); margin-top: 2px; }
+.brand-sync { font-size: 0.6rem; color: var(--muted-2); }
 
-.division-toggle-row { display: flex; justify-content: flex-end; margin: 0 0 1.25rem; }
+.division-toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 0.6rem 0 1.25rem; }
 .division-switch {
     position: relative;
     display: inline-flex;
