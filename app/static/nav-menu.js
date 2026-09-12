@@ -1,34 +1,46 @@
 (function () {
-    var menu = document.getElementById("ft-menu");
-    var toggle = document.getElementById("ft-menu-toggle");
+    var menus = Array.prototype.slice.call(document.querySelectorAll(".menu"));
     var themeSwitch = document.getElementById("ft-theme-switch");
-    if (!menu || !toggle) return;
 
-    function closeMenu() {
+    function closeMenu(menu) {
+        var toggle = menu.querySelector(".menu-toggle");
         menu.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
     }
-    function openMenu() {
+    function openMenu(menu) {
+        menus.forEach(function (m) {
+            if (m !== menu) closeMenu(m);
+        });
+        var toggle = menu.querySelector(".menu-toggle");
         menu.classList.add("open");
-        toggle.setAttribute("aria-expanded", "true");
+        if (toggle) toggle.setAttribute("aria-expanded", "true");
     }
 
-    toggle.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (menu.classList.contains("open")) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
+    menus.forEach(function (menu) {
+        var toggle = menu.querySelector(".menu-toggle");
+        if (!toggle) return;
+        toggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (menu.classList.contains("open")) {
+                closeMenu(menu);
+            } else {
+                openMenu(menu);
+            }
+        });
     });
     document.addEventListener("click", function (e) {
-        if (!menu.contains(e.target)) closeMenu();
+        menus.forEach(function (menu) {
+            if (!menu.contains(e.target)) closeMenu(menu);
+        });
     });
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && menu.classList.contains("open")) {
-            closeMenu();
-            toggle.focus();
-        }
+        if (e.key !== "Escape") return;
+        menus.forEach(function (menu) {
+            if (!menu.classList.contains("open")) return;
+            closeMenu(menu);
+            var toggle = menu.querySelector(".menu-toggle");
+            if (toggle) toggle.focus();
+        });
     });
 
     function isDark() {

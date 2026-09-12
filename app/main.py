@@ -323,6 +323,7 @@ def index(
     date: str | None = None,
     conference: str | None = None,
     conf_only: bool = False,
+    state: str | None = None,
     division: str | None = None,
 ):
     day = _parse_date(date)
@@ -332,6 +333,7 @@ def index(
         conferences = db.get_conferences(conn, division)
         rank_map = _rank_map(db.get_latest_rankings(conn, division))
         top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn, division))
+    team_states = reference_data.get_team_states()
     for g in games:
         g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
         g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
@@ -342,11 +344,16 @@ def index(
             if g["home_conference"] and g["home_conference"] == g["away_conference"]
             else ""
         )
+        g["home_state"] = team_states.get(g["home_seo"], "")
+        g["away_state"] = team_states.get(g["away_seo"], "")
         badge = _match_badge(g)
         g["badge_class"], g["badge_label"] = badge if badge else ("", "")
         g["start_time_main"], g["start_time_tz"] = reference_data.split_time_tz(g["start_time"])
+    states = sorted({s for g in games for s in (g["home_state"], g["away_state"]) if s})
     if conf_only:
         games = [g for g in games if g["conference_match"]]
+    if state:
+        games = [g for g in games if state in (g["home_state"], g["away_state"])]
     featured_games = [g for g in games if _is_featured(g, top30_seos)]
     games = [g for g in games if not _is_featured(g, top30_seos)]
     has_upset = any(g["is_upset"] for g in games + featured_games)
@@ -364,6 +371,8 @@ def index(
             "conferences": conferences,
             "selected_conference": conference,
             "conf_only": conf_only,
+            "states": states,
+            "selected_state": state,
             "conference_label": _conference_label,
         },
     )

@@ -64,17 +64,29 @@
 </div>
 <div class="division-toggle-row">
     <span class="brand-sync" title="{{ sync.title }}">Synced {{ sync.label }}</span>
-    {% if enabled_divisions|length > 1 %}
-    {% set d1 = enabled_divisions[0] %}
-    {% set d3 = enabled_divisions[1] %}
-    {% set is_d1 = current_division == d1 %}
-    <a class="division-switch {{ 'is-on' if is_d1 else 'is-off' }}"
-       href="/set-division/{{ d3 if is_d1 else d1 }}?next={{ current_path(request) | urlencode }}"
-       aria-label="Viewing {{ division_label(current_division) }}. Switch to {{ division_label(d3 if is_d1 else d1) }}.">
-        <span class="division-switch-label">{{ division_label(current_division) }}</span>
-        <span class="division-switch-thumb"></span>
-    </a>
-    {% endif %}
+    <div class="division-toggle-right">
+        {% if enabled_divisions|length > 1 %}
+        {% set d1 = enabled_divisions[0] %}
+        {% set d3 = enabled_divisions[1] %}
+        {% set is_d1 = current_division == d1 %}
+        <a class="division-switch {{ 'is-on' if is_d1 else 'is-off' }}"
+           href="/set-division/{{ d3 if is_d1 else d1 }}?next={{ current_path(request) | urlencode }}"
+           aria-label="Viewing {{ division_label(current_division) }}. Switch to {{ division_label(d3 if is_d1 else d1) }}.">
+            <span class="division-switch-label">{{ division_label(current_division) }}</span>
+            <span class="division-switch-thumb"></span>
+        </a>
+        {% endif %}
+        {% if filter_panel_html is defined %}
+        <div class="menu filter-menu" id="ft-filter-menu">
+            <button type="button" class="menu-toggle" id="ft-filter-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="ft-filter-panel" aria-label="Open filters">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 4 21 4 14 13 14 19 10 21 10 13 3 4"></polygon></svg>
+            </button>
+            <div class="menu-panel filter-panel" id="ft-filter-panel">
+                {{ filter_panel_html }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 <script src="/static/nav-menu.js"></script>
 <script src="/static/localize-time.js"></script>
