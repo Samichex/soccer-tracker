@@ -39,8 +39,11 @@
         </select>
         <label class="conf-only-toggle">
             <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
-            Conf. matchups
+            Conf. Match
         </label>
+        {% if has_upset %}
+        <span class="upset-key">🔥 Upset</span>
+        {% endif %}
         <noscript><button type="submit">Go</button></noscript>
     </form>
 

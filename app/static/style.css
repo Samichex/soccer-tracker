@@ -291,7 +291,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     text-align: center;
 }
 
-.conference-filter { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1.1rem; }
+.conference-filter { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-bottom: 0.8rem; }
 .conference-filter select {
     padding: 0.45rem 0.75rem;
     min-width: 0;
@@ -316,6 +316,15 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     cursor: pointer;
 }
 .conf-only-toggle input { margin: 0; accent-color: var(--accent); }
+
+.upset-key {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
 
 /* Card rows (matches, team history) */
 .card-list { display: flex; flex-direction: column; gap: 8px; margin-top: 0.5rem; }
@@ -388,7 +397,14 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .match-time { font-size: 0.78rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .match-time .tz { color: var(--muted-2); font-weight: 500; font-size: 0.7rem; }
 
-.match-upset { grid-column: 1 / -1; justify-self: start; margin-top: 2px; }
+.upset-fire {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+}
+.upset-fire-away { right: 100%; margin-right: 1px; }
+.upset-fire-home { left: 100%; margin-left: 1px; }
 
 .name-short { display: none; }
 
@@ -398,6 +414,8 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .team-link:hover { color: var(--accent); }
 
 .score-link {
+    position: relative;
+    display: inline-block;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     text-align: center;
@@ -425,7 +443,6 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .pill.result-w { background: var(--win-bg); color: var(--win); }
 .pill.result-l { background: var(--loss-bg); color: var(--loss); }
 .pill.result-d { background: var(--draw-bg); color: var(--draw); }
-.pill.pill-upset { background: var(--live-bg); color: var(--live); }
 .pill.pill-standout { background: var(--accent-soft); color: var(--accent); }
 .pill.role-sub { background: var(--neutral-soft); color: var(--muted-2); font-weight: 600; }
 
