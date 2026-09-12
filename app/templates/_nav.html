@@ -46,6 +46,9 @@
                         <span>Rank History</span>
                     </a>
                     {% endif %}
+                    <a class="menu-row menu-link{% if request.url.path == '/about' %} active{% endif %}" href="/about"{% if request.url.path == '/about' %} aria-current="page"{% endif %}>
+                        <span>About</span>
+                    </a>
                 </div>
                 {% if enabled_divisions|length > 1 %}
                 <div class="menu-section">

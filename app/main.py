@@ -544,6 +544,11 @@ def rank_history_page(request: Request, division: str | None = None):
     )
 
 
+@app.get("/about", response_class=HTMLResponse)
+def about_page(request: Request):
+    return templates.TemplateResponse("about.html", {"request": request})
+
+
 PLAYERS_PER_PAGE = 50
 
 _PLAYER_SORT_KEYS = {
