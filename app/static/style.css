@@ -264,7 +264,48 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .theme-switch.is-dark { background: var(--accent-soft); border-color: var(--accent); }
 .theme-switch.is-dark .theme-switch-thumb { transform: translateX(16px); background: var(--accent); }
 
-.sync-status { font-size: 0.65rem; color: var(--muted-2); text-align: right; margin: 0 0 1.25rem; }
+.brand-sync { font-size: 0.6rem; color: var(--muted-2); margin-top: 2px; }
+
+.division-toggle-row { display: flex; justify-content: flex-end; margin: 0 0 1.25rem; }
+.division-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    width: 56px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.division-switch-label {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #fff;
+}
+.division-switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px var(--scroll-shadow);
+    transition: transform 0.15s ease;
+}
+.division-switch.is-on .division-switch-thumb { transform: translateX(28px); }
+.division-switch.is-off {
+    background: var(--neutral-soft);
+    border-color: var(--border);
+}
+.division-switch.is-off .division-switch-label { left: auto; right: 8px; color: var(--muted-2); }
 
 /* Date bar */
 .datebar {

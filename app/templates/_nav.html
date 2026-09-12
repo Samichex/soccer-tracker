@@ -12,12 +12,14 @@
 </script>
 {% set current_division = request.cookies.get('division') %}
 {% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
+{% set sync = last_synced() %}
 <div class="topnav">
     <a class="brand" href="/" aria-label="Full Time home">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16 H30 M22 16 A6 6 0 0 1 10 16 A6 6 0 0 1 22 16" pathlength="1"></path></svg>
         <span class="brand-text">
             <span class="brand-word">Full Time</span>
             <span class="brand-sub">{{ 'D3' if current_division == 'd3' else 'D1' }} Men's Soccer</span>
+            <span class="brand-sync" title="{{ sync.title }}">Synced {{ sync.label }}</span>
         </span>
     </a>
     <form class="topnav-search" action="/search" method="get">
@@ -50,18 +52,6 @@
                         <span>About</span>
                     </a>
                 </div>
-                {% if enabled_divisions|length > 1 %}
-                <div class="menu-section">
-                    <div class="menu-row">
-                        <span>Division</span>
-                    </div>
-                    <div class="pill-list">
-                        {% for d in enabled_divisions %}
-                        <a class="pill{% if d == current_division %} active{% endif %}" href="/set-division/{{ d }}?next={{ current_path(request) | urlencode }}">{{ division_label(d) }}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
                 <div class="menu-section">
                     <div class="menu-row">
                         <span>Theme</span>
@@ -74,7 +64,18 @@
         </div>
     </div>
 </div>
-{% set sync = last_synced() %}
-<p class="sync-status" title="{{ sync.title }}">Synced {{ sync.label }}</p>
+{% if enabled_divisions|length > 1 %}
+{% set d1 = enabled_divisions[0] %}
+{% set d3 = enabled_divisions[1] %}
+{% set is_d1 = current_division == d1 %}
+<div class="division-toggle-row">
+    <a class="division-switch {{ 'is-on' if is_d1 else 'is-off' }}"
+       href="/set-division/{{ d3 if is_d1 else d1 }}?next={{ current_path(request) | urlencode }}"
+       aria-label="Viewing {{ division_label(current_division) }}. Switch to {{ division_label(d3 if is_d1 else d1) }}.">
+        <span class="division-switch-label">{{ division_label(current_division) }}</span>
+        <span class="division-switch-thumb"></span>
+    </a>
+</div>
+{% endif %}
 <script src="/static/nav-menu.js"></script>
 <script src="/static/localize-time.js"></script>
