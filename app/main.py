@@ -96,10 +96,10 @@ def _team_label(context, name, seo, conference_seo=None, **kwargs):
 
 
 @pass_context
-def _team_label_responsive(context, short_name, full_name, seo, conference_seo=None):
+def _team_label_responsive(context, short_name, full_name, seo, conference_seo=None, **kwargs):
     division = _viewing_division(context)
     return reference_data.get_team_label_responsive(
-        short_name, full_name, seo, conference_seo, viewing_division=division
+        short_name, full_name, seo, conference_seo, viewing_division=division, **kwargs
     )
 
 
@@ -425,6 +425,7 @@ def team_detail(request: Request, seo: str):
         roster = db.get_team_roster_stats(conn, seo)
         rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
         current_rank, current_prev_rank = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
+    team_city = reference_data.get_team_cities().get(seo) if team else None
     rows, record = standings.build_team_schedule(games, seo, team["conference"] if team else None)
     team_totals = standings.build_team_totals(roster, rows)
     if rank_history and rank_history[0]["record"] is None:
@@ -437,6 +438,7 @@ def team_detail(request: Request, seo: str):
         {
             "request": request,
             "team": team,
+            "team_city": team_city,
             "seo": seo,
             "rows": rows,
             "record": record,
