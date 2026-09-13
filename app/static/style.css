@@ -560,6 +560,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 .section-link:hover { text-decoration: underline; }
 .team-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 1.5rem 0 1.1rem; flex-wrap: wrap; }
 .team-head h1 { margin: 0; }
+.team-city-link:hover { text-decoration: underline; }
 .conf-link {
     display: inline-flex;
     align-items: center;

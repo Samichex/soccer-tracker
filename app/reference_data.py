@@ -1,16 +1,19 @@
 import datetime as dt
 import json
 import re
+from urllib.parse import quote
 
 from markupsafe import Markup
 
 from . import config
 
 _TEAM_STATES_PATH = config.BASE_DIR / "app" / "data" / "team_states.json"
+_TEAM_CITIES_PATH = config.BASE_DIR / "app" / "data" / "team_cities.json"
 _NON_D1_PATH = config.BASE_DIR / "app" / "data" / "non_d1.json"
 _CONFERENCES_PATH = config.BASE_DIR / "app" / "data" / "conferences.json"
 
 _cache: dict | None = None
+_cities_cache: dict | None = None
 _non_d1_cache: dict | None = None
 _conferences_cache: dict | None = None
 
@@ -23,6 +26,28 @@ def get_team_states() -> dict:
         else:
             _cache = {}
     return _cache
+
+
+def get_team_cities() -> dict:
+    """seo -> city, from app/backfill_college_scorecard.py. Coverage is
+    partial -- only schools that matched a College Scorecard record have an
+    entry, unlike get_team_states (sourced from the NCAA directory, which
+    every school appears in)."""
+    global _cities_cache
+    if _cities_cache is None:
+        if _TEAM_CITIES_PATH.exists():
+            _cities_cache = json.loads(_TEAM_CITIES_PATH.read_text())
+        else:
+            _cities_cache = {}
+    return _cities_cache
+
+
+def google_maps_url(name: str, city: str, state: str) -> str:
+    """Google Maps search URL for a school by name + city/state -- good
+    enough to land on campus without needing a precise street address,
+    which nothing in this app's data sources provides."""
+    query = f"{name}, {city}, {state}"
+    return f"https://www.google.com/maps/search/?api=1&query={quote(query)}"
 
 
 def _get_non_d1() -> dict:
@@ -89,6 +114,7 @@ def get_team_label(
     *,
     hideable_suffix: bool = False,
     viewing_division: str | None = None,
+    city: str | None = None,
 ) -> str:
     """Team display name, with a '(CA)'/'(CA, D2)'/'(D3)'/'(NAIA)'/'(NCCAA)' suffix
     combining the school's state and, when the school itself or its conference
@@ -108,6 +134,10 @@ def get_team_label(
     "(D3)" while already on the D3-scoped view of a page; the tag still
     earns its keep flagging a team from a *different* division showing up
     there (a cross-division non-conference opponent).
+
+    `city`, when given (team page header only -- get_team_cities coverage is
+    partial, so every other call site leaves this unset), replaces the plain
+    state text with a "City, ST" link to a Google Maps search for the school.
     """
     if not name:
         name = seo or "Unknown Team"
@@ -124,9 +154,17 @@ def get_team_label(
     parts = [p for p in (state, tag) if p]
     if not parts:
         return name
-    suffix = f"({', '.join(parts)})"
+    if city and state:
+        location = Markup('<a class="team-city-link" href="{}" target="_blank" rel="noopener noreferrer">{}, {}</a>').format(
+            google_maps_url(name, city, state), city, state
+        )
+        suffix = Markup("(") + Markup(", ").join([location, *parts[1:]]) + Markup(")")
+    else:
+        suffix = f"({', '.join(parts)})"
     if hideable_suffix:
         return Markup('{} <span class="team-state">{}</span>').format(name, suffix)
+    if isinstance(suffix, Markup):
+        return Markup("{} {}").format(name, suffix)
     return f"{name} {suffix}"
 
 
@@ -136,6 +174,7 @@ def get_team_label_responsive(
     seo: str | None,
     conference_seo: str | None = None,
     viewing_division: str | None = None,
+    city: str | None = None,
 ) -> Markup:
     """Team display name that shows the full name on wide screens and the
     short scoreboard name (e.g. "NC State" instead of "North Carolina State
@@ -143,13 +182,13 @@ def get_team_label_responsive(
     The state/division suffix is wrapped in `.team-state` so a page can hide
     it separately (e.g. narrow-screen tables tight on space).
 
-    See get_team_label for `viewing_division`.
+    See get_team_label for `viewing_division` and `city`.
     """
     full_label = get_team_label(
-        full_name or short_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division
+        full_name or short_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division, city=city
     )
     short_label = get_team_label(
-        short_name or full_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division
+        short_name or full_name, seo, conference_seo, hideable_suffix=True, viewing_division=viewing_division, city=city
     )
     return Markup('<span class="name-full">{}</span><span class="name-short">{}</span>').format(
         full_label, short_label
