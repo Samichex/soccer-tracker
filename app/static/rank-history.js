@@ -10,7 +10,27 @@
     if (!weeks.length || !teams.length) return;
 
     var RANK_MIN = 1;
-    var RANK_MAX = 25;
+    // D1's top-25 poll always maxes at 25, but a D3 regional leaderboard
+    // (see config.REGIONAL_RANKINGS_DIVISIONS) only has a handful of teams
+    // -- derive the axis ceiling from the data instead of assuming 25, or
+    // most of the chart is empty space.
+    var RANK_MAX = 1;
+    teams.forEach(function (team) {
+        team.points.forEach(function (p) { if (p[1] > RANK_MAX) RANK_MAX = p[1]; });
+    });
+    RANK_MAX = Math.max(RANK_MAX, 5);
+    function rankTicks(max) {
+        if (max <= 12) {
+            var all = [];
+            for (var r = 1; r <= max; r++) all.push(r);
+            return all;
+        }
+        var step = Math.round(max / 5 / 5) * 5 || 5;
+        var ticks = [1];
+        for (var t = step; t < max; t += step) ticks.push(t);
+        if (ticks[ticks.length - 1] !== max) ticks.push(max);
+        return ticks;
+    }
     var VIEW_W = 800;
     var VIEW_H = 340;
     var MARGIN = { top: 14, right: 14, bottom: 26, left: 30 };
@@ -51,7 +71,7 @@
     });
 
     // Gridlines + rank labels.
-    [1, 5, 10, 15, 20, 25].forEach(function (rank) {
+    rankTicks(RANK_MAX).forEach(function (rank) {
         var y = yScale(rank);
         svg.appendChild(el("line", {
             class: "rank-chart-axis",

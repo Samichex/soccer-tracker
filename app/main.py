@@ -42,6 +42,7 @@ app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
+templates.env.globals["region_roman"] = reference_data.region_roman
 templates.env.globals["google_maps_url"] = reference_data.google_maps_url
 
 # Division switcher: only meaningful (and only rendered by _nav.html) once
@@ -51,7 +52,9 @@ templates.env.globals["google_maps_url"] = reference_data.google_maps_url
 # division support existed.
 templates.env.globals["enabled_divisions"] = config.ENABLED_DIVISIONS
 templates.env.globals["division_label"] = lambda d: {"d1": "D1", "d3": "D3"}.get(d, d.upper())
-templates.env.globals["rankings_supported_divisions"] = config.RANKINGS_SUPPORTED_DIVISIONS
+templates.env.globals["rankings_supported_divisions"] = (
+    config.RANKINGS_SUPPORTED_DIVISIONS | config.REGIONAL_RANKINGS_DIVISIONS
+)
 
 
 def _current_path(request: Request) -> str:
@@ -256,14 +259,33 @@ def _conference_label(seo: str, full: bool = False) -> str:
 
 
 def _rank_map(rankings) -> dict[str, dict]:
-    """{seo: {"rank", "prev_rank"}} for the latest poll, skipping rows where
-    seo is unresolved."""
-    return {r["seo"]: {"rank": r["rank"], "prev_rank": r["prev_rank"]} for r in rankings if r["seo"]}
+    """{seo: {"rank", "prev_rank", "region"}} for the latest poll, skipping
+    rows where seo is unresolved. `region` is only present on rows from
+    db.get_latest_regional_rankings (see config.REGIONAL_RANKINGS_DIVISIONS);
+    plain national-poll rows leave it None."""
+    return {
+        r["seo"]: {
+            "rank": r["rank"],
+            "prev_rank": r["prev_rank"],
+            "region": r["region"] if "region" in r.keys() else None,
+        }
+        for r in rankings
+        if r["seo"]
+    }
 
 
-def _rank_lookup(rank_map: dict, seo: str | None) -> tuple[int | None, str | None]:
+def _rank_lookup(rank_map: dict, seo: str | None) -> tuple[int | None, str | None, int | None]:
     info = rank_map.get(seo)
-    return (info["rank"], info["prev_rank"]) if info else (None, None)
+    return (info["rank"], info["prev_rank"], info["region"]) if info else (None, None, None)
+
+
+def _latest_rankings_for_division(conn, division: str):
+    """db.get_latest_rankings or db.get_latest_regional_rankings, whichever
+    shape `division`'s rankings feed actually uses -- see
+    config.REGIONAL_RANKINGS_DIVISIONS."""
+    if division in config.REGIONAL_RANKINGS_DIVISIONS:
+        return db.get_latest_regional_rankings(conn, division)
+    return db.get_latest_rankings(conn, division)
 
 
 def _upset_winner(g: dict) -> str | None:
@@ -370,12 +392,12 @@ def index(
     with db.get_conn() as conn:
         games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference, division)]
         conferences = db.get_conferences(conn, division)
-        rank_map = _rank_map(db.get_latest_rankings(conn, division))
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
         top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn, division))
     team_states = reference_data.get_team_states()
     for g in games:
-        g["away_rank"], g["away_prev_rank"] = _rank_lookup(rank_map, g["away_seo"])
-        g["home_rank"], g["home_prev_rank"] = _rank_lookup(rank_map, g["home_seo"])
+        g["away_rank"], g["away_prev_rank"], g["away_region"] = _rank_lookup(rank_map, g["away_seo"])
+        g["home_rank"], g["home_prev_rank"], g["home_region"] = _rank_lookup(rank_map, g["home_seo"])
         g["upset_winner"] = _upset_winner(g)
         g["is_upset"] = g["upset_winner"] is not None
         g["conference_match"] = (
@@ -463,7 +485,11 @@ def team_detail(request: Request, seo: str):
         games = db.get_team_games(conn, seo)
         roster = db.get_team_roster_stats(conn, seo)
         rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
-        current_rank, current_prev_rank = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
+        # D1-only for now -- team pages don't yet resolve a team's own
+        # division to pick between get_latest_rankings/_regional (see
+        # _latest_rankings_for_division), so a D3 team's regional rank
+        # doesn't appear here.
+        current_rank, current_prev_rank, _current_region = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
     team_city = reference_data.get_team_cities().get(seo) if team else None
     team_state = reference_data.get_team_states().get(seo) if team else None
     college_stats = reference_data.get_team_college_stats().get(seo) if team else None
@@ -501,12 +527,12 @@ def conference_detail(request: Request, conference: str, division: str | None = 
     with db.get_conn() as conn:
         conferences = db.get_conferences(conn, division)
         games = db.get_conference_games(conn, conference, division)
-        rank_map = _rank_map(db.get_latest_rankings(conn, division))
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
     table = standings.build_conference_table(games, conference)
     team_states = reference_data.get_team_states()
     for t in table:
         t["state"] = team_states.get(t["seo"], "")
-        t["rank"], t["prev_rank"] = _rank_lookup(rank_map, t["seo"])
+        t["rank"], t["prev_rank"], t["region"] = _rank_lookup(rank_map, t["seo"])
 
     table.sort(key=lambda t: -(t["overall_w"] * 3 + t["overall_d"]))
     return templates.TemplateResponse(
@@ -539,14 +565,14 @@ def teams_list(
     with db.get_conn() as conn:
         games = db.get_all_final_games(conn, division)
         conferences = db.get_conferences(conn, division)
-        rank_map = _rank_map(db.get_latest_rankings(conn, division))
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
         team_privacy = db.get_team_privacy(conn)
     table = standings.build_all_teams_table(games)
     team_states = reference_data.get_team_states()
     college_stats = reference_data.get_team_college_stats()
     for t in table:
         t["state"] = team_states.get(t["seo"], "")
-        t["rank"], t["prev_rank"] = _rank_lookup(rank_map, t["seo"])
+        t["rank"], t["prev_rank"], t["region"] = _rank_lookup(rank_map, t["seo"])
         t["is_private"] = team_privacy.get(t["seo"])
         t["college"] = college_stats.get(t["seo"], {})
 
@@ -601,10 +627,20 @@ def teams_list(
 
 
 @app.get("/rank-history", response_class=HTMLResponse)
-def rank_history_page(request: Request, division: str | None = None):
+def rank_history_page(request: Request, division: str | None = None, region: int | None = None):
     division = _resolve_division(request, division)
+    is_regional = division in config.REGIONAL_RANKINGS_DIVISIONS
     with db.get_conn() as conn:
-        rows = db.get_all_ranking_history(conn, division)
+        if is_regional:
+            # Ten independent regional leaderboards, not one national poll
+            # (see config.REGIONAL_RANKINGS_DIVISIONS) -- show one at a
+            # time, same as the rest of the site shows one division at a
+            # time, defaulting to Region I when none is picked yet.
+            region = region if region in range(1, 11) else 1
+            rows = db.get_all_regional_ranking_history(conn, division, region)
+        else:
+            region = None
+            rows = db.get_all_ranking_history(conn, division)
     history = reference_data.build_rank_history(rows)
     week_index = {w: i for i, w in enumerate(history["weeks"])}
     chart_data = {
@@ -625,7 +661,10 @@ def rank_history_page(request: Request, division: str | None = None):
             "weeks": history["weeks"],
             "teams": history["teams"],
             "chart_data": chart_data,
-            "rankings_supported": division in config.RANKINGS_SUPPORTED_DIVISIONS,
+            "rankings_supported": is_regional or division in config.RANKINGS_SUPPORTED_DIVISIONS,
+            "is_regional": is_regional,
+            "region": region,
+            "regions": list(range(1, 11)),
         },
     )
 
@@ -789,9 +828,9 @@ def game_detail(request: Request, game_id: str):
 
         if game is not None:
             game = dict(game)
-            rank_map = _rank_map(db.get_latest_rankings(conn))
-            game["away_rank"], game["away_prev_rank"] = _rank_lookup(rank_map, game["away_seo"])
-            game["home_rank"], game["home_prev_rank"] = _rank_lookup(rank_map, game["home_seo"])
+            rank_map = _rank_map(_latest_rankings_for_division(conn, game["division"] or "d1"))
+            game["away_rank"], game["away_prev_rank"], game["away_region"] = _rank_lookup(rank_map, game["away_seo"])
+            game["home_rank"], game["home_prev_rank"], game["home_region"] = _rank_lookup(rank_map, game["home_seo"])
 
         team_stats = db.get_team_stats(conn, game_id)
 

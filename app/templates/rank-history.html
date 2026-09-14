@@ -13,13 +13,24 @@
     {% include "_nav.html" %}
 
     <h1>Rank History</h1>
-    {% if rankings_supported %}
+    {% if is_regional %}
+    <p class="team-meta">NCAA D3 Regional NPI &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d3" target="_blank" rel="noopener noreferrer">NCAA D3 2026 Season</a></p>
+    <form class="conference-filter" onsubmit="return false">
+        <select onchange="if (this.value) window.location.href = '/rank-history?division=d3&region=' + this.value">
+            {% for r in regions %}
+            <option value="{{ r }}" {% if r == region %}selected{% endif %}>Region {{ region_roman(r) }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% elif rankings_supported %}
     <p class="team-meta">US Coaches Top 25 &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d1/united-soccer-coaches" target="_blank" rel="noopener noreferrer">NCAA D1 2026 Season</a></p>
     {% endif %}
 
     {% if not teams %}
     <p class="empty">
-        {% if rankings_supported %}No ranking data yet.{% else %}No national ranking for this division yet.{% endif %}
+        {% if is_regional %}No ranking data yet for Region {{ region_roman(region) }}.
+        {% elif rankings_supported %}No ranking data yet.
+        {% else %}No national ranking for this division yet.{% endif %}
     </p>
     {% else %}
     <div class="boxscore-card">

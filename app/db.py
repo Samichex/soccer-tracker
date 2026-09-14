@@ -14,7 +14,7 @@ _GAME_COLUMNS = """
     g.home_score, g.home_conference,
     g.away_seo, COALESCE(ta.name_full, g.away_name) AS away_name, g.away_name AS away_name_short,
     g.away_score, g.away_conference,
-    g.network, g.url, g.updated_at
+    g.network, g.url, g.division, g.updated_at
 """
 _GAME_JOINS = """
     FROM games g
@@ -88,6 +88,29 @@ CREATE TABLE IF NOT EXISTS team_rankings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_team_rankings_seo ON team_rankings(seo);
+
+-- D3 men's soccer's rankings feed has no single national poll -- it's ten
+-- separate regional NPI leaderboards instead (see
+-- config.REGIONAL_RANKINGS_DIVISIONS). A team's slot is identified by
+-- (region, rank) rather than by school, so that's the key here instead of
+-- team_rankings' (observed_date, division, school). prev_rank is kept
+-- (always NULL -- the feed has no PREVIOUS-equivalent field) purely so
+-- group_rankings_by_week/build_rank_history can be reused unchanged; its
+-- own "fall back to last week's rank" logic fills it in at render time.
+CREATE TABLE IF NOT EXISTS team_rankings_regional (
+    observed_date TEXT NOT NULL,
+    division TEXT NOT NULL,
+    region INTEGER NOT NULL,       -- 1-10, parsed from the feed's "Region I".."Region X" headers
+    rank INTEGER NOT NULL,
+    school TEXT NOT NULL,
+    seo TEXT,
+    prev_rank TEXT,
+    npi TEXT,
+    record TEXT,                   -- in-division W-L-T
+    PRIMARY KEY (observed_date, division, region, rank)
+);
+
+CREATE INDEX IF NOT EXISTS idx_team_rankings_regional_seo ON team_rankings_regional(seo);
 
 CREATE TABLE IF NOT EXISTS sync_meta (
     key TEXT PRIMARY KEY,
@@ -183,12 +206,14 @@ def init_db():
 
         tr_cols = {row["name"] for row in conn.execute("PRAGMA table_info(team_rankings)")}
         if "division" not in tr_cols:
-            # D3 has its own United Soccer Coaches poll, distinct from D1's,
-            # so the primary key widens to include division alongside
+            # A second division's national-poll-shaped rankings (were one
+            # ever added) would need its own row alongside D1's here, so the
+            # primary key widens to include division alongside
             # (observed_date, school). SQLite can't ALTER a table's primary
             # key in place, so rebuild it -- safe here since every existing
             # row was synced before D3 support existed (same reasoning as
-            # the games.division backfill above).
+            # the games.division backfill above). D3 itself turned out not
+            # to use this table at all -- see team_rankings_regional.
             conn.executescript(
                 """
                 ALTER TABLE team_rankings RENAME TO team_rankings_pre_division;
@@ -901,6 +926,90 @@ def get_latest_rankings(conn, division: str = "d1"):
                 if r["seo"]
             }
             for r in missing:
+                if r["seo"] in prior_ranks:
+                    r["prev_rank"] = str(prior_ranks[r["seo"]])
+    return rows
+
+
+def replace_regional_rankings_for_date(conn, observed_date: str, rows: list[dict], division: str = "d3"):
+    conn.execute(
+        "DELETE FROM team_rankings_regional WHERE observed_date = ? AND division = ?",
+        (observed_date, division),
+    )
+    conn.executemany(
+        """
+        INSERT INTO team_rankings_regional (
+            observed_date, division, region, rank, school, seo, npi, record
+        ) VALUES (?,?,?,?,?,?,?,?)
+        """,
+        [
+            (
+                observed_date,
+                division,
+                r["region"],
+                r["rank"],
+                r["school"],
+                r["seo"],
+                r["npi"],
+                r["record"],
+            )
+            for r in rows
+        ],
+    )
+
+
+def get_all_regional_ranking_history(conn, division: str = "d3", region: int | None = None):
+    """Same contract as get_all_ranking_history (rows shaped for
+    reference_data.build_rank_history), but from team_rankings_regional.
+    `region` narrows to one region's leaderboard -- the Rank History page
+    only ever shows one at a time."""
+    query = """
+        SELECT tr.*, t.name AS team_name, t.name_full AS team_name_full,
+               t.conference AS team_conference
+        FROM team_rankings_regional tr
+        LEFT JOIN teams t ON t.seo = tr.seo
+        WHERE tr.seo IS NOT NULL AND tr.division = ?
+    """
+    params: list = [division]
+    if region is not None:
+        query += " AND tr.region = ?"
+        params.append(region)
+    query += " ORDER BY tr.seo, tr.observed_date"
+    return conn.execute(query, params).fetchall()
+
+
+def get_latest_regional_rankings(conn, division: str = "d3"):
+    """Most recent day's regional snapshots for `division`, across all
+    regions -- one row per currently-ranked team. Unlike get_latest_rankings,
+    prev_rank has no upstream backfill to fall back to (the feed never
+    reports it), so it's always derived here from the prior snapshot's own
+    rank for that team, the same fallback group_rankings_by_week applies
+    when building the Rank History chart."""
+    rows = [dict(r) for r in conn.execute(
+        """
+        SELECT * FROM team_rankings_regional
+        WHERE division = ? AND observed_date = (
+            SELECT MAX(observed_date) FROM team_rankings_regional WHERE division = ?
+        )
+        ORDER BY region, rank
+        """,
+        (division, division),
+    )]
+    if rows:
+        prior_date = conn.execute(
+            "SELECT MAX(observed_date) AS d FROM team_rankings_regional WHERE division = ? AND observed_date < ?",
+            (division, rows[0]["observed_date"]),
+        ).fetchone()["d"]
+        if prior_date:
+            prior_ranks = {
+                r["seo"]: r["rank"]
+                for r in conn.execute(
+                    "SELECT seo, rank FROM team_rankings_regional WHERE division = ? AND observed_date = ?",
+                    (division, prior_date),
+                )
+                if r["seo"]
+            }
+            for r in rows:
                 if r["seo"] in prior_ranks:
                     r["prev_rank"] = str(prior_ranks[r["seo"]])
     return rows

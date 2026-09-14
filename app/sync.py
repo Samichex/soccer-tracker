@@ -168,6 +168,71 @@ def _parse_rankings(data: dict) -> list[dict]:
     return rows
 
 
+_REGION_ROMAN_TO_INT = {roman: i + 1 for i, roman in enumerate(
+    ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+)}
+
+
+def _parse_regional_rankings(data: dict) -> list[dict]:
+    """Parse the ten-region NPI feed (see config.REGIONAL_RANKINGS_DIVISIONS):
+    a flat row list where a region boundary is marked by a row with an empty
+    SCHOOL and a RANK of "Region I".."Region X", followed by that region's
+    ranked teams. Rows before the first region header (there shouldn't be
+    any) are dropped rather than guessed at."""
+    rows = []
+    region = None
+    for entry in data.get("data", []):
+        school = (entry.get("SCHOOL") or "").strip()
+        raw_rank = str(entry.get("RANK") or "").strip()
+        if not school and raw_rank.startswith("Region "):
+            region = _REGION_ROMAN_TO_INT.get(raw_rank[len("Region "):].strip())
+            continue
+        if region is None or not school:
+            continue
+        rank = _parse_rank(raw_rank)
+        if rank is None:
+            continue
+        rows.append(
+            {
+                "region": region,
+                "school": school,
+                "rank": rank,
+                "npi": entry.get("NPI"),
+                "record": entry.get("IN-DIVISION RECORD"),
+            }
+        )
+    return rows
+
+
+def sync_regional_rankings(
+    conn,
+    division: str = "d3",
+    sport_path: str | None = None,
+    observed_date: dt.date | None = None,
+):
+    """Snapshot the current ten-region NPI leaderboards under `observed_date`
+    (default: today). Same overwrite-today's-row-on-rerun semantics as
+    sync_rankings, but for the region-scoped shape described in
+    config.REGIONAL_RANKINGS_DIVISIONS instead of a single national poll."""
+    sport_path = sport_path or config.DIVISIONS[division]
+    observed_date = observed_date or dt.date.today()
+    data = ncaa_client.get_rankings(sport_path)
+    rows = _parse_regional_rankings(data)
+    for r in rows:
+        r["seo"] = db.resolve_seo_by_name(conn, r["school"])
+    db.replace_regional_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
+    unresolved = [r["school"] for r in rows if not r["seo"]]
+    if unresolved:
+        log.warning("could not resolve seo for regionally-ranked %s schools: %s", division, unresolved)
+    log.info(
+        "synced %s regional rankings for %s (%s teams across %s regions)",
+        division,
+        observed_date.isoformat(),
+        len(rows),
+        len({r["region"] for r in rows}),
+    )
+
+
 def sync_rankings(
     conn,
     division: str = "d1",
@@ -231,6 +296,14 @@ def run_full_sync():
                 sync_rankings(conn, division, config.DIVISIONS[division])
             except Exception:
                 log.exception("failed to sync rankings for %s", division)
+        for division in config.REGIONAL_RANKINGS_DIVISIONS:
+            # Deliberately not gated by ENABLED_DIVISIONS -- unlike the games
+            # sync above, this never touches the games table, so it carries
+            # none of the D1/D3 mixing risk ENABLED_DIVISIONS guards against.
+            try:
+                sync_regional_rankings(conn, division, config.DIVISIONS[division])
+            except Exception:
+                log.exception("failed to sync regional rankings for %s", division)
         db.set_last_synced(conn, dt.datetime.utcnow().isoformat())
 
 

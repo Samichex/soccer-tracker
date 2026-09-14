@@ -37,6 +37,15 @@ ENABLED_DIVISIONS = [
 # poll. Confirmed by inspecting the live feed 2026-09-11.
 RANKINGS_SUPPORTED_DIVISIONS = {"d1"}
 
+# Divisions whose rankings feed is the ten-region NPI split described above,
+# synced via sync.sync_regional_rankings into db.team_rankings_regional
+# instead of team_rankings. Kept out of RANKINGS_SUPPORTED_DIVISIONS since
+# that set specifically means "single national poll shape". This loop runs
+# independently of ENABLED_DIVISIONS (see sync.run_full_sync) -- regional
+# rankings don't touch the games table at all, so pulling them doesn't carry
+# the D1/D3 game-mixing risk ENABLED_DIVISIONS guards against.
+REGIONAL_RANKINGS_DIVISIONS = {"d3"}
+
 # NCAA directory (web3.ncaa.org) division codes, keyed the same as
 # DIVISIONS above -- a different vocabulary ("I"/"III" instead of
 # "d1"/"d3") because it's a different upstream host. See
