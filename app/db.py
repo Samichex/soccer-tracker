@@ -392,6 +392,12 @@ def games_missing_boxscore(conn):
     return [r["id"] for r in rows]
 
 
+def has_live_games(conn) -> bool:
+    """True if any synced game is currently in progress."""
+    row = conn.execute("SELECT 1 FROM games WHERE status = 'live' LIMIT 1").fetchone()
+    return row is not None
+
+
 def replace_player_stats(conn, game_id: str, rows: list[dict]):
     for r in rows:
         validate.sanitize_player_row_stats(game_id, r)

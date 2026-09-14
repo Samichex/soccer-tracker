@@ -67,3 +67,12 @@ SCHEDULE_DAYS_FORWARD = int(os.environ.get("SCHEDULE_DAYS_FORWARD", "65"))
 SCHEDULE_SYNC_INTERVAL_HOURS = int(os.environ.get("SCHEDULE_SYNC_INTERVAL_HOURS", "24"))
 
 SYNC_INTERVAL_MINUTES = int(os.environ.get("SYNC_INTERVAL_MINUTES", "30"))
+
+# When a game is currently live, poll far more often than the idle
+# SYNC_INTERVAL_MINUTES cadence so scores/clock update promptly.
+LIVE_SYNC_INTERVAL_SECONDS = int(os.environ.get("LIVE_SYNC_INTERVAL_SECONDS", "90"))
+
+# Circuit breaker: after this many consecutive sync failures (e.g. repeated
+# 429s from the shared public ncaa-api instance), fall back to the slow
+# idle interval regardless of live-game status, until a sync succeeds again.
+SYNC_FAILURE_BACKOFF_THRESHOLD = int(os.environ.get("SYNC_FAILURE_BACKOFF_THRESHOLD", "3"))
