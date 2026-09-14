@@ -371,7 +371,7 @@ def _match_badge(g: dict) -> tuple[str, str] | None:
     if g["status"] == "final":
         return "b-final", "FT"
     if g["status"] == "live":
-        label = reference_data.live_match_clock(g["current_period"], g["start_epoch"])
+        label = reference_data.period_short(g["current_period"])
         if label == "HT":
             return "b-ht", "HT"
         return "b-live", label

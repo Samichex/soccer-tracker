@@ -522,37 +522,6 @@ def period_short(value: str | None) -> str:
     return value.strip()[:3].upper()
 
 
-_HALF_MINUTES = 45
-_HALFTIME_BREAK_MINUTES = 15
-
-
-def live_match_clock(current_period: str | None, start_epoch: int | None, now: dt.datetime | None = None) -> str:
-    """Best-effort elapsed match minute for a live game's compact badge,
-    e.g. "34'" -- estimated from kickoff time, since the scoreboard feed's
-    current_period only ever gives coarse text ("1ST HALF"/"HALF"/"2ND
-    HALF"), never a running clock. Assumes a standard 45-minute half and a
-    15-minute halftime break, so this can drift during stoppage time or a
-    longer-than-usual halftime -- good enough for a compact badge, not
-    exact timing. Falls back to period_short's abbreviation for the
-    halftime break, unrecognized periods (e.g. overtime), or when
-    start_epoch is missing.
-    """
-    if not current_period:
-        return "LIVE"
-    v = current_period.strip().lower()
-    if start_epoch is None or not (v.startswith("1st half") or v.startswith("2nd half")):
-        return period_short(current_period)
-
-    now = now or dt.datetime.now(dt.timezone.utc)
-    elapsed_minutes = (now.timestamp() - start_epoch) / 60
-    if v.startswith("1st half"):
-        minute = max(1, min(round(elapsed_minutes), _HALF_MINUTES))
-    else:
-        second_half_elapsed = elapsed_minutes - _HALF_MINUTES - _HALFTIME_BREAK_MINUTES
-        minute = _HALF_MINUTES + max(1, min(round(second_half_elapsed), _HALF_MINUTES))
-    return f"{minute}'"
-
-
 def _format_local_time(local: dt.datetime, with_year: bool) -> str:
     # Avoid %-d/%-I (no-leading-zero) strftime codes: they're a Unix/glibc
     # extension and raise on Windows.
