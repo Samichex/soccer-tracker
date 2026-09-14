@@ -42,6 +42,7 @@ app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
+templates.env.globals["google_maps_url"] = reference_data.google_maps_url
 
 # Division switcher: only meaningful (and only rendered by _nav.html) once
 # more than one division is enabled. With ENABLED_DIVISIONS at its default
@@ -134,6 +135,9 @@ templates.env.filters["name_case"] = reference_data.title_case_name
 templates.env.filters["position_short"] = reference_data.position_short
 templates.env.filters["site_domain"] = reference_data.site_domain
 templates.env.filters["site_href"] = reference_data.site_href
+templates.env.filters["money"] = reference_data.format_money
+templates.env.filters["percent"] = reference_data.format_percent
+templates.env.filters["count"] = reference_data.format_count
 
 
 def _pretty_date(date_str: str | None) -> str:
@@ -426,6 +430,8 @@ def team_detail(request: Request, seo: str):
         rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
         current_rank, current_prev_rank = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
     team_city = reference_data.get_team_cities().get(seo) if team else None
+    team_state = reference_data.get_team_states().get(seo) if team else None
+    college_stats = reference_data.get_team_college_stats().get(seo) if team else None
     rows, record = standings.build_team_schedule(games, seo, team["conference"] if team else None)
     team_totals = standings.build_team_totals(roster, rows)
     if rank_history and rank_history[0]["record"] is None:
@@ -439,6 +445,8 @@ def team_detail(request: Request, seo: str):
             "request": request,
             "team": team,
             "team_city": team_city,
+            "team_state": team_state,
+            "college_stats": college_stats,
             "seo": seo,
             "rows": rows,
             "record": record,

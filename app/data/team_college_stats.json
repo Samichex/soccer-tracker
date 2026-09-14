@@ -1,0 +1,3754 @@
+{
+  "adrian": {
+    "admission_rate": 0.7253,
+    "grad_rate": 0.4842,
+    "net_price": 25368,
+    "student_size": 1604,
+    "tuition_in_state": 41684,
+    "tuition_out_of_state": 41684
+  },
+  "akron": {
+    "admission_rate": 0.5967,
+    "grad_rate": 0.5186,
+    "net_price": 13946,
+    "student_size": 9052,
+    "tuition_in_state": 13135,
+    "tuition_out_of_state": 20815
+  },
+  "albany-ny": {
+    "admission_rate": 0.691,
+    "grad_rate": 0.6145,
+    "net_price": 17167,
+    "student_size": 12564,
+    "tuition_in_state": 10866,
+    "tuition_out_of_state": 31256
+  },
+  "albion": {
+    "admission_rate": 0.807,
+    "grad_rate": 0.6159,
+    "net_price": 14301,
+    "student_size": 1300,
+    "tuition_in_state": 56950,
+    "tuition_out_of_state": 56950
+  },
+  "alma": {
+    "admission_rate": 0.5703,
+    "grad_rate": 0.6287,
+    "net_price": 20694,
+    "student_size": 1148,
+    "tuition_in_state": 49552,
+    "tuition_out_of_state": 49552
+  },
+  "alvernia": {
+    "admission_rate": 0.5806,
+    "grad_rate": 0.5553,
+    "net_price": 28138,
+    "student_size": 2152,
+    "tuition_in_state": 45000,
+    "tuition_out_of_state": 45000
+  },
+  "american": {
+    "admission_rate": 0.6196,
+    "grad_rate": 0.7549,
+    "net_price": 41943,
+    "student_size": 7266,
+    "tuition_in_state": 58771,
+    "tuition_out_of_state": 58771
+  },
+  "asbury": {
+    "admission_rate": 0.634,
+    "grad_rate": 0.6498,
+    "net_price": 21401,
+    "student_size": 1420,
+    "tuition_in_state": 33640,
+    "tuition_out_of_state": 33640
+  },
+  "aurora": {
+    "admission_rate": 0.8085,
+    "grad_rate": 0.6032,
+    "net_price": 18838,
+    "student_size": 3974,
+    "tuition_in_state": 29170,
+    "tuition_out_of_state": 29170
+  },
+  "averett": {
+    "admission_rate": 0.5659,
+    "grad_rate": 0.4814,
+    "net_price": 22925,
+    "student_size": 1231,
+    "tuition_in_state": 38550,
+    "tuition_out_of_state": 38550
+  },
+  "babson": {
+    "admission_rate": 0.1709,
+    "grad_rate": 0.9312,
+    "net_price": 40514,
+    "student_size": 2728,
+    "tuition_in_state": 57152,
+    "tuition_out_of_state": 57152
+  },
+  "bakersfield": {
+    "admission_rate": 0.9385,
+    "grad_rate": 0.498,
+    "net_price": 5652,
+    "student_size": 8577,
+    "tuition_in_state": 8090,
+    "tuition_out_of_state": 20690
+  },
+  "baldwin-wallace": {
+    "admission_rate": 0.757,
+    "grad_rate": 0.6677,
+    "net_price": 27603,
+    "student_size": 2842,
+    "tuition_in_state": 39832,
+    "tuition_out_of_state": 39832
+  },
+  "bard": {
+    "admission_rate": 0.5212,
+    "grad_rate": 0.6756,
+    "net_price": 34649,
+    "student_size": 2414,
+    "tuition_in_state": 66436,
+    "tuition_out_of_state": 66436
+  },
+  "barton": {
+    "admission_rate": 0.942,
+    "grad_rate": 0.4585,
+    "net_price": 23626,
+    "student_size": 982,
+    "tuition_in_state": 37250,
+    "tuition_out_of_state": 37250
+  },
+  "belhaven": {
+    "admission_rate": 0.4975,
+    "grad_rate": 0.4854,
+    "net_price": 15676,
+    "student_size": 1471,
+    "tuition_in_state": 30250,
+    "tuition_out_of_state": 30250
+  },
+  "bellarmine": {
+    "admission_rate": 0.8611,
+    "grad_rate": 0.6436,
+    "net_price": 21499,
+    "student_size": 2161,
+    "tuition_in_state": 48770,
+    "tuition_out_of_state": 48770
+  },
+  "belmont": {
+    "admission_rate": 0.9528,
+    "grad_rate": 0.7066,
+    "net_price": 33147,
+    "student_size": 7137,
+    "tuition_in_state": 42540,
+    "tuition_out_of_state": 42540
+  },
+  "beloit": {
+    "admission_rate": 0.6304,
+    "grad_rate": 0.7105,
+    "net_price": 21526,
+    "student_size": 926,
+    "tuition_in_state": 60886,
+    "tuition_out_of_state": 60886
+  },
+  "berea": {
+    "admission_rate": 0.1934,
+    "grad_rate": 0.5822,
+    "net_price": 6106,
+    "student_size": 1513,
+    "tuition_in_state": 51658,
+    "tuition_out_of_state": 51658
+  },
+  "berry": {
+    "admission_rate": 0.64,
+    "grad_rate": 0.6949,
+    "net_price": 22320,
+    "student_size": 2245,
+    "tuition_in_state": 41686,
+    "tuition_out_of_state": 41686
+  },
+  "bethany-lutheran": {
+    "admission_rate": 0.3897,
+    "grad_rate": 0.5486,
+    "net_price": 20148,
+    "student_size": 669,
+    "tuition_in_state": 31360,
+    "tuition_out_of_state": 31360
+  },
+  "binghamton": {
+    "admission_rate": 0.3861,
+    "grad_rate": 0.8162,
+    "net_price": 21620,
+    "student_size": 14655,
+    "tuition_in_state": 10567,
+    "tuition_out_of_state": 30447
+  },
+  "blackburn": {
+    "admission_rate": 0.6319,
+    "grad_rate": 0.5749,
+    "net_price": 18460,
+    "student_size": 471,
+    "tuition_in_state": 28149,
+    "tuition_out_of_state": 28149
+  },
+  "bluffton": {
+    "admission_rate": 0.6723,
+    "grad_rate": 0.5294,
+    "net_price": 19943,
+    "student_size": 582,
+    "tuition_in_state": 37362,
+    "tuition_out_of_state": 37362
+  },
+  "bob-jones": {
+    "grad_rate": 0.6475,
+    "net_price": 16641,
+    "student_size": 2005,
+    "tuition_in_state": 24470,
+    "tuition_out_of_state": 24470
+  },
+  "boston-college": {
+    "admission_rate": 0.1643,
+    "grad_rate": 0.9083,
+    "net_price": 41704,
+    "student_size": 10085,
+    "tuition_in_state": 70702,
+    "tuition_out_of_state": 70702
+  },
+  "boston-u": {
+    "admission_rate": 0.1111,
+    "grad_rate": 0.8866,
+    "net_price": 24402,
+    "student_size": 18248,
+    "tuition_in_state": 68102,
+    "tuition_out_of_state": 68102
+  },
+  "bowling-green": {
+    "admission_rate": 0.8096,
+    "grad_rate": 0.6373,
+    "net_price": 24022,
+    "student_size": 12812,
+    "tuition_in_state": 14460,
+    "tuition_out_of_state": 22448
+  },
+  "bradley": {
+    "admission_rate": 0.7676,
+    "grad_rate": 0.7617,
+    "net_price": 22719,
+    "student_size": 3574,
+    "tuition_in_state": 42160,
+    "tuition_out_of_state": 42160
+  },
+  "brandeis": {
+    "admission_rate": 0.405,
+    "grad_rate": 0.8603,
+    "net_price": 35736,
+    "student_size": 3618,
+    "tuition_in_state": 68080,
+    "tuition_out_of_state": 68080
+  },
+  "brevard": {
+    "admission_rate": 0.4216,
+    "grad_rate": 0.4884,
+    "net_price": 23509,
+    "student_size": 815,
+    "tuition_in_state": 32280,
+    "tuition_out_of_state": 32280
+  },
+  "bridgewater-st": {
+    "admission_rate": 0.8781,
+    "grad_rate": 0.5341,
+    "net_price": 16383,
+    "student_size": 7829,
+    "tuition_in_state": 11808,
+    "tuition_out_of_state": 17948
+  },
+  "brown": {
+    "admission_rate": 0.0539,
+    "grad_rate": 0.9569,
+    "net_price": 25184,
+    "student_size": 7226,
+    "tuition_in_state": 71412,
+    "tuition_out_of_state": 71412
+  },
+  "bryant": {
+    "admission_rate": 0.6546,
+    "grad_rate": 0.7975,
+    "net_price": 41219,
+    "student_size": 3194,
+    "tuition_in_state": 52677,
+    "tuition_out_of_state": 52677
+  },
+  "bucknell": {
+    "admission_rate": 0.2893,
+    "grad_rate": 0.8632,
+    "net_price": 40766,
+    "student_size": 3876,
+    "tuition_in_state": 67812,
+    "tuition_out_of_state": 67812
+  },
+  "buena-vista": {
+    "admission_rate": 0.7761,
+    "grad_rate": 0.6169,
+    "net_price": 18846,
+    "student_size": 1366,
+    "tuition_in_state": 41798,
+    "tuition_out_of_state": 41798
+  },
+  "butler": {
+    "admission_rate": 0.8508,
+    "grad_rate": 0.8038,
+    "net_price": 36041,
+    "student_size": 4317,
+    "tuition_in_state": 47560,
+    "tuition_out_of_state": 47560
+  },
+  "cairn": {
+    "admission_rate": 0.8817,
+    "grad_rate": 0.5968,
+    "net_price": 27642,
+    "student_size": 775,
+    "tuition_in_state": 34009,
+    "tuition_out_of_state": 34009
+  },
+  "cal-lutheran": {
+    "admission_rate": 0.7567,
+    "grad_rate": 0.696,
+    "net_price": 30109,
+    "student_size": 2296,
+    "tuition_in_state": 52560,
+    "tuition_out_of_state": 52560
+  },
+  "cal-poly": {
+    "admission_rate": 0.3132,
+    "grad_rate": 0.864,
+    "net_price": 16665,
+    "student_size": 21996,
+    "tuition_in_state": 13596,
+    "tuition_out_of_state": 34665
+  },
+  "cal-st-fullerton": {
+    "admission_rate": 0.9052,
+    "grad_rate": 0.7018,
+    "net_price": 6555,
+    "student_size": 38546,
+    "tuition_in_state": 7470,
+    "tuition_out_of_state": 20070
+  },
+  "cal-st-northridge": {
+    "admission_rate": 0.9345,
+    "grad_rate": 0.5695,
+    "net_price": 7021,
+    "student_size": 32691,
+    "tuition_in_state": 7458,
+    "tuition_out_of_state": 20058
+  },
+  "california": {
+    "admission_rate": 0.1098,
+    "grad_rate": 0.9284,
+    "net_price": 13481,
+    "student_size": 33068,
+    "tuition_in_state": 16347,
+    "tuition_out_of_state": 50547
+  },
+  "california-baptist": {
+    "admission_rate": 0.8488,
+    "grad_rate": 0.6188,
+    "net_price": 26285,
+    "student_size": 8179,
+    "tuition_in_state": 41228,
+    "tuition_out_of_state": 41228
+  },
+  "caltech": {
+    "admission_rate": 0.0257,
+    "grad_rate": 0.9437,
+    "net_price": 16075,
+    "student_size": 987,
+    "tuition_in_state": 65898,
+    "tuition_out_of_state": 65898
+  },
+  "calvin": {
+    "admission_rate": 0.7091,
+    "grad_rate": 0.7406,
+    "net_price": 22992,
+    "student_size": 3193,
+    "tuition_in_state": 39350,
+    "tuition_out_of_state": 39350
+  },
+  "campbell": {
+    "admission_rate": 0.8718,
+    "grad_rate": 0.6096,
+    "net_price": 24516,
+    "student_size": 2680,
+    "tuition_in_state": 41600,
+    "tuition_out_of_state": 41600
+  },
+  "canisius": {
+    "admission_rate": 0.7236,
+    "grad_rate": 0.6639,
+    "net_price": 17940,
+    "student_size": 1685,
+    "tuition_in_state": 34500,
+    "tuition_out_of_state": 34500
+  },
+  "carleton": {
+    "admission_rate": 0.2041,
+    "grad_rate": 0.896,
+    "net_price": 25407,
+    "student_size": 2086,
+    "tuition_in_state": 68892,
+    "tuition_out_of_state": 68892
+  },
+  "carlow": {
+    "admission_rate": 0.8695,
+    "grad_rate": 0.5992,
+    "net_price": 20786,
+    "student_size": 1348,
+    "tuition_in_state": 35874,
+    "tuition_out_of_state": 35874
+  },
+  "carnegie-mellon": {
+    "admission_rate": 0.1166,
+    "grad_rate": 0.9413,
+    "net_price": 31944,
+    "student_size": 7304,
+    "tuition_in_state": 66246,
+    "tuition_out_of_state": 66246
+  },
+  "carthage": {
+    "admission_rate": 0.8706,
+    "grad_rate": 0.6426,
+    "net_price": 26565,
+    "student_size": 2660,
+    "tuition_in_state": 38750,
+    "tuition_out_of_state": 38750
+  },
+  "case": {
+    "admission_rate": 0.3654,
+    "grad_rate": 0.8717,
+    "net_price": 41190,
+    "student_size": 6437,
+    "tuition_in_state": 66608,
+    "tuition_out_of_state": 66608
+  },
+  "central-ark": {
+    "admission_rate": 0.8949,
+    "grad_rate": 0.5353,
+    "net_price": 16511,
+    "student_size": 7762,
+    "tuition_in_state": 10523,
+    "tuition_out_of_state": 18023
+  },
+  "central-baptist": {
+    "admission_rate": 0.6346,
+    "grad_rate": 0.3411,
+    "net_price": 12287,
+    "student_size": 484,
+    "tuition_in_state": 21330,
+    "tuition_out_of_state": 21330
+  },
+  "central-conn-st": {
+    "admission_rate": 0.7333,
+    "grad_rate": 0.4844,
+    "net_price": 16857,
+    "student_size": 7822,
+    "tuition_in_state": 13050,
+    "tuition_out_of_state": 16550
+  },
+  "centre": {
+    "admission_rate": 0.5436,
+    "grad_rate": 0.8067,
+    "net_price": 20781,
+    "student_size": 1400,
+    "tuition_in_state": 52820,
+    "tuition_out_of_state": 52820
+  },
+  "chapman": {
+    "admission_rate": 0.6543,
+    "grad_rate": 0.8188,
+    "net_price": 46555,
+    "student_size": 7478,
+    "tuition_in_state": 64984,
+    "tuition_out_of_state": 64984
+  },
+  "charlotte": {
+    "admission_rate": 0.796,
+    "grad_rate": 0.6897,
+    "net_price": 15435,
+    "student_size": 24453,
+    "tuition_in_state": 7239,
+    "tuition_out_of_state": 22492
+  },
+  "chatham": {
+    "admission_rate": 0.6196,
+    "grad_rate": 0.6306,
+    "net_price": 29954,
+    "student_size": 1232,
+    "tuition_in_state": 44626,
+    "tuition_out_of_state": 44626
+  },
+  "chicago": {
+    "admission_rate": 0.0448,
+    "grad_rate": 0.9585,
+    "net_price": 14860,
+    "student_size": 7569,
+    "tuition_in_state": 70662,
+    "tuition_out_of_state": 70662
+  },
+  "chicago-st": {
+    "admission_rate": 0.4326,
+    "grad_rate": 0.1549,
+    "net_price": 12335,
+    "student_size": 1384,
+    "tuition_in_state": 12754,
+    "tuition_out_of_state": 12754
+  },
+  "clarkson": {
+    "admission_rate": 0.7736,
+    "grad_rate": 0.7491,
+    "net_price": 30305,
+    "student_size": 2196,
+    "tuition_in_state": 59398,
+    "tuition_out_of_state": 59398
+  },
+  "clemson": {
+    "admission_rate": 0.3834,
+    "grad_rate": 0.8656,
+    "net_price": 22253,
+    "student_size": 23300,
+    "tuition_in_state": 15554,
+    "tuition_out_of_state": 40866
+  },
+  "cleveland-st": {
+    "admission_rate": 0.913,
+    "grad_rate": 0.5057,
+    "net_price": 14764,
+    "student_size": 8969,
+    "tuition_in_state": 12988,
+    "tuition_out_of_state": 18510
+  },
+  "coastal-caro": {
+    "admission_rate": 0.7527,
+    "grad_rate": 0.4846,
+    "net_price": 13966,
+    "student_size": 10377,
+    "tuition_in_state": 11640,
+    "tuition_out_of_state": 29628
+  },
+  "coe": {
+    "admission_rate": 0.6404,
+    "grad_rate": 0.659,
+    "net_price": 18745,
+    "student_size": 1164,
+    "tuition_in_state": 54666,
+    "tuition_out_of_state": 54666
+  },
+  "colby-sawyer": {
+    "admission_rate": 0.8008,
+    "grad_rate": 0.5745,
+    "net_price": 27431,
+    "student_size": 771,
+    "tuition_in_state": 19125,
+    "tuition_out_of_state": 19125
+  },
+  "colgate": {
+    "admission_rate": 0.1388,
+    "grad_rate": 0.9117,
+    "net_price": 28786,
+    "student_size": 3180,
+    "tuition_in_state": 70306,
+    "tuition_out_of_state": 70306
+  },
+  "colorado-col": {
+    "admission_rate": 0.1847,
+    "grad_rate": 0.8766,
+    "net_price": 33375,
+    "student_size": 2014,
+    "tuition_in_state": 70734,
+    "tuition_out_of_state": 70734
+  },
+  "concordia-chicago": {
+    "admission_rate": 0.9279,
+    "grad_rate": 0.3646,
+    "net_price": 18436,
+    "student_size": 1323,
+    "tuition_in_state": 37488,
+    "tuition_out_of_state": 37488
+  },
+  "concordia-mhead": {
+    "admission_rate": 0.6265,
+    "grad_rate": 0.6107,
+    "net_price": 24902,
+    "student_size": 1829,
+    "tuition_in_state": 31170,
+    "tuition_out_of_state": 31170
+  },
+  "concordia-tx": {
+    "admission_rate": 0.9125,
+    "grad_rate": 0.446,
+    "net_price": 23131,
+    "student_size": 1185,
+    "tuition_in_state": 23500,
+    "tuition_out_of_state": 23500
+  },
+  "concordia-wi": {
+    "admission_rate": 0.782,
+    "grad_rate": 0.6835,
+    "net_price": 36201,
+    "student_size": 2197,
+    "tuition_in_state": 35470,
+    "tuition_out_of_state": 35470
+  },
+  "connecticut-col": {
+    "admission_rate": 0.3704,
+    "grad_rate": 0.8205,
+    "net_price": 36175,
+    "student_size": 1937,
+    "tuition_in_state": 67242,
+    "tuition_out_of_state": 67242
+  },
+  "corban": {
+    "admission_rate": 0.939,
+    "grad_rate": 0.6059,
+    "net_price": 28035,
+    "student_size": 678,
+    "tuition_in_state": 40280,
+    "tuition_out_of_state": 40280
+  },
+  "cornell": {
+    "admission_rate": 0.0876,
+    "grad_rate": 0.9538,
+    "net_price": 28690,
+    "student_size": 15995,
+    "tuition_in_state": 69314,
+    "tuition_out_of_state": 69314
+  },
+  "cornell-college": {
+    "admission_rate": 0.799,
+    "grad_rate": 0.6182,
+    "net_price": 23634,
+    "student_size": 1086,
+    "tuition_in_state": 52660,
+    "tuition_out_of_state": 52660
+  },
+  "covenant": {
+    "admission_rate": 0.8651,
+    "grad_rate": 0.7149,
+    "net_price": 26265,
+    "student_size": 939,
+    "tuition_in_state": 42040,
+    "tuition_out_of_state": 42040
+  },
+  "creighton": {
+    "admission_rate": 0.7975,
+    "grad_rate": 0.8336,
+    "net_price": 31568,
+    "student_size": 4348,
+    "tuition_in_state": 48856,
+    "tuition_out_of_state": 48856
+  },
+  "dallas": {
+    "admission_rate": 0.5344,
+    "grad_rate": 0.7307,
+    "net_price": 22610,
+    "student_size": 1403,
+    "tuition_in_state": 53930,
+    "tuition_out_of_state": 53930
+  },
+  "dartmouth": {
+    "admission_rate": 0.054,
+    "grad_rate": 0.9554,
+    "net_price": 29519,
+    "student_size": 4541,
+    "tuition_in_state": 68268,
+    "tuition_out_of_state": 68268
+  },
+  "davidson": {
+    "admission_rate": 0.1337,
+    "grad_rate": 0.9107,
+    "net_price": 17379,
+    "student_size": 1867,
+    "tuition_in_state": 64410,
+    "tuition_out_of_state": 64410
+  },
+  "dayton": {
+    "admission_rate": 0.6545,
+    "grad_rate": 0.8018,
+    "net_price": 29533,
+    "student_size": 7682,
+    "tuition_in_state": 49140,
+    "tuition_out_of_state": 49140
+  },
+  "dean-college": {
+    "admission_rate": 0.7371,
+    "grad_rate": 0.5359,
+    "net_price": 30684,
+    "student_size": 1089,
+    "tuition_in_state": 46526,
+    "tuition_out_of_state": 46526
+  },
+  "defiance": {
+    "admission_rate": 0.4755,
+    "grad_rate": 0.3057,
+    "net_price": 26337,
+    "student_size": 499,
+    "tuition_in_state": 29320,
+    "tuition_out_of_state": 29320
+  },
+  "delaware": {
+    "admission_rate": 0.706,
+    "grad_rate": 0.8055,
+    "net_price": 17799,
+    "student_size": 19071,
+    "tuition_in_state": 16810,
+    "tuition_out_of_state": 41400
+  },
+  "delaware-valley": {
+    "admission_rate": 0.9321,
+    "grad_rate": 0.5591,
+    "net_price": 28278,
+    "student_size": 1628,
+    "tuition_in_state": 44850,
+    "tuition_out_of_state": 44850
+  },
+  "denison": {
+    "admission_rate": 0.1739,
+    "grad_rate": 0.789,
+    "net_price": 40007,
+    "student_size": 2380,
+    "tuition_in_state": 67000,
+    "tuition_out_of_state": 67000
+  },
+  "denver": {
+    "admission_rate": 0.7781,
+    "grad_rate": 0.756,
+    "net_price": 36131,
+    "student_size": 6025,
+    "tuition_in_state": 61398,
+    "tuition_out_of_state": 61398
+  },
+  "depaul": {
+    "admission_rate": 0.7589,
+    "grad_rate": 0.678,
+    "net_price": 30902,
+    "student_size": 14090,
+    "tuition_in_state": 45999,
+    "tuition_out_of_state": 45999
+  },
+  "depauw": {
+    "admission_rate": 0.5719,
+    "grad_rate": 0.7469,
+    "net_price": 22264,
+    "student_size": 1905,
+    "tuition_in_state": 59070,
+    "tuition_out_of_state": 59070
+  },
+  "desales": {
+    "admission_rate": 0.7709,
+    "grad_rate": 0.722,
+    "net_price": 31643,
+    "student_size": 2128,
+    "tuition_in_state": 46800,
+    "tuition_out_of_state": 46800
+  },
+  "detroit": {
+    "admission_rate": 0.7542,
+    "grad_rate": 0.672,
+    "net_price": 15232,
+    "student_size": 2438,
+    "tuition_in_state": 32946,
+    "tuition_out_of_state": 32946
+  },
+  "dickinson": {
+    "admission_rate": 0.4209,
+    "grad_rate": 0.7978,
+    "net_price": 37607,
+    "student_size": 2273,
+    "tuition_in_state": 65650,
+    "tuition_out_of_state": 65650
+  },
+  "drake": {
+    "admission_rate": 0.6385,
+    "grad_rate": 0.7403,
+    "net_price": 29127,
+    "student_size": 2543,
+    "tuition_in_state": 52130,
+    "tuition_out_of_state": 52130
+  },
+  "drew": {
+    "admission_rate": 0.6783,
+    "grad_rate": 0.7048,
+    "net_price": 24280,
+    "student_size": 1533,
+    "tuition_in_state": 47100,
+    "tuition_out_of_state": 47100
+  },
+  "drexel": {
+    "admission_rate": 0.7944,
+    "grad_rate": 0.7816,
+    "net_price": 38509,
+    "student_size": 13233,
+    "tuition_in_state": 62412,
+    "tuition_out_of_state": 62412
+  },
+  "dubuque": {
+    "admission_rate": 0.8863,
+    "grad_rate": 0.4008,
+    "net_price": 23386,
+    "student_size": 1440,
+    "tuition_in_state": 42095,
+    "tuition_out_of_state": 42095
+  },
+  "duke": {
+    "admission_rate": 0.0571,
+    "grad_rate": 0.9678,
+    "net_price": 29612,
+    "student_size": 6442,
+    "tuition_in_state": 68758,
+    "tuition_out_of_state": 68758
+  },
+  "duquesne": {
+    "admission_rate": 0.8356,
+    "grad_rate": 0.7749,
+    "net_price": 37730,
+    "student_size": 5350,
+    "tuition_in_state": 48986,
+    "tuition_out_of_state": 48986
+  },
+  "earlham": {
+    "admission_rate": 0.7311,
+    "grad_rate": 0.69,
+    "net_price": 24714,
+    "student_size": 670,
+    "tuition_in_state": 53930,
+    "tuition_out_of_state": 53930
+  },
+  "east-tenn-st": {
+    "admission_rate": 0.8619,
+    "grad_rate": 0.5321,
+    "net_price": 15983,
+    "student_size": 10004,
+    "tuition_in_state": 10472,
+    "tuition_out_of_state": 14522
+  },
+  "east-tex-baptist": {
+    "admission_rate": 0.5776,
+    "grad_rate": 0.4712,
+    "net_price": 23911,
+    "student_size": 1352,
+    "tuition_in_state": 30680,
+    "tuition_out_of_state": 30680
+  },
+  "eastern": {
+    "admission_rate": 0.9077,
+    "grad_rate": 0.54,
+    "net_price": 26662,
+    "student_size": 2404,
+    "tuition_in_state": 38400,
+    "tuition_out_of_state": 38400
+  },
+  "eastern-conn-st": {
+    "admission_rate": 0.8298,
+    "grad_rate": 0.5752,
+    "net_price": 21067,
+    "student_size": 3418,
+    "tuition_in_state": 13928,
+    "tuition_out_of_state": 17428
+  },
+  "eastern-ill": {
+    "admission_rate": 0.6535,
+    "grad_rate": 0.4736,
+    "net_price": 12786,
+    "student_size": 4188,
+    "tuition_in_state": 13679,
+    "tuition_out_of_state": 16217
+  },
+  "edgewood": {
+    "admission_rate": 0.7573,
+    "grad_rate": 0.6024,
+    "net_price": 26113,
+    "student_size": 1107,
+    "tuition_in_state": 35860,
+    "tuition_out_of_state": 35860
+  },
+  "elizabethtown": {
+    "admission_rate": 0.7787,
+    "grad_rate": 0.7617,
+    "net_price": 26598,
+    "student_size": 1868,
+    "tuition_in_state": 37950,
+    "tuition_out_of_state": 37950
+  },
+  "elmhurst": {
+    "admission_rate": 0.7364,
+    "grad_rate": 0.7,
+    "net_price": 24185,
+    "student_size": 3006,
+    "tuition_in_state": 42955,
+    "tuition_out_of_state": 42955
+  },
+  "elmira": {
+    "admission_rate": 0.7696,
+    "grad_rate": 0.6471,
+    "net_price": 22386,
+    "student_size": 708,
+    "tuition_in_state": 38976,
+    "tuition_out_of_state": 38976
+  },
+  "elon": {
+    "admission_rate": 0.6635,
+    "grad_rate": 0.8404,
+    "net_price": 41555,
+    "student_size": 6452,
+    "tuition_in_state": 46958,
+    "tuition_out_of_state": 46958
+  },
+  "emerson": {
+    "admission_rate": 0.5131,
+    "grad_rate": 0.7711,
+    "net_price": 49180,
+    "student_size": 3870,
+    "tuition_in_state": 57056,
+    "tuition_out_of_state": 57056
+  },
+  "emory": {
+    "admission_rate": 0.1065,
+    "grad_rate": 0.9109,
+    "net_price": 22585,
+    "student_size": 7298,
+    "tuition_in_state": 64280,
+    "tuition_out_of_state": 64280
+  },
+  "eureka": {
+    "admission_rate": 0.8499,
+    "grad_rate": 0.4161,
+    "net_price": 17349,
+    "student_size": 522,
+    "tuition_in_state": 29096,
+    "tuition_out_of_state": 29096
+  },
+  "evansville": {
+    "admission_rate": 0.776,
+    "grad_rate": 0.6446,
+    "net_price": 18499,
+    "student_size": 1539,
+    "tuition_in_state": 44172,
+    "tuition_out_of_state": 44172
+  },
+  "fairfield": {
+    "admission_rate": 0.3329,
+    "grad_rate": 0.843,
+    "net_price": 48095,
+    "student_size": 5373,
+    "tuition_in_state": 58350,
+    "tuition_out_of_state": 58350
+  },
+  "farmingdale-st": {
+    "admission_rate": 0.6329,
+    "grad_rate": 0.5278,
+    "net_price": 10867,
+    "student_size": 9552,
+    "tuition_in_state": 8626,
+    "tuition_out_of_state": 18536
+  },
+  "fdu": {
+    "admission_rate": 0.9071,
+    "grad_rate": 0.5332,
+    "net_price": 15404,
+    "student_size": 2627,
+    "tuition_in_state": 38004,
+    "tuition_out_of_state": 38004
+  },
+  "ferrum": {
+    "admission_rate": 0.8898,
+    "grad_rate": 0.319,
+    "net_price": 20082,
+    "student_size": 699,
+    "tuition_in_state": 28520,
+    "tuition_out_of_state": 28520
+  },
+  "fgcu": {
+    "admission_rate": 0.6344,
+    "grad_rate": 0.574,
+    "net_price": 12568,
+    "student_size": 13874,
+    "tuition_in_state": 6118,
+    "tuition_out_of_state": 25162
+  },
+  "fisher": {
+    "admission_rate": 0.7068,
+    "grad_rate": 0.2775,
+    "net_price": 26649,
+    "student_size": 1167,
+    "tuition_in_state": 35689,
+    "tuition_out_of_state": 35689
+  },
+  "fiu": {
+    "admission_rate": 0.5466,
+    "grad_rate": 0.7443,
+    "net_price": 9288,
+    "student_size": 39508,
+    "tuition_in_state": 6565,
+    "tuition_out_of_state": 18964
+  },
+  "fla-atlantic": {
+    "admission_rate": 0.6613,
+    "grad_rate": 0.6257,
+    "net_price": 8752,
+    "student_size": 23757,
+    "tuition_in_state": 4879,
+    "tuition_out_of_state": 17324
+  },
+  "fordham": {
+    "admission_rate": 0.5931,
+    "grad_rate": 0.8191,
+    "net_price": 44338,
+    "student_size": 10512,
+    "tuition_in_state": 64915,
+    "tuition_out_of_state": 64915
+  },
+  "framingham-st": {
+    "admission_rate": 0.8361,
+    "grad_rate": 0.478,
+    "net_price": 16114,
+    "student_size": 2566,
+    "tuition_in_state": 11920,
+    "tuition_out_of_state": 18000
+  },
+  "franklin": {
+    "admission_rate": 0.698,
+    "grad_rate": 0.603,
+    "net_price": 22855,
+    "student_size": 900,
+    "tuition_in_state": 38710,
+    "tuition_out_of_state": 38710
+  },
+  "furman": {
+    "admission_rate": 0.4295,
+    "grad_rate": 0.7876,
+    "net_price": 30308,
+    "student_size": 2379,
+    "tuition_in_state": 59770,
+    "tuition_out_of_state": 59770
+  },
+  "ga-southern": {
+    "admission_rate": 0.8789,
+    "grad_rate": 0.549,
+    "net_price": 15267,
+    "student_size": 21790,
+    "tuition_in_state": 6022,
+    "tuition_out_of_state": 17734
+  },
+  "gallaudet": {
+    "admission_rate": 0.5806,
+    "grad_rate": 0.4726,
+    "net_price": 15845,
+    "student_size": 812,
+    "tuition_in_state": 19654,
+    "tuition_out_of_state": 19654
+  },
+  "gardner-webb": {
+    "admission_rate": 0.7721,
+    "grad_rate": 0.5539,
+    "net_price": 17674,
+    "student_size": 1856,
+    "tuition_in_state": 34760,
+    "tuition_out_of_state": 34760
+  },
+  "george-fox": {
+    "admission_rate": 0.9351,
+    "grad_rate": 0.7196,
+    "net_price": 31679,
+    "student_size": 2699,
+    "tuition_in_state": 42750,
+    "tuition_out_of_state": 42750
+  },
+  "george-mason": {
+    "admission_rate": 0.8748,
+    "grad_rate": 0.6784,
+    "net_price": 17915,
+    "student_size": 27752,
+    "tuition_in_state": 14220,
+    "tuition_out_of_state": 38688
+  },
+  "george-washington": {
+    "admission_rate": 0.4709,
+    "grad_rate": 0.8398,
+    "net_price": 36586,
+    "student_size": 11182,
+    "tuition_in_state": 67710,
+    "tuition_out_of_state": 67710
+  },
+  "georgetown": {
+    "admission_rate": 0.1291,
+    "grad_rate": 0.9481,
+    "net_price": 40815,
+    "student_size": 7569,
+    "tuition_in_state": 68017,
+    "tuition_out_of_state": 68017
+  },
+  "georgia-st": {
+    "admission_rate": 0.5544,
+    "grad_rate": 0.5306,
+    "net_price": 15931,
+    "student_size": 26623,
+    "tuition_in_state": 8664,
+    "tuition_out_of_state": 24840
+  },
+  "gonzaga": {
+    "admission_rate": 0.8169,
+    "grad_rate": 0.8629,
+    "net_price": 35119,
+    "student_size": 5198,
+    "tuition_in_state": 55480,
+    "tuition_out_of_state": 55480
+  },
+  "gordon": {
+    "admission_rate": 0.6923,
+    "grad_rate": 0.6854,
+    "net_price": 24883,
+    "student_size": 1278,
+    "tuition_in_state": 30700,
+    "tuition_out_of_state": 30700
+  },
+  "goucher": {
+    "admission_rate": 0.7771,
+    "grad_rate": 0.5734,
+    "net_price": 22470,
+    "student_size": 964,
+    "tuition_in_state": 53350,
+    "tuition_out_of_state": 53350
+  },
+  "grand-canyon": {
+    "admission_rate": 0.7891,
+    "grad_rate": 0.4346,
+    "net_price": 22472,
+    "student_size": 73371,
+    "tuition_in_state": 17850,
+    "tuition_out_of_state": 17850
+  },
+  "green-bay": {
+    "admission_rate": 0.8859,
+    "grad_rate": 0.4822,
+    "net_price": 13369,
+    "student_size": 6341,
+    "tuition_in_state": 8700,
+    "tuition_out_of_state": 17288
+  },
+  "greensboro": {
+    "admission_rate": 0.7014,
+    "grad_rate": 0.462,
+    "net_price": 17882,
+    "student_size": 708,
+    "tuition_in_state": 21000,
+    "tuition_out_of_state": 21000
+  },
+  "greenville": {
+    "admission_rate": 0.975,
+    "grad_rate": 0.3982,
+    "net_price": 19533,
+    "student_size": 955,
+    "tuition_in_state": 32200,
+    "tuition_out_of_state": 32200
+  },
+  "grinnell": {
+    "admission_rate": 0.1451,
+    "grad_rate": 0.8812,
+    "net_price": 17648,
+    "student_size": 1729,
+    "tuition_in_state": 68106,
+    "tuition_out_of_state": 68106
+  },
+  "grove-city": {
+    "admission_rate": 0.7232,
+    "grad_rate": 0.8317,
+    "student_size": 2216,
+    "tuition_in_state": 21700,
+    "tuition_out_of_state": 21700
+  },
+  "guilford": {
+    "admission_rate": 0.8,
+    "grad_rate": 0.4581,
+    "net_price": 22270,
+    "student_size": 1001,
+    "tuition_in_state": 41362,
+    "tuition_out_of_state": 41362
+  },
+  "gust-adolphus": {
+    "admission_rate": 0.6099,
+    "grad_rate": 0.7665,
+    "net_price": 22900,
+    "student_size": 1878,
+    "tuition_in_state": 56076,
+    "tuition_out_of_state": 56076
+  },
+  "gwynedd-mercy": {
+    "admission_rate": 0.8963,
+    "grad_rate": 0.5688,
+    "net_price": 27483,
+    "student_size": 1067,
+    "tuition_in_state": 40122,
+    "tuition_out_of_state": 40122
+  },
+  "hamline": {
+    "admission_rate": 0.8763,
+    "grad_rate": 0.6045,
+    "net_price": 20744,
+    "student_size": 1776,
+    "tuition_in_state": 50004,
+    "tuition_out_of_state": 50004
+  },
+  "hampden-sydney": {
+    "admission_rate": 0.4092,
+    "grad_rate": 0.6217,
+    "net_price": 22400,
+    "student_size": 946,
+    "tuition_in_state": 54550,
+    "tuition_out_of_state": 54550
+  },
+  "hanover": {
+    "admission_rate": 0.837,
+    "grad_rate": 0.6713,
+    "net_price": 21829,
+    "student_size": 1031,
+    "tuition_in_state": 44638,
+    "tuition_out_of_state": 44638
+  },
+  "hardin-simmons": {
+    "admission_rate": 0.9,
+    "grad_rate": 0.4604,
+    "net_price": 19555,
+    "student_size": 1283,
+    "tuition_in_state": 32960,
+    "tuition_out_of_state": 32960
+  },
+  "hartwick": {
+    "admission_rate": 0.696,
+    "grad_rate": 0.5332,
+    "net_price": 31320,
+    "student_size": 1087,
+    "tuition_in_state": 54962,
+    "tuition_out_of_state": 54962
+  },
+  "harvard": {
+    "admission_rate": 0.0365,
+    "grad_rate": 0.9758,
+    "net_price": 19066,
+    "student_size": 7601,
+    "tuition_in_state": 61676,
+    "tuition_out_of_state": 61676
+  },
+  "heidelberg": {
+    "admission_rate": 0.8579,
+    "grad_rate": 0.5198,
+    "net_price": 20556,
+    "student_size": 915,
+    "tuition_in_state": 33650,
+    "tuition_out_of_state": 33650
+  },
+  "hendrix": {
+    "admission_rate": 0.5565,
+    "grad_rate": 0.7235,
+    "net_price": 24149,
+    "student_size": 1100,
+    "tuition_in_state": 38200,
+    "tuition_out_of_state": 38200
+  },
+  "high-point": {
+    "admission_rate": 0.7531,
+    "grad_rate": 0.737,
+    "net_price": 38707,
+    "student_size": 5129,
+    "tuition_in_state": 45312,
+    "tuition_out_of_state": 45312
+  },
+  "hilbert": {
+    "admission_rate": 0.972,
+    "grad_rate": 0.5631,
+    "net_price": 22723,
+    "student_size": 921,
+    "tuition_in_state": 33740,
+    "tuition_out_of_state": 33740
+  },
+  "hiram": {
+    "admission_rate": 0.9353,
+    "grad_rate": 0.5451,
+    "net_price": 21058,
+    "student_size": 777,
+    "tuition_in_state": 27600,
+    "tuition_out_of_state": 27600
+  },
+  "hofstra": {
+    "admission_rate": 0.6808,
+    "grad_rate": 0.6854,
+    "net_price": 34176,
+    "student_size": 6488,
+    "tuition_in_state": 57660,
+    "tuition_out_of_state": 57660
+  },
+  "holy-cross": {
+    "admission_rate": 0.1761,
+    "grad_rate": 0.8733,
+    "net_price": 38782,
+    "student_size": 3106,
+    "tuition_in_state": 64500,
+    "tuition_out_of_state": 64500
+  },
+  "hood": {
+    "admission_rate": 0.7777,
+    "grad_rate": 0.569,
+    "net_price": 20873,
+    "student_size": 1194,
+    "tuition_in_state": 47700,
+    "tuition_out_of_state": 47700
+  },
+  "hope": {
+    "admission_rate": 0.7924,
+    "grad_rate": 0.7995,
+    "net_price": 27182,
+    "student_size": 3288,
+    "tuition_in_state": 41970,
+    "tuition_out_of_state": 41970
+  },
+  "houston-christian": {
+    "admission_rate": 0.8444,
+    "grad_rate": 0.4912,
+    "net_price": 20629,
+    "student_size": 2886,
+    "tuition_in_state": 39430,
+    "tuition_out_of_state": 39430
+  },
+  "howard": {
+    "admission_rate": 0.4134,
+    "grad_rate": 0.6996,
+    "net_price": 50539,
+    "student_size": 10108,
+    "tuition_in_state": 35810,
+    "tuition_out_of_state": 35810
+  },
+  "howard-payne": {
+    "admission_rate": 0.6737,
+    "grad_rate": 0.2798,
+    "net_price": 23627,
+    "student_size": 713,
+    "tuition_in_state": 34982,
+    "tuition_out_of_state": 34982
+  },
+  "huntingdon": {
+    "admission_rate": 0.6949,
+    "grad_rate": 0.4798,
+    "net_price": 22566,
+    "student_size": 879,
+    "tuition_in_state": 29070,
+    "tuition_out_of_state": 29070
+  },
+  "husson": {
+    "admission_rate": 0.8095,
+    "grad_rate": 0.5935,
+    "net_price": 21005,
+    "student_size": 2618,
+    "tuition_in_state": 23304,
+    "tuition_out_of_state": 23304
+  },
+  "ill-chicago": {
+    "admission_rate": 0.7735,
+    "grad_rate": 0.6162,
+    "net_price": 10974,
+    "student_size": 22170,
+    "tuition_in_state": 14338,
+    "tuition_out_of_state": 29884
+  },
+  "ill-springfield": {
+    "admission_rate": 0.8588,
+    "grad_rate": 0.5321,
+    "net_price": 9833,
+    "student_size": 2263,
+    "tuition_in_state": 12252,
+    "tuition_out_of_state": 22017
+  },
+  "ill-wesleyan": {
+    "admission_rate": 0.3931,
+    "grad_rate": 0.747,
+    "net_price": 28199,
+    "student_size": 1582,
+    "tuition_in_state": 57704,
+    "tuition_out_of_state": 57704
+  },
+  "illinois-col": {
+    "admission_rate": 0.7819,
+    "grad_rate": 0.6382,
+    "net_price": 18298,
+    "student_size": 930,
+    "tuition_in_state": 38676,
+    "tuition_out_of_state": 38676
+  },
+  "immaculata": {
+    "admission_rate": 0.8576,
+    "grad_rate": 0.7104,
+    "net_price": 24258,
+    "student_size": 1320,
+    "tuition_in_state": 29330,
+    "tuition_out_of_state": 29330
+  },
+  "indiana": {
+    "admission_rate": 0.7821,
+    "grad_rate": 0.8021,
+    "net_price": 16264,
+    "student_size": 37806,
+    "tuition_in_state": 12144,
+    "tuition_out_of_state": 41891
+  },
+  "iona": {
+    "admission_rate": 0.8694,
+    "grad_rate": 0.56,
+    "net_price": 29188,
+    "student_size": 2951,
+    "tuition_in_state": 47260,
+    "tuition_out_of_state": 47260
+  },
+  "ipfw": {
+    "admission_rate": 0.8389,
+    "grad_rate": 0.3627,
+    "net_price": 13171,
+    "student_size": 5484,
+    "tuition_in_state": 9532,
+    "tuition_out_of_state": 22887
+  },
+  "ithaca": {
+    "admission_rate": 0.6901,
+    "grad_rate": 0.7623,
+    "net_price": 33926,
+    "student_size": 4242,
+    "tuition_in_state": 53540,
+    "tuition_out_of_state": 53540
+  },
+  "iu-indy": {
+    "admission_rate": 0.7637,
+    "grad_rate": 0.5445,
+    "net_price": 11668,
+    "student_size": 13830,
+    "tuition_in_state": 10762,
+    "tuition_out_of_state": 34891
+  },
+  "jacksonville": {
+    "admission_rate": 0.5694,
+    "grad_rate": 0.5065,
+    "net_price": 25180,
+    "student_size": 2930,
+    "tuition_in_state": 47830,
+    "tuition_out_of_state": 47830
+  },
+  "james-madison": {
+    "admission_rate": 0.7152,
+    "grad_rate": 0.7972,
+    "net_price": 23322,
+    "student_size": 20888,
+    "tuition_in_state": 14250,
+    "tuition_out_of_state": 31604
+  },
+  "john-carroll": {
+    "admission_rate": 0.809,
+    "grad_rate": 0.7855,
+    "net_price": 28746,
+    "student_size": 2274,
+    "tuition_in_state": 50500,
+    "tuition_out_of_state": 50500
+  },
+  "johns-hopkins": {
+    "admission_rate": 0.0644,
+    "grad_rate": 0.9378,
+    "net_price": 18809,
+    "student_size": 5693,
+    "tuition_in_state": 65230,
+    "tuition_out_of_state": 65230
+  },
+  "johnson-wales-charlotte": {
+    "admission_rate": 0.7988,
+    "grad_rate": 0.4897,
+    "net_price": 27426,
+    "student_size": 1184,
+    "tuition_in_state": 42419,
+    "tuition_out_of_state": 42419
+  },
+  "juniata": {
+    "admission_rate": 0.7891,
+    "grad_rate": 0.735,
+    "net_price": 23988,
+    "student_size": 1191,
+    "tuition_in_state": 58580,
+    "tuition_out_of_state": 58580
+  },
+  "kalamazoo": {
+    "admission_rate": 0.7532,
+    "grad_rate": 0.7598,
+    "net_price": 19072,
+    "student_size": 1149,
+    "tuition_in_state": 61050,
+    "tuition_out_of_state": 61050
+  },
+  "kean": {
+    "admission_rate": 0.759,
+    "grad_rate": 0.4657,
+    "net_price": 12447,
+    "student_size": 11433,
+    "tuition_in_state": 14299,
+    "tuition_out_of_state": 22446
+  },
+  "keene-st": {
+    "admission_rate": 0.9033,
+    "grad_rate": 0.6006,
+    "net_price": 17887,
+    "student_size": 2699,
+    "tuition_in_state": 14784,
+    "tuition_out_of_state": 26840
+  },
+  "kentucky": {
+    "admission_rate": 0.9294,
+    "grad_rate": 0.7142,
+    "net_price": 18851,
+    "student_size": 24763,
+    "tuition_in_state": 13502,
+    "tuition_out_of_state": 34140
+  },
+  "kenyon": {
+    "admission_rate": 0.3103,
+    "grad_rate": 0.8234,
+    "net_price": 38512,
+    "student_size": 1732,
+    "tuition_in_state": 71520,
+    "tuition_out_of_state": 71520
+  },
+  "keuka": {
+    "admission_rate": 0.6808,
+    "grad_rate": 0.5836,
+    "net_price": 24338,
+    "student_size": 966,
+    "tuition_in_state": 39332,
+    "tuition_out_of_state": 39332
+  },
+  "keystone": {
+    "admission_rate": 0.848,
+    "grad_rate": 0.3587,
+    "net_price": 22051,
+    "student_size": 771,
+    "tuition_in_state": 18300,
+    "tuition_out_of_state": 18300
+  },
+  "knox": {
+    "admission_rate": 0.7079,
+    "grad_rate": 0.6773,
+    "net_price": 24595,
+    "student_size": 1127,
+    "tuition_in_state": 57903,
+    "tuition_out_of_state": 57903
+  },
+  "la-roche": {
+    "admission_rate": 0.7576,
+    "grad_rate": 0.5721,
+    "net_price": 20794,
+    "student_size": 751,
+    "tuition_in_state": 34052,
+    "tuition_out_of_state": 34052
+  },
+  "la-salle": {
+    "admission_rate": 0.9659,
+    "grad_rate": 0.5712,
+    "net_price": 19409,
+    "student_size": 1953,
+    "tuition_in_state": 37800,
+    "tuition_out_of_state": 37800
+  },
+  "la-verne": {
+    "admission_rate": 0.7117,
+    "grad_rate": 0.6312,
+    "net_price": 20161,
+    "student_size": 3050,
+    "tuition_in_state": 49470,
+    "tuition_out_of_state": 49470
+  },
+  "lafayette": {
+    "admission_rate": 0.3145,
+    "grad_rate": 0.8759,
+    "net_price": 34433,
+    "student_size": 2757,
+    "tuition_in_state": 65398,
+    "tuition_out_of_state": 65398
+  },
+  "lagrange": {
+    "admission_rate": 0.6209,
+    "grad_rate": 0.4692,
+    "net_price": 20875,
+    "student_size": 636,
+    "tuition_in_state": 35400,
+    "tuition_out_of_state": 35400
+  },
+  "lake-forest": {
+    "admission_rate": 0.5681,
+    "grad_rate": 0.7778,
+    "net_price": 28673,
+    "student_size": 1813,
+    "tuition_in_state": 56402,
+    "tuition_out_of_state": 56402
+  },
+  "lakeland": {
+    "admission_rate": 0.8628,
+    "grad_rate": 0.4245,
+    "net_price": 24212,
+    "student_size": 1212,
+    "tuition_in_state": 33396,
+    "tuition_out_of_state": 33396
+  },
+  "lancaster-bible": {
+    "admission_rate": 0.5589,
+    "grad_rate": 0.6667,
+    "net_price": 25480,
+    "student_size": 1569,
+    "tuition_in_state": 29990,
+    "tuition_out_of_state": 29990
+  },
+  "lasell": {
+    "admission_rate": 0.8122,
+    "grad_rate": 0.5864,
+    "net_price": 27511,
+    "student_size": 1226,
+    "tuition_in_state": 27040,
+    "tuition_out_of_state": 27040
+  },
+  "lawrence": {
+    "admission_rate": 0.6394,
+    "grad_rate": 0.7677,
+    "net_price": 23401,
+    "student_size": 1396,
+    "tuition_in_state": 56982,
+    "tuition_out_of_state": 56982
+  },
+  "le-moyne": {
+    "admission_rate": 0.8298,
+    "grad_rate": 0.7313,
+    "net_price": 22277,
+    "student_size": 2439,
+    "tuition_in_state": 40330,
+    "tuition_out_of_state": 40330
+  },
+  "lebanon-valley": {
+    "admission_rate": 0.8377,
+    "grad_rate": 0.6496,
+    "net_price": 26979,
+    "student_size": 1684,
+    "tuition_in_state": 52080,
+    "tuition_out_of_state": 52080
+  },
+  "lehigh": {
+    "admission_rate": 0.2593,
+    "grad_rate": 0.8791,
+    "net_price": 36931,
+    "student_size": 5898,
+    "tuition_in_state": 64980,
+    "tuition_out_of_state": 64980
+  },
+  "letourneau": {
+    "admission_rate": 0.3801,
+    "grad_rate": 0.5858,
+    "net_price": 28185,
+    "student_size": 1468,
+    "tuition_in_state": 37160,
+    "tuition_out_of_state": 37160
+  },
+  "lewis-clark": {
+    "admission_rate": 0.7849,
+    "grad_rate": 0.7536,
+    "net_price": 36013,
+    "student_size": 2120,
+    "tuition_in_state": 64828,
+    "tuition_out_of_state": 64828
+  },
+  "liberty": {
+    "admission_rate": 0.9898,
+    "grad_rate": 0.6533,
+    "net_price": 29357,
+    "student_size": 50012,
+    "tuition_in_state": 22465,
+    "tuition_out_of_state": 22465
+  },
+  "life-pacific": {
+    "admission_rate": 0.958,
+    "grad_rate": 0.404,
+    "net_price": 20898,
+    "student_size": 456,
+    "tuition_in_state": 22118,
+    "tuition_out_of_state": 22118
+  },
+  "lindenwood-mo": {
+    "admission_rate": 0.5684,
+    "grad_rate": 0.4933,
+    "net_price": 19638,
+    "student_size": 4624,
+    "tuition_in_state": 21600,
+    "tuition_out_of_state": 21600
+  },
+  "lipscomb": {
+    "admission_rate": 0.6773,
+    "grad_rate": 0.7216,
+    "net_price": 24739,
+    "student_size": 2997,
+    "tuition_in_state": 40572,
+    "tuition_out_of_state": 40572
+  },
+  "long-island": {
+    "admission_rate": 0.8616,
+    "grad_rate": 0.5707,
+    "net_price": 33062,
+    "student_size": 5520,
+    "tuition_in_state": 42432,
+    "tuition_out_of_state": 42432
+  },
+  "longwood": {
+    "admission_rate": 0.9022,
+    "grad_rate": 0.6123,
+    "net_price": 19066,
+    "student_size": 3015,
+    "tuition_in_state": 15744,
+    "tuition_out_of_state": 27978
+  },
+  "loras": {
+    "admission_rate": 0.9986,
+    "grad_rate": 0.676,
+    "net_price": 20716,
+    "student_size": 1083,
+    "tuition_in_state": 39824,
+    "tuition_out_of_state": 39824
+  },
+  "louisville": {
+    "admission_rate": 0.7941,
+    "grad_rate": 0.6123,
+    "net_price": 17988,
+    "student_size": 14727,
+    "tuition_in_state": 13136,
+    "tuition_out_of_state": 29482
+  },
+  "loyola-chicago": {
+    "admission_rate": 0.816,
+    "grad_rate": 0.7304,
+    "net_price": 36079,
+    "student_size": 11737,
+    "tuition_in_state": 53710,
+    "tuition_out_of_state": 53710
+  },
+  "loyola-maryland": {
+    "admission_rate": 0.7549,
+    "grad_rate": 0.7919,
+    "net_price": 30574,
+    "student_size": 3869,
+    "tuition_in_state": 57150,
+    "tuition_out_of_state": 57150
+  },
+  "loyola-marymount": {
+    "admission_rate": 0.4508,
+    "grad_rate": 0.7887,
+    "net_price": 48381,
+    "student_size": 7094,
+    "tuition_in_state": 62357,
+    "tuition_out_of_state": 62357
+  },
+  "lycoming": {
+    "admission_rate": 0.7407,
+    "grad_rate": 0.5963,
+    "net_price": 19140,
+    "student_size": 996,
+    "tuition_in_state": 50029,
+    "tuition_out_of_state": 50029
+  },
+  "lynchburg": {
+    "admission_rate": 0.4301,
+    "grad_rate": 0.5736,
+    "net_price": 22235,
+    "student_size": 1577,
+    "tuition_in_state": 36750,
+    "tuition_out_of_state": 36750
+  },
+  "lyon": {
+    "admission_rate": 0.6276,
+    "grad_rate": 0.4676,
+    "net_price": 19616,
+    "student_size": 648,
+    "tuition_in_state": 31000,
+    "tuition_out_of_state": 31000
+  },
+  "manchester": {
+    "admission_rate": 0.7106,
+    "grad_rate": 0.4608,
+    "net_price": 18805,
+    "student_size": 936,
+    "tuition_in_state": 37135,
+    "tuition_out_of_state": 37135
+  },
+  "manhattan": {
+    "admission_rate": 0.7894,
+    "grad_rate": 0.6371,
+    "net_price": 27256,
+    "student_size": 2744,
+    "tuition_in_state": 53400,
+    "tuition_out_of_state": 53400
+  },
+  "manhattanville": {
+    "admission_rate": 0.8734,
+    "grad_rate": 0.5842,
+    "net_price": 20991,
+    "student_size": 1362,
+    "tuition_in_state": 44604,
+    "tuition_out_of_state": 44604
+  },
+  "maranatha-baptist": {
+    "admission_rate": 0.719,
+    "grad_rate": 0.6357,
+    "net_price": 26005,
+    "student_size": 541,
+    "tuition_in_state": 21550,
+    "tuition_out_of_state": 21550
+  },
+  "marist": {
+    "admission_rate": 0.5651,
+    "grad_rate": 0.796,
+    "net_price": 41544,
+    "student_size": 5182,
+    "tuition_in_state": 47750,
+    "tuition_out_of_state": 47750
+  },
+  "marquette": {
+    "admission_rate": 0.8134,
+    "grad_rate": 0.8321,
+    "net_price": 31487,
+    "student_size": 7660,
+    "tuition_in_state": 51170,
+    "tuition_out_of_state": 51170
+  },
+  "marshall": {
+    "admission_rate": 0.9573,
+    "grad_rate": 0.5123,
+    "net_price": 7502,
+    "student_size": 7266,
+    "tuition_in_state": 9162,
+    "tuition_out_of_state": 20342
+  },
+  "martin-luther": {
+    "admission_rate": 0.8717,
+    "grad_rate": 0.715,
+    "net_price": 18463,
+    "student_size": 725,
+    "tuition_in_state": 18120,
+    "tuition_out_of_state": 18120
+  },
+  "mary-baldwin": {
+    "grad_rate": 0.393,
+    "net_price": 12756,
+    "student_size": 1090,
+    "tuition_in_state": 34152,
+    "tuition_out_of_state": 34152
+  },
+  "mary-hardin-baylor": {
+    "admission_rate": 0.9576,
+    "grad_rate": 0.4931,
+    "net_price": 26106,
+    "student_size": 2759,
+    "tuition_in_state": 32020,
+    "tuition_out_of_state": 32020
+  },
+  "maryland": {
+    "admission_rate": 0.4479,
+    "grad_rate": 0.8859,
+    "net_price": 15678,
+    "student_size": 30760,
+    "tuition_in_state": 11809,
+    "tuition_out_of_state": 41186
+  },
+  "marywood": {
+    "admission_rate": 0.6058,
+    "grad_rate": 0.7165,
+    "net_price": 23388,
+    "student_size": 1784,
+    "tuition_in_state": 41420,
+    "tuition_out_of_state": 41420
+  },
+  "mass-maritime": {
+    "admission_rate": 0.947,
+    "grad_rate": 0.7406,
+    "net_price": 21582,
+    "student_size": 1395,
+    "tuition_in_state": 11420,
+    "tuition_out_of_state": 23722
+  },
+  "massachusetts": {
+    "admission_rate": 0.5973,
+    "grad_rate": 0.8326,
+    "net_price": 22383,
+    "student_size": 23671,
+    "tuition_in_state": 17772,
+    "tuition_out_of_state": 40449
+  },
+  "mcdaniel": {
+    "admission_rate": 0.7793,
+    "grad_rate": 0.6329,
+    "net_price": 21916,
+    "student_size": 1617,
+    "tuition_in_state": 52081,
+    "tuition_out_of_state": 52081
+  },
+  "mcla": {
+    "admission_rate": 0.8974,
+    "grad_rate": 0.5564,
+    "net_price": 16068,
+    "student_size": 713,
+    "tuition_in_state": 12436,
+    "tuition_out_of_state": 21381
+  },
+  "mcmurry": {
+    "admission_rate": 0.5704,
+    "grad_rate": 0.4429,
+    "net_price": 19581,
+    "student_size": 1176,
+    "tuition_in_state": 32340,
+    "tuition_out_of_state": 32340
+  },
+  "me-farmington": {
+    "admission_rate": 0.9672,
+    "grad_rate": 0.5154,
+    "net_price": 16857,
+    "student_size": 1140,
+    "tuition_in_state": 11308,
+    "tuition_out_of_state": 23878
+  },
+  "memphis": {
+    "admission_rate": 0.7203,
+    "grad_rate": 0.5089,
+    "net_price": 12397,
+    "student_size": 12701,
+    "tuition_in_state": 10728,
+    "tuition_out_of_state": 15384
+  },
+  "mercer": {
+    "admission_rate": 0.6889,
+    "grad_rate": 0.6962,
+    "net_price": 23847,
+    "student_size": 4500,
+    "tuition_in_state": 42312,
+    "tuition_out_of_state": 42312
+  },
+  "mercyhurst": {
+    "admission_rate": 0.8102,
+    "grad_rate": 0.6017,
+    "net_price": 19444,
+    "student_size": 2191,
+    "tuition_in_state": 45770,
+    "tuition_out_of_state": 45770
+  },
+  "merrimack": {
+    "admission_rate": 0.7002,
+    "grad_rate": 0.7005,
+    "net_price": 37927,
+    "student_size": 3916,
+    "tuition_in_state": 53962,
+    "tuition_out_of_state": 53962
+  },
+  "messiah": {
+    "admission_rate": 0.7897,
+    "grad_rate": 0.7496,
+    "net_price": 26502,
+    "student_size": 2259,
+    "tuition_in_state": 42240,
+    "tuition_out_of_state": 42240
+  },
+  "methodist": {
+    "admission_rate": 0.7514,
+    "grad_rate": 0.4351,
+    "net_price": 24704,
+    "student_size": 1448,
+    "tuition_in_state": 41250,
+    "tuition_out_of_state": 41250
+  },
+  "michigan-st": {
+    "admission_rate": 0.848,
+    "grad_rate": 0.8072,
+    "net_price": 19680,
+    "student_size": 40922,
+    "tuition_in_state": 16458,
+    "tuition_out_of_state": 43842
+  },
+  "middlebury": {
+    "admission_rate": 0.1075,
+    "grad_rate": 0.914,
+    "net_price": 31483,
+    "student_size": 2738,
+    "tuition_in_state": 67600,
+    "tuition_out_of_state": 67600
+  },
+  "millikin": {
+    "admission_rate": 0.6668,
+    "grad_rate": 0.5494,
+    "net_price": 21989,
+    "student_size": 1382,
+    "tuition_in_state": 26892,
+    "tuition_out_of_state": 26892
+  },
+  "milwaukee": {
+    "admission_rate": 0.9068,
+    "grad_rate": 0.4932,
+    "net_price": 15014,
+    "student_size": 16758,
+    "tuition_in_state": 10398,
+    "tuition_out_of_state": 22398
+  },
+  "misericordia": {
+    "admission_rate": 0.7093,
+    "grad_rate": 0.7171,
+    "net_price": 37485,
+    "student_size": 1672,
+    "tuition_in_state": 40370,
+    "tuition_out_of_state": 40370
+  },
+  "mitchell": {
+    "admission_rate": 0.9466,
+    "grad_rate": 0.4218,
+    "net_price": 30260,
+    "student_size": 377,
+    "tuition_in_state": 40490,
+    "tuition_out_of_state": 40490
+  },
+  "monmouth": {
+    "admission_rate": 0.8902,
+    "grad_rate": 0.719,
+    "net_price": 30988,
+    "student_size": 3684,
+    "tuition_in_state": 46552,
+    "tuition_out_of_state": 46552
+  },
+  "montclair-st": {
+    "admission_rate": 0.8789,
+    "grad_rate": 0.6466,
+    "net_price": 15566,
+    "student_size": 18376,
+    "tuition_in_state": 15912,
+    "tuition_out_of_state": 26022
+  },
+  "moravian": {
+    "admission_rate": 0.5417,
+    "grad_rate": 0.7169,
+    "net_price": 30670,
+    "student_size": 1949,
+    "tuition_in_state": 53500,
+    "tuition_out_of_state": 53500
+  },
+  "msoe": {
+    "admission_rate": 0.5893,
+    "grad_rate": 0.6711,
+    "net_price": 22453,
+    "student_size": 2654,
+    "tuition_in_state": 50480,
+    "tuition_out_of_state": 50480
+  },
+  "mt-aloysius": {
+    "admission_rate": 0.8205,
+    "grad_rate": 0.5691,
+    "net_price": 22344,
+    "student_size": 1094,
+    "tuition_in_state": 27072,
+    "tuition_out_of_state": 27072
+  },
+  "mt-st-marys": {
+    "admission_rate": 0.7381,
+    "grad_rate": 0.6539,
+    "net_price": 22655,
+    "student_size": 1768,
+    "tuition_in_state": 48630,
+    "tuition_out_of_state": 48630
+  },
+  "mt-st-vincent": {
+    "admission_rate": 0.8511,
+    "grad_rate": 0.5683,
+    "net_price": 21696,
+    "student_size": 2692,
+    "tuition_in_state": 44540,
+    "tuition_out_of_state": 44540
+  },
+  "muw": {
+    "admission_rate": 0.9031,
+    "grad_rate": 0.4677,
+    "net_price": 12411,
+    "student_size": 1605,
+    "tuition_in_state": 8492,
+    "tuition_out_of_state": 8492
+  },
+  "nc-wesleyan": {
+    "admission_rate": 0.8023,
+    "grad_rate": 0.4197,
+    "net_price": 17432,
+    "student_size": 1214,
+    "tuition_in_state": 35736,
+    "tuition_out_of_state": 35736
+  },
+  "neb-omaha": {
+    "admission_rate": 0.8698,
+    "grad_rate": 0.4708,
+    "net_price": 13441,
+    "student_size": 11488,
+    "tuition_in_state": 8718,
+    "tuition_out_of_state": 23206
+  },
+  "neb-wesleyan": {
+    "admission_rate": 0.7982,
+    "grad_rate": 0.6612,
+    "net_price": 18327,
+    "student_size": 1453,
+    "tuition_in_state": 43572,
+    "tuition_out_of_state": 43572
+  },
+  "neumann": {
+    "admission_rate": 0.8128,
+    "grad_rate": 0.5368,
+    "net_price": 27804,
+    "student_size": 1533,
+    "tuition_in_state": 39100,
+    "tuition_out_of_state": 39100
+  },
+  "new-england-col": {
+    "admission_rate": 0.9213,
+    "grad_rate": 0.3451,
+    "net_price": 26972,
+    "student_size": 1022,
+    "tuition_in_state": 41938,
+    "tuition_out_of_state": 41938
+  },
+  "new-hampshire": {
+    "admission_rate": 0.8816,
+    "grad_rate": 0.7607,
+    "net_price": 23805,
+    "student_size": 11261,
+    "tuition_in_state": 19202,
+    "tuition_out_of_state": 39852
+  },
+  "new-haven": {
+    "admission_rate": 0.6038,
+    "grad_rate": 0.6307,
+    "net_price": 34192,
+    "student_size": 4841,
+    "tuition_in_state": 47332,
+    "tuition_out_of_state": 47332
+  },
+  "new-york-u": {
+    "admission_rate": 0.0923,
+    "grad_rate": 0.8757,
+    "net_price": 37050,
+    "student_size": 28663,
+    "tuition_in_state": 62796,
+    "tuition_out_of_state": 62796
+  },
+  "niagara": {
+    "admission_rate": 0.8737,
+    "grad_rate": 0.7451,
+    "net_price": 17248,
+    "student_size": 2653,
+    "tuition_in_state": 39345,
+    "tuition_out_of_state": 39345
+  },
+  "nichols": {
+    "admission_rate": 0.8084,
+    "grad_rate": 0.6261,
+    "net_price": 33036,
+    "student_size": 1163,
+    "tuition_in_state": 42705,
+    "tuition_out_of_state": 42705
+  },
+  "njit": {
+    "admission_rate": 0.6507,
+    "grad_rate": 0.7276,
+    "net_price": 16504,
+    "student_size": 9019,
+    "tuition_in_state": 19974,
+    "tuition_out_of_state": 37664
+  },
+  "north-american": {
+    "grad_rate": 0.3158,
+    "net_price": 18721,
+    "student_size": 609,
+    "tuition_in_state": 15436,
+    "tuition_out_of_state": 15436
+  },
+  "north-carolina": {
+    "admission_rate": 0.1534,
+    "grad_rate": 0.9117,
+    "net_price": 11655,
+    "student_size": 20752,
+    "tuition_in_state": 8994,
+    "tuition_out_of_state": 41203
+  },
+  "north-carolina-st": {
+    "admission_rate": 0.4174,
+    "grad_rate": 0.8476,
+    "net_price": 17303,
+    "student_size": 27371,
+    "tuition_in_state": 8799,
+    "tuition_out_of_state": 32847
+  },
+  "north-central-il": {
+    "admission_rate": 0.7733,
+    "grad_rate": 0.64,
+    "net_price": 21044,
+    "student_size": 2428,
+    "tuition_in_state": 45726,
+    "tuition_out_of_state": 45726
+  },
+  "north-central-mn": {
+    "admission_rate": 0.9898,
+    "grad_rate": 0.6634,
+    "net_price": 25817,
+    "student_size": 709,
+    "tuition_in_state": 32220,
+    "tuition_out_of_state": 32220
+  },
+  "north-florida": {
+    "admission_rate": 0.5324,
+    "grad_rate": 0.6921,
+    "net_price": 10154,
+    "student_size": 13359,
+    "tuition_in_state": 6389,
+    "tuition_out_of_state": 20793
+  },
+  "north-park": {
+    "admission_rate": 0.6851,
+    "grad_rate": 0.5772,
+    "net_price": 16948,
+    "student_size": 1818,
+    "tuition_in_state": 36710,
+    "tuition_out_of_state": 36710
+  },
+  "northeastern": {
+    "admission_rate": 0.0522,
+    "grad_rate": 0.9054,
+    "net_price": 30915,
+    "student_size": 17326,
+    "tuition_in_state": 66162,
+    "tuition_out_of_state": 66162
+  },
+  "northern-ill": {
+    "admission_rate": 0.6979,
+    "grad_rate": 0.4866,
+    "net_price": 13391,
+    "student_size": 11301,
+    "tuition_in_state": 13248,
+    "tuition_out_of_state": 13248
+  },
+  "northern-ky": {
+    "admission_rate": 0.6765,
+    "grad_rate": 0.5224,
+    "net_price": 8191,
+    "student_size": 8246,
+    "tuition_in_state": 11088,
+    "tuition_out_of_state": 21912
+  },
+  "northwestern": {
+    "admission_rate": 0.0769,
+    "grad_rate": 0.9513,
+    "net_price": 29167,
+    "student_size": 9201,
+    "tuition_in_state": 68322,
+    "tuition_out_of_state": 68322
+  },
+  "northwestern-st-paul": {
+    "admission_rate": 0.9347,
+    "grad_rate": 0.6813,
+    "net_price": 27705,
+    "student_size": 1442,
+    "tuition_in_state": 37920,
+    "tuition_out_of_state": 37920
+  },
+  "norwich": {
+    "admission_rate": 0.7444,
+    "grad_rate": 0.6021,
+    "net_price": 22257,
+    "student_size": 2428,
+    "tuition_in_state": 49740,
+    "tuition_out_of_state": 49740
+  },
+  "notre-dame": {
+    "admission_rate": 0.1127,
+    "grad_rate": 0.9517,
+    "net_price": 26780,
+    "student_size": 8818,
+    "tuition_in_state": 65025,
+    "tuition_out_of_state": 65025
+  },
+  "notre-dame-md": {
+    "admission_rate": 0.8216,
+    "grad_rate": 0.5,
+    "net_price": 19169,
+    "student_size": 709,
+    "tuition_in_state": 43360,
+    "tuition_out_of_state": 43360
+  },
+  "oakland": {
+    "admission_rate": 0.8784,
+    "grad_rate": 0.5756,
+    "net_price": 9120,
+    "student_size": 12351,
+    "tuition_in_state": 15262,
+    "tuition_out_of_state": 23188
+  },
+  "oberlin": {
+    "admission_rate": 0.3418,
+    "grad_rate": 0.8089,
+    "net_price": 38645,
+    "student_size": 2887,
+    "tuition_in_state": 67366,
+    "tuition_out_of_state": 67366
+  },
+  "occidental": {
+    "admission_rate": 0.4417,
+    "grad_rate": 0.8088,
+    "net_price": 38263,
+    "student_size": 1877,
+    "tuition_in_state": 66274,
+    "tuition_out_of_state": 66274
+  },
+  "oglethorpe": {
+    "admission_rate": 0.8845,
+    "grad_rate": 0.541,
+    "net_price": 19509,
+    "student_size": 1352,
+    "tuition_in_state": 47590,
+    "tuition_out_of_state": 47590
+  },
+  "ohio-st": {
+    "admission_rate": 0.6057,
+    "grad_rate": 0.8772,
+    "net_price": 17339,
+    "student_size": 45638,
+    "tuition_in_state": 13244,
+    "tuition_out_of_state": 40022
+  },
+  "ohio-wesleyan": {
+    "admission_rate": 0.556,
+    "grad_rate": 0.5857,
+    "net_price": 20897,
+    "student_size": 1516,
+    "tuition_in_state": 53888,
+    "tuition_out_of_state": 53888
+  },
+  "old-dominion": {
+    "admission_rate": 0.9036,
+    "grad_rate": 0.4632,
+    "net_price": 14638,
+    "student_size": 17514,
+    "tuition_in_state": 12750,
+    "tuition_out_of_state": 33780
+  },
+  "oral-roberts": {
+    "admission_rate": 0.989,
+    "grad_rate": 0.5683,
+    "net_price": 25365,
+    "student_size": 3487,
+    "tuition_in_state": 35470,
+    "tuition_out_of_state": 35470
+  },
+  "oregon-st": {
+    "admission_rate": 0.773,
+    "grad_rate": 0.7011,
+    "net_price": 19604,
+    "student_size": 30743,
+    "tuition_in_state": 14400,
+    "tuition_out_of_state": 38190
+  },
+  "otterbein": {
+    "admission_rate": 0.8453,
+    "grad_rate": 0.6788,
+    "net_price": 19237,
+    "student_size": 2157,
+    "tuition_in_state": 35548,
+    "tuition_out_of_state": 35548
+  },
+  "ouachita-baptist": {
+    "admission_rate": 0.6752,
+    "grad_rate": 0.614,
+    "net_price": 22409,
+    "student_size": 1602,
+    "tuition_in_state": 34500,
+    "tuition_out_of_state": 34500
+  },
+  "our-lady-of-the-lake": {
+    "grad_rate": 0.4611,
+    "net_price": 16442,
+    "student_size": 1066,
+    "tuition_in_state": 32106,
+    "tuition_out_of_state": 32106
+  },
+  "pacific": {
+    "admission_rate": 0.7132,
+    "grad_rate": 0.6905,
+    "net_price": 25447,
+    "student_size": 3204,
+    "tuition_in_state": 57080,
+    "tuition_out_of_state": 57080
+  },
+  "pacific-lutheran": {
+    "admission_rate": 0.7802,
+    "grad_rate": 0.6857,
+    "net_price": 19589,
+    "student_size": 2401,
+    "tuition_in_state": 52254,
+    "tuition_out_of_state": 52254
+  },
+  "peace": {
+    "admission_rate": 0.9425,
+    "grad_rate": 0.4481,
+    "net_price": 21649,
+    "student_size": 666,
+    "tuition_in_state": 34176,
+    "tuition_out_of_state": 34176
+  },
+  "penn": {
+    "admission_rate": 0.054,
+    "grad_rate": 0.9654,
+    "net_price": 28699,
+    "student_size": 10650,
+    "tuition_in_state": 68686,
+    "tuition_out_of_state": 68686
+  },
+  "penn-st": {
+    "admission_rate": 0.6056,
+    "grad_rate": 0.8609,
+    "net_price": 32875,
+    "student_size": 42284,
+    "tuition_in_state": 20644,
+    "tuition_out_of_state": 41790
+  },
+  "penn-tech": {
+    "grad_rate": 0.5348,
+    "net_price": 25110,
+    "student_size": 4464,
+    "tuition_in_state": 18240,
+    "tuition_out_of_state": 25980
+  },
+  "pfeiffer": {
+    "admission_rate": 0.9603,
+    "grad_rate": 0.3497,
+    "net_price": 19076,
+    "student_size": 655,
+    "tuition_in_state": 35070,
+    "tuition_out_of_state": 35070
+  },
+  "piedmont": {
+    "admission_rate": 0.9328,
+    "grad_rate": 0.4741,
+    "net_price": 20599,
+    "student_size": 1117,
+    "tuition_in_state": 31700,
+    "tuition_out_of_state": 31700
+  },
+  "pitt-greensburg": {
+    "admission_rate": 0.9521,
+    "grad_rate": 0.397,
+    "net_price": 17945,
+    "student_size": 1305,
+    "tuition_in_state": 14710,
+    "tuition_out_of_state": 26584
+  },
+  "pittsburgh": {
+    "admission_rate": 0.5808,
+    "grad_rate": 0.855,
+    "net_price": 30434,
+    "student_size": 20370,
+    "tuition_in_state": 21926,
+    "tuition_out_of_state": 41430
+  },
+  "plymouth-st": {
+    "admission_rate": 0.8754,
+    "grad_rate": 0.5203,
+    "net_price": 19216,
+    "student_size": 3153,
+    "tuition_in_state": 14626,
+    "tuition_out_of_state": 25566
+  },
+  "portland": {
+    "admission_rate": 0.8917,
+    "grad_rate": 0.7984,
+    "net_price": 28210,
+    "student_size": 2957,
+    "tuition_in_state": 58100,
+    "tuition_out_of_state": 58100
+  },
+  "presbyterian": {
+    "admission_rate": 0.6837,
+    "grad_rate": 0.5146,
+    "net_price": 20528,
+    "student_size": 852,
+    "tuition_in_state": 44910,
+    "tuition_out_of_state": 44910
+  },
+  "princeton": {
+    "admission_rate": 0.0462,
+    "grad_rate": 0.9761,
+    "net_price": 6128,
+    "student_size": 5709,
+    "tuition_in_state": 62688,
+    "tuition_out_of_state": 62688
+  },
+  "providence": {
+    "admission_rate": 0.5089,
+    "grad_rate": 0.8582,
+    "net_price": 48523,
+    "student_size": 4229,
+    "tuition_in_state": 63550,
+    "tuition_out_of_state": 63550
+  },
+  "queens-nc": {
+    "admission_rate": 0.6208,
+    "grad_rate": 0.6131,
+    "net_price": 30857,
+    "student_size": 1211,
+    "tuition_in_state": 45846,
+    "tuition_out_of_state": 45846
+  },
+  "quincy": {
+    "admission_rate": 0.5093,
+    "grad_rate": 0.4504,
+    "net_price": 20359,
+    "student_size": 1010,
+    "tuition_in_state": 37140,
+    "tuition_out_of_state": 37140
+  },
+  "quinnipiac": {
+    "admission_rate": 0.7215,
+    "grad_rate": 0.757,
+    "net_price": 40675,
+    "student_size": 6531,
+    "tuition_in_state": 55480,
+    "tuition_out_of_state": 55480
+  },
+  "radford": {
+    "admission_rate": 0.8953,
+    "grad_rate": 0.4866,
+    "net_price": 14578,
+    "student_size": 6038,
+    "tuition_in_state": 12548,
+    "tuition_out_of_state": 25633
+  },
+  "ramapo": {
+    "admission_rate": 0.7064,
+    "grad_rate": 0.6981,
+    "net_price": 18173,
+    "student_size": 4898,
+    "tuition_in_state": 16777,
+    "tuition_out_of_state": 27708
+  },
+  "randolph": {
+    "admission_rate": 0.9371,
+    "grad_rate": 0.4639,
+    "net_price": 15921,
+    "student_size": 658,
+    "tuition_in_state": 30310,
+    "tuition_out_of_state": 30310
+  },
+  "randolph-macon": {
+    "admission_rate": 0.8661,
+    "grad_rate": 0.7048,
+    "net_price": 27866,
+    "student_size": 1639,
+    "tuition_in_state": 49466,
+    "tuition_out_of_state": 49466
+  },
+  "redlands": {
+    "admission_rate": 0.8271,
+    "grad_rate": 0.6727,
+    "net_price": 30031,
+    "student_size": 2049,
+    "tuition_in_state": 60878,
+    "tuition_out_of_state": 60878
+  },
+  "regent": {
+    "admission_rate": 0.3812,
+    "grad_rate": 0.5692,
+    "net_price": 19923,
+    "student_size": 4729,
+    "tuition_in_state": 21650,
+    "tuition_out_of_state": 21650
+  },
+  "rensselaer": {
+    "admission_rate": 0.6347,
+    "grad_rate": 0.8362,
+    "net_price": 36228,
+    "student_size": 5714,
+    "tuition_in_state": 64081,
+    "tuition_out_of_state": 64081
+  },
+  "rhode-island": {
+    "admission_rate": 0.7216,
+    "grad_rate": 0.7331,
+    "net_price": 21440,
+    "student_size": 13381,
+    "tuition_in_state": 16942,
+    "tuition_out_of_state": 37146
+  },
+  "rhode-island-col": {
+    "admission_rate": 0.9182,
+    "grad_rate": 0.4813,
+    "net_price": 9478,
+    "student_size": 5049,
+    "tuition_in_state": 11300,
+    "tuition_out_of_state": 27299
+  },
+  "rhodes": {
+    "admission_rate": 0.5035,
+    "grad_rate": 0.8453,
+    "net_price": 28585,
+    "student_size": 1836,
+    "tuition_in_state": 57110,
+    "tuition_out_of_state": 57110
+  },
+  "richard-stockton": {
+    "admission_rate": 0.8894,
+    "grad_rate": 0.6854,
+    "net_price": 20670,
+    "student_size": 7537,
+    "tuition_in_state": 16266,
+    "tuition_out_of_state": 24524
+  },
+  "rider": {
+    "admission_rate": 0.7864,
+    "grad_rate": 0.6133,
+    "net_price": 24792,
+    "student_size": 3106,
+    "tuition_in_state": 41120,
+    "tuition_out_of_state": 41120
+  },
+  "ripon": {
+    "admission_rate": 0.7984,
+    "grad_rate": 0.633,
+    "net_price": 20216,
+    "student_size": 688,
+    "tuition_in_state": 51900,
+    "tuition_out_of_state": 51900
+  },
+  "rivier": {
+    "admission_rate": 0.8259,
+    "grad_rate": 0.5167,
+    "net_price": 28082,
+    "student_size": 1231,
+    "tuition_in_state": 39488,
+    "tuition_out_of_state": 39488
+  },
+  "roanoke": {
+    "admission_rate": 0.8306,
+    "grad_rate": 0.6736,
+    "net_price": 24503,
+    "student_size": 1767,
+    "tuition_in_state": 38068,
+    "tuition_out_of_state": 38068
+  },
+  "robert-morris": {
+    "admission_rate": 0.8989,
+    "grad_rate": 0.6569,
+    "net_price": 23003,
+    "student_size": 2896,
+    "tuition_in_state": 35970,
+    "tuition_out_of_state": 35970
+  },
+  "rochester-inst": {
+    "admission_rate": 0.6693,
+    "grad_rate": 0.6989,
+    "net_price": 34906,
+    "student_size": 13215,
+    "tuition_in_state": 59274,
+    "tuition_out_of_state": 59274
+  },
+  "rochester-ny": {
+    "admission_rate": 0.4008,
+    "grad_rate": 0.8543,
+    "net_price": 29278,
+    "student_size": 6331,
+    "tuition_in_state": 67080,
+    "tuition_out_of_state": 67080
+  },
+  "rockford": {
+    "admission_rate": 0.9291,
+    "grad_rate": 0.472,
+    "net_price": 22436,
+    "student_size": 972,
+    "tuition_in_state": 37780,
+    "tuition_out_of_state": 37780
+  },
+  "roger-williams": {
+    "admission_rate": 0.8771,
+    "grad_rate": 0.6865,
+    "net_price": 37999,
+    "student_size": 3946,
+    "tuition_in_state": 44418,
+    "tuition_out_of_state": 44418
+  },
+  "rose-hulman": {
+    "admission_rate": 0.7686,
+    "grad_rate": 0.7816,
+    "net_price": 42513,
+    "student_size": 2309,
+    "tuition_in_state": 58649,
+    "tuition_out_of_state": 58649
+  },
+  "rowan": {
+    "admission_rate": 0.7766,
+    "grad_rate": 0.6736,
+    "net_price": 22408,
+    "student_size": 15841,
+    "tuition_in_state": 16574,
+    "tuition_out_of_state": 26932
+  },
+  "sacramento-st": {
+    "admission_rate": 0.9399,
+    "grad_rate": 0.5629,
+    "net_price": 9338,
+    "student_size": 28350,
+    "tuition_in_state": 8018,
+    "tuition_out_of_state": 20618
+  },
+  "sacred-heart": {
+    "admission_rate": 0.6536,
+    "grad_rate": 0.7346,
+    "net_price": 46174,
+    "student_size": 7087,
+    "tuition_in_state": 50404,
+    "tuition_out_of_state": 50404
+  },
+  "saint-josephs": {
+    "admission_rate": 0.8883,
+    "grad_rate": 0.7884,
+    "net_price": 29689,
+    "student_size": 4948,
+    "tuition_in_state": 53260,
+    "tuition_out_of_state": 53260
+  },
+  "saint-louis": {
+    "admission_rate": 0.7504,
+    "grad_rate": 0.7953,
+    "net_price": 24398,
+    "student_size": 7267,
+    "tuition_in_state": 55760,
+    "tuition_out_of_state": 55760
+  },
+  "saint-vincent": {
+    "admission_rate": 0.6173,
+    "grad_rate": 0.6859,
+    "net_price": 23510,
+    "student_size": 1259,
+    "tuition_in_state": 42396,
+    "tuition_out_of_state": 42396
+  },
+  "salem-st": {
+    "admission_rate": 0.9588,
+    "grad_rate": 0.4977,
+    "net_price": 15996,
+    "student_size": 4291,
+    "tuition_in_state": 12338,
+    "tuition_out_of_state": 19531
+  },
+  "salve-regina": {
+    "admission_rate": 0.6817,
+    "grad_rate": 0.7688,
+    "net_price": 36967,
+    "student_size": 2121,
+    "tuition_in_state": 50100,
+    "tuition_out_of_state": 50100
+  },
+  "san-diego": {
+    "admission_rate": 0.5238,
+    "grad_rate": 0.8367,
+    "net_price": 30365,
+    "student_size": 5671,
+    "tuition_in_state": 59486,
+    "tuition_out_of_state": 59486
+  },
+  "san-diego-st": {
+    "admission_rate": 0.3619,
+    "grad_rate": 0.7643,
+    "net_price": 15364,
+    "student_size": 35377,
+    "tuition_in_state": 8728,
+    "tuition_out_of_state": 21328
+  },
+  "san-francisco": {
+    "admission_rate": 0.6171,
+    "grad_rate": 0.7006,
+    "net_price": 41431,
+    "student_size": 5287,
+    "tuition_in_state": 60492,
+    "tuition_out_of_state": 60492
+  },
+  "san-jose-st": {
+    "admission_rate": 0.8461,
+    "grad_rate": 0.6922,
+    "net_price": 13760,
+    "student_size": 27601,
+    "tuition_in_state": 8410,
+    "tuition_out_of_state": 21010
+  },
+  "santa-clara": {
+    "admission_rate": 0.48,
+    "grad_rate": 0.8792,
+    "net_price": 50062,
+    "student_size": 6552,
+    "tuition_in_state": 61293,
+    "tuition_out_of_state": 61293
+  },
+  "sarah-lawrence": {
+    "admission_rate": 0.6173,
+    "grad_rate": 0.7133,
+    "net_price": 41437,
+    "student_size": 1530,
+    "tuition_in_state": 66862,
+    "tuition_out_of_state": 66862
+  },
+  "schreiner": {
+    "admission_rate": 0.882,
+    "grad_rate": 0.4318,
+    "net_price": 21507,
+    "student_size": 1053,
+    "tuition_in_state": 39266,
+    "tuition_out_of_state": 39266
+  },
+  "scranton": {
+    "admission_rate": 0.8123,
+    "grad_rate": 0.7979,
+    "net_price": 32568,
+    "student_size": 3554,
+    "tuition_in_state": 53983,
+    "tuition_out_of_state": 53983
+  },
+  "seattle": {
+    "admission_rate": 0.7692,
+    "grad_rate": 0.7551,
+    "net_price": 34662,
+    "student_size": 4062,
+    "tuition_in_state": 56721,
+    "tuition_out_of_state": 56721
+  },
+  "seton-hall": {
+    "admission_rate": 0.7326,
+    "grad_rate": 0.6949,
+    "net_price": 31446,
+    "student_size": 6036,
+    "tuition_in_state": 53170,
+    "tuition_out_of_state": 53170
+  },
+  "shaw": {
+    "admission_rate": 0.8016,
+    "grad_rate": 0.2179,
+    "net_price": 16512,
+    "student_size": 875,
+    "tuition_in_state": 17538,
+    "tuition_out_of_state": 17538
+  },
+  "shenandoah": {
+    "admission_rate": 0.7695,
+    "grad_rate": 0.6682,
+    "net_price": 30298,
+    "student_size": 2116,
+    "tuition_in_state": 36950,
+    "tuition_out_of_state": 36950
+  },
+  "siena": {
+    "admission_rate": 0.6902,
+    "grad_rate": 0.7473,
+    "net_price": 33733,
+    "student_size": 3409,
+    "tuition_in_state": 46580,
+    "tuition_out_of_state": 46580
+  },
+  "simpson": {
+    "admission_rate": 0.8622,
+    "grad_rate": 0.6333,
+    "net_price": 21936,
+    "student_size": 1227,
+    "tuition_in_state": 47656,
+    "tuition_out_of_state": 47656
+  },
+  "siu-edwardsville": {
+    "admission_rate": 0.975,
+    "grad_rate": 0.5697,
+    "net_price": 14889,
+    "student_size": 8750,
+    "tuition_in_state": 12922,
+    "tuition_out_of_state": 12922
+  },
+  "smu": {
+    "admission_rate": 0.6335,
+    "grad_rate": 0.8427,
+    "net_price": 40892,
+    "student_size": 7277,
+    "tuition_in_state": 67040,
+    "tuition_out_of_state": 67040
+  },
+  "south-carolina": {
+    "admission_rate": 0.6015,
+    "grad_rate": 0.7882,
+    "net_price": 22811,
+    "student_size": 29820,
+    "tuition_in_state": 12688,
+    "tuition_out_of_state": 35972
+  },
+  "south-fla": {
+    "admission_rate": 0.4319,
+    "grad_rate": 0.7676,
+    "net_price": 9812,
+    "student_size": 37207,
+    "tuition_in_state": 6410,
+    "tuition_out_of_state": 17324
+  },
+  "southern-ind": {
+    "admission_rate": 0.9581,
+    "grad_rate": 0.4818,
+    "net_price": 12923,
+    "student_size": 5292,
+    "tuition_in_state": 10066,
+    "tuition_out_of_state": 22907
+  },
+  "southern-me": {
+    "admission_rate": 0.7923,
+    "grad_rate": 0.4035,
+    "net_price": 13596,
+    "student_size": 4222,
+    "tuition_in_state": 11284,
+    "tuition_out_of_state": 27944
+  },
+  "southern-va": {
+    "admission_rate": 0.9642,
+    "grad_rate": 0.3347,
+    "net_price": 22213,
+    "student_size": 936,
+    "tuition_in_state": 21280,
+    "tuition_out_of_state": 21280
+  },
+  "spalding": {
+    "admission_rate": 0.9945,
+    "grad_rate": 0.5167,
+    "net_price": 25491,
+    "student_size": 583,
+    "tuition_in_state": 29200,
+    "tuition_out_of_state": 29200
+  },
+  "st-bonaventure": {
+    "admission_rate": 0.8165,
+    "grad_rate": 0.6673,
+    "net_price": 27074,
+    "student_size": 2012,
+    "tuition_in_state": 41735,
+    "tuition_out_of_state": 41735
+  },
+  "st-elizabeth": {
+    "admission_rate": 0.7103,
+    "grad_rate": 0.511,
+    "net_price": 23125,
+    "student_size": 557,
+    "tuition_in_state": 36741,
+    "tuition_out_of_state": 36741
+  },
+  "st-john-fisher": {
+    "admission_rate": 0.664,
+    "grad_rate": 0.7417,
+    "net_price": 28945,
+    "student_size": 2565,
+    "tuition_in_state": 41190,
+    "tuition_out_of_state": 41190
+  },
+  "st-lawrence": {
+    "admission_rate": 0.5434,
+    "grad_rate": 0.7906,
+    "net_price": 28651,
+    "student_size": 1918,
+    "tuition_in_state": 65900,
+    "tuition_out_of_state": 65900
+  },
+  "st-marys-ca": {
+    "admission_rate": 0.8653,
+    "grad_rate": 0.703,
+    "net_price": 30378,
+    "student_size": 1947,
+    "tuition_in_state": 57803,
+    "tuition_out_of_state": 57803
+  },
+  "st-marys-md": {
+    "admission_rate": 0.6863,
+    "grad_rate": 0.6995,
+    "net_price": 18441,
+    "student_size": 1603,
+    "tuition_in_state": 15298,
+    "tuition_out_of_state": 31374
+  },
+  "st-marys-mn": {
+    "admission_rate": 0.9278,
+    "grad_rate": 0.6601,
+    "net_price": 11704,
+    "student_size": 1073,
+    "tuition_in_state": 45080,
+    "tuition_out_of_state": 45080
+  },
+  "st-olaf": {
+    "admission_rate": 0.4832,
+    "grad_rate": 0.84,
+    "net_price": 23874,
+    "student_size": 3093,
+    "tuition_in_state": 59760,
+    "tuition_out_of_state": 59760
+  },
+  "st-peters": {
+    "admission_rate": 0.903,
+    "grad_rate": 0.5826,
+    "net_price": 12199,
+    "student_size": 2135,
+    "tuition_in_state": 42552,
+    "tuition_out_of_state": 42552
+  },
+  "stanford": {
+    "admission_rate": 0.0361,
+    "grad_rate": 0.9192,
+    "net_price": 13807,
+    "student_size": 7554,
+    "tuition_in_state": 65910,
+    "tuition_out_of_state": 65910
+  },
+  "stetson": {
+    "admission_rate": 0.716,
+    "grad_rate": 0.6229,
+    "net_price": 19372,
+    "student_size": 2297,
+    "tuition_in_state": 57410,
+    "tuition_out_of_state": 57410
+  },
+  "stevens": {
+    "admission_rate": 0.4758,
+    "grad_rate": 0.8688,
+    "net_price": 41346,
+    "student_size": 4222,
+    "tuition_in_state": 63462,
+    "tuition_out_of_state": 63462
+  },
+  "stevenson": {
+    "admission_rate": 0.7891,
+    "grad_rate": 0.6849,
+    "net_price": 26505,
+    "student_size": 3102,
+    "tuition_in_state": 40560,
+    "tuition_out_of_state": 40560
+  },
+  "stonehill": {
+    "admission_rate": 0.6628,
+    "grad_rate": 0.76,
+    "net_price": 33016,
+    "student_size": 2528,
+    "tuition_in_state": 57490,
+    "tuition_out_of_state": 57490
+  },
+  "stony-brook": {
+    "admission_rate": 0.4904,
+    "grad_rate": 0.7556,
+    "net_price": 18784,
+    "student_size": 18101,
+    "tuition_in_state": 10931,
+    "tuition_out_of_state": 32741
+  },
+  "suny-cortland": {
+    "admission_rate": 0.5979,
+    "grad_rate": 0.6803,
+    "net_price": 22345,
+    "student_size": 5901,
+    "tuition_in_state": 8874,
+    "tuition_out_of_state": 18784
+  },
+  "suny-new-paltz": {
+    "admission_rate": 0.6161,
+    "grad_rate": 0.716,
+    "net_price": 18809,
+    "student_size": 6086,
+    "tuition_in_state": 8572,
+    "tuition_out_of_state": 18822
+  },
+  "susquehanna": {
+    "admission_rate": 0.8143,
+    "grad_rate": 0.8174,
+    "net_price": 28819,
+    "student_size": 2163,
+    "tuition_in_state": 59850,
+    "tuition_out_of_state": 59850
+  },
+  "swarthmore": {
+    "admission_rate": 0.0746,
+    "grad_rate": 0.9227,
+    "net_price": 23149,
+    "student_size": 1613,
+    "tuition_in_state": 65494,
+    "tuition_out_of_state": 65494
+  },
+  "syracuse": {
+    "admission_rate": 0.4592,
+    "grad_rate": 0.8361,
+    "net_price": 38793,
+    "student_size": 15477,
+    "tuition_in_state": 65528,
+    "tuition_out_of_state": 65528
+  },
+  "temple": {
+    "admission_rate": 0.8041,
+    "grad_rate": 0.7505,
+    "net_price": 28198,
+    "student_size": 20970,
+    "tuition_in_state": 23011,
+    "tuition_out_of_state": 38958
+  },
+  "texas-lutheran": {
+    "admission_rate": 0.9571,
+    "grad_rate": 0.5385,
+    "net_price": 24654,
+    "student_size": 1304,
+    "tuition_in_state": 36230,
+    "tuition_out_of_state": 36230
+  },
+  "thiel": {
+    "admission_rate": 0.7155,
+    "grad_rate": 0.4873,
+    "net_price": 22347,
+    "student_size": 788,
+    "tuition_in_state": 38344,
+    "tuition_out_of_state": 38344
+  },
+  "thomas-me": {
+    "admission_rate": 0.963,
+    "grad_rate": 0.5369,
+    "net_price": 18885,
+    "student_size": 647,
+    "tuition_in_state": 31824,
+    "tuition_out_of_state": 31824
+  },
+  "transylvania": {
+    "admission_rate": 0.8655,
+    "grad_rate": 0.7148,
+    "net_price": 21913,
+    "student_size": 1005,
+    "tuition_in_state": 46870,
+    "tuition_out_of_state": 46870
+  },
+  "trine": {
+    "admission_rate": 0.8548,
+    "grad_rate": 0.6438,
+    "net_price": 25355,
+    "student_size": 2324,
+    "tuition_in_state": 36560,
+    "tuition_out_of_state": 36560
+  },
+  "tufts": {
+    "admission_rate": 0.1149,
+    "grad_rate": 0.9351,
+    "net_price": 39998,
+    "student_size": 7061,
+    "tuition_in_state": 70704,
+    "tuition_out_of_state": 70704
+  },
+  "tulsa": {
+    "admission_rate": 0.6151,
+    "grad_rate": 0.7229,
+    "net_price": 15000,
+    "student_size": 2813,
+    "tuition_in_state": 50061,
+    "tuition_out_of_state": 50061
+  },
+  "uab": {
+    "admission_rate": 0.8818,
+    "grad_rate": 0.6423,
+    "net_price": 18749,
+    "student_size": 11635,
+    "tuition_in_state": 9098,
+    "tuition_out_of_state": 22562
+  },
+  "uc-davis": {
+    "admission_rate": 0.4183,
+    "grad_rate": 0.8567,
+    "net_price": 14741,
+    "student_size": 32253,
+    "tuition_in_state": 16774,
+    "tuition_out_of_state": 50974
+  },
+  "uc-irvine": {
+    "admission_rate": 0.2857,
+    "grad_rate": 0.8687,
+    "net_price": 14251,
+    "student_size": 30197,
+    "tuition_in_state": 15722,
+    "tuition_out_of_state": 49922
+  },
+  "uc-riverside": {
+    "admission_rate": 0.7639,
+    "grad_rate": 0.7596,
+    "net_price": 14304,
+    "student_size": 22593,
+    "tuition_in_state": 15606,
+    "tuition_out_of_state": 49806
+  },
+  "uc-san-diego": {
+    "admission_rate": 0.2671,
+    "grad_rate": 0.8605,
+    "net_price": 12470,
+    "student_size": 34948,
+    "tuition_in_state": 16758,
+    "tuition_out_of_state": 50958
+  },
+  "uc-santa-barbara": {
+    "admission_rate": 0.3297,
+    "grad_rate": 0.8303,
+    "net_price": 16109,
+    "student_size": 23113,
+    "tuition_in_state": 16414,
+    "tuition_out_of_state": 50614
+  },
+  "uc-santa-cruz": {
+    "admission_rate": 0.6579,
+    "grad_rate": 0.7509,
+    "net_price": 17890,
+    "student_size": 17940,
+    "tuition_in_state": 16005,
+    "tuition_out_of_state": 50205
+  },
+  "ucf": {
+    "admission_rate": 0.4011,
+    "grad_rate": 0.7801,
+    "net_price": 10411,
+    "student_size": 59146,
+    "tuition_in_state": 6368,
+    "tuition_out_of_state": 22467
+  },
+  "ucla": {
+    "admission_rate": 0.0897,
+    "grad_rate": 0.9262,
+    "net_price": 12548,
+    "student_size": 33475,
+    "tuition_in_state": 15203,
+    "tuition_out_of_state": 49403
+  },
+  "uconn": {
+    "admission_rate": 0.5239,
+    "grad_rate": 0.8329,
+    "net_price": 25097,
+    "student_size": 19835,
+    "tuition_in_state": 21044,
+    "tuition_out_of_state": 43712
+  },
+  "uiw": {
+    "admission_rate": 0.9814,
+    "grad_rate": 0.5098,
+    "net_price": 22775,
+    "student_size": 4440,
+    "tuition_in_state": 37090,
+    "tuition_out_of_state": 37090
+  },
+  "umass-boston": {
+    "admission_rate": 0.8378,
+    "grad_rate": 0.4941,
+    "net_price": 17707,
+    "student_size": 11512,
+    "tuition_in_state": 15908,
+    "tuition_out_of_state": 38125
+  },
+  "umass-dartmouth": {
+    "admission_rate": 0.9064,
+    "grad_rate": 0.5207,
+    "net_price": 20927,
+    "student_size": 5221,
+    "tuition_in_state": 15612,
+    "tuition_out_of_state": 32567
+  },
+  "umass-lowell": {
+    "admission_rate": 0.8304,
+    "grad_rate": 0.6482,
+    "net_price": 17163,
+    "student_size": 11434,
+    "tuition_in_state": 16966,
+    "tuition_out_of_state": 36264
+  },
+  "umbc": {
+    "admission_rate": 0.7243,
+    "grad_rate": 0.7001,
+    "net_price": 16467,
+    "student_size": 10701,
+    "tuition_in_state": 13256,
+    "tuition_out_of_state": 31275
+  },
+  "umkc": {
+    "admission_rate": 0.7218,
+    "grad_rate": 0.5546,
+    "net_price": 13310,
+    "student_size": 6817,
+    "tuition_in_state": 12587,
+    "tuition_out_of_state": 30227
+  },
+  "unc-asheville": {
+    "admission_rate": 0.9192,
+    "grad_rate": 0.5448,
+    "net_price": 12250,
+    "student_size": 2910,
+    "tuition_in_state": 7501,
+    "tuition_out_of_state": 24849
+  },
+  "unc-greensboro": {
+    "admission_rate": 0.8851,
+    "grad_rate": 0.5631,
+    "net_price": 10965,
+    "student_size": 14062,
+    "tuition_in_state": 7661,
+    "tuition_out_of_state": 24012
+  },
+  "unc-wilmington": {
+    "admission_rate": 0.6424,
+    "grad_rate": 0.7059,
+    "net_price": 20109,
+    "student_size": 14922,
+    "tuition_in_state": 7277,
+    "tuition_out_of_state": 24152
+  },
+  "unlv": {
+    "admission_rate": 0.9617,
+    "grad_rate": 0.5051,
+    "net_price": 10359,
+    "student_size": 24622,
+    "tuition_in_state": 9748,
+    "tuition_out_of_state": 27411
+  },
+  "ursinus": {
+    "admission_rate": 0.9177,
+    "grad_rate": 0.7328,
+    "net_price": 30536,
+    "student_size": 1491,
+    "tuition_in_state": 61210,
+    "tuition_out_of_state": 61210
+  },
+  "usc-upstate": {
+    "admission_rate": 0.6726,
+    "grad_rate": 0.4304,
+    "net_price": 13557,
+    "student_size": 4038,
+    "tuition_in_state": 11588,
+    "tuition_out_of_state": 23090
+  },
+  "utah-tech": {
+    "grad_rate": 0.3839,
+    "net_price": 16039,
+    "student_size": 8552,
+    "tuition_in_state": 6306,
+    "tuition_out_of_state": 18246
+  },
+  "utah-valley": {
+    "grad_rate": 0.4511,
+    "net_price": 6376,
+    "student_size": 28453,
+    "tuition_in_state": 6507,
+    "tuition_out_of_state": 18489
+  },
+  "utica": {
+    "admission_rate": 0.9195,
+    "grad_rate": 0.5624,
+    "net_price": 19108,
+    "student_size": 2278,
+    "tuition_in_state": 26930,
+    "tuition_out_of_state": 26930
+  },
+  "utrgv": {
+    "admission_rate": 0.9419,
+    "grad_rate": 0.509,
+    "net_price": 4831,
+    "student_size": 28666,
+    "tuition_in_state": 9987,
+    "tuition_out_of_state": 19827
+  },
+  "vcu": {
+    "admission_rate": 0.9262,
+    "grad_rate": 0.6318,
+    "net_price": 23433,
+    "student_size": 20753,
+    "tuition_in_state": 16945,
+    "tuition_out_of_state": 40109
+  },
+  "vermont": {
+    "admission_rate": 0.653,
+    "grad_rate": 0.7859,
+    "net_price": 19343,
+    "student_size": 11743,
+    "tuition_in_state": 19058,
+    "tuition_out_of_state": 45502
+  },
+  "villanova": {
+    "admission_rate": 0.2698,
+    "grad_rate": 0.9186,
+    "net_price": 43756,
+    "student_size": 6938,
+    "tuition_in_state": 67776,
+    "tuition_out_of_state": 67776
+  },
+  "virginia": {
+    "admission_rate": 0.1681,
+    "grad_rate": 0.956,
+    "net_price": 21565,
+    "student_size": 17597,
+    "tuition_in_state": 21803,
+    "tuition_out_of_state": 59512
+  },
+  "virginia-tech": {
+    "admission_rate": 0.5478,
+    "grad_rate": 0.8622,
+    "net_price": 24953,
+    "student_size": 30923,
+    "tuition_in_state": 15948,
+    "tuition_out_of_state": 37764
+  },
+  "vmi": {
+    "admission_rate": 0.7125,
+    "grad_rate": 0.7621,
+    "net_price": 17113,
+    "student_size": 1527,
+    "tuition_in_state": 21046,
+    "tuition_out_of_state": 52638
+  },
+  "wabash": {
+    "admission_rate": 0.633,
+    "grad_rate": 0.7701,
+    "net_price": 24336,
+    "student_size": 866,
+    "tuition_in_state": 50800,
+    "tuition_out_of_state": 50800
+  },
+  "wake-forest": {
+    "admission_rate": 0.2167,
+    "grad_rate": 0.8915,
+    "net_price": 28719,
+    "student_size": 5485,
+    "tuition_in_state": 67642,
+    "tuition_out_of_state": 67642
+  },
+  "warren-wilson-college": {
+    "admission_rate": 0.7134,
+    "grad_rate": 0.42,
+    "net_price": 21249,
+    "student_size": 707,
+    "tuition_in_state": 41500,
+    "tuition_out_of_state": 41500
+  },
+  "wartburg": {
+    "admission_rate": 0.7584,
+    "grad_rate": 0.643,
+    "net_price": 32908,
+    "student_size": 1452,
+    "tuition_in_state": 26250,
+    "tuition_out_of_state": 26250
+  },
+  "wash-lee": {
+    "admission_rate": 0.1397,
+    "grad_rate": 0.9388,
+    "net_price": 23781,
+    "student_size": 1881,
+    "tuition_in_state": 68045,
+    "tuition_out_of_state": 68045
+  },
+  "washington": {
+    "admission_rate": 0.5689,
+    "grad_rate": 0.6537,
+    "net_price": 27898,
+    "student_size": 891,
+    "tuition_in_state": 55326,
+    "tuition_out_of_state": 55326
+  },
+  "washington-st-louis": {
+    "admission_rate": 0.1206,
+    "grad_rate": 0.9426,
+    "net_price": 21786,
+    "student_size": 7857,
+    "tuition_in_state": 65790,
+    "tuition_out_of_state": 65790
+  },
+  "waynesburg": {
+    "admission_rate": 0.8982,
+    "grad_rate": 0.6554,
+    "net_price": 18235,
+    "student_size": 1009,
+    "tuition_in_state": 30480,
+    "tuition_out_of_state": 30480
+  },
+  "webster": {
+    "admission_rate": 0.8623,
+    "grad_rate": 0.6439,
+    "net_price": 27047,
+    "student_size": 2304,
+    "tuition_in_state": 31750,
+    "tuition_out_of_state": 31750
+  },
+  "wentworth": {
+    "admission_rate": 0.9121,
+    "grad_rate": 0.6824,
+    "net_price": 34170,
+    "student_size": 3747,
+    "tuition_in_state": 42884,
+    "tuition_out_of_state": 42884
+  },
+  "west-florida": {
+    "admission_rate": 0.5824,
+    "grad_rate": 0.588,
+    "net_price": 9364,
+    "student_size": 9330,
+    "tuition_in_state": 6360,
+    "tuition_out_of_state": 19241
+  },
+  "west-virginia": {
+    "admission_rate": 0.89,
+    "grad_rate": 0.6466,
+    "net_price": 15634,
+    "student_size": 17385,
+    "tuition_in_state": 10104,
+    "tuition_out_of_state": 28608
+  },
+  "western-conn-st": {
+    "admission_rate": 0.8701,
+    "grad_rate": 0.5176,
+    "net_price": 17604,
+    "student_size": 3511,
+    "tuition_in_state": 13401,
+    "tuition_out_of_state": 16901
+  },
+  "western-ill": {
+    "admission_rate": 0.7118,
+    "grad_rate": 0.4522,
+    "net_price": 12937,
+    "student_size": 4410,
+    "tuition_in_state": 15264,
+    "tuition_out_of_state": 15264
+  },
+  "western-mich": {
+    "admission_rate": 0.846,
+    "grad_rate": 0.5757,
+    "net_price": 15273,
+    "student_size": 12568,
+    "tuition_in_state": 15252,
+    "tuition_out_of_state": 19034
+  },
+  "western-new-eng": {
+    "admission_rate": 0.8348,
+    "grad_rate": 0.6398,
+    "net_price": 27290,
+    "student_size": 2603,
+    "tuition_in_state": 47820,
+    "tuition_out_of_state": 47820
+  },
+  "westfield-st": {
+    "admission_rate": 0.8141,
+    "grad_rate": 0.5441,
+    "net_price": 16721,
+    "student_size": 3615,
+    "tuition_in_state": 12179,
+    "tuition_out_of_state": 18259
+  },
+  "wheaton-ma": {
+    "admission_rate": 0.6773,
+    "grad_rate": 0.7282,
+    "net_price": 29822,
+    "student_size": 1773,
+    "tuition_in_state": 63960,
+    "tuition_out_of_state": 63960
+  },
+  "whitman": {
+    "admission_rate": 0.3815,
+    "grad_rate": 0.8052,
+    "net_price": 33313,
+    "student_size": 1531,
+    "tuition_in_state": 64050,
+    "tuition_out_of_state": 64050
+  },
+  "whitworth": {
+    "admission_rate": 0.8978,
+    "grad_rate": 0.7089,
+    "net_price": 26534,
+    "student_size": 1858,
+    "tuition_in_state": 52880,
+    "tuition_out_of_state": 52880
+  },
+  "widener": {
+    "admission_rate": 0.7093,
+    "grad_rate": 0.6832,
+    "net_price": 25759,
+    "student_size": 2951,
+    "tuition_in_state": 55730,
+    "tuition_out_of_state": 55730
+  },
+  "wilkes": {
+    "admission_rate": 0.9064,
+    "grad_rate": 0.6317,
+    "net_price": 27743,
+    "student_size": 1985,
+    "tuition_in_state": 43496,
+    "tuition_out_of_state": 43496
+  },
+  "willamette": {
+    "admission_rate": 0.7709,
+    "grad_rate": 0.7124,
+    "net_price": 25121,
+    "student_size": 1592,
+    "tuition_in_state": 51156,
+    "tuition_out_of_state": 51156
+  },
+  "william-mary": {
+    "admission_rate": 0.3407,
+    "grad_rate": 0.8942,
+    "net_price": 19096,
+    "student_size": 7055,
+    "tuition_in_state": 25914,
+    "tuition_out_of_state": 51038
+  },
+  "wilson": {
+    "admission_rate": 0.9211,
+    "grad_rate": 0.4815,
+    "net_price": 21741,
+    "student_size": 865,
+    "tuition_in_state": 27100,
+    "tuition_out_of_state": 27100
+  },
+  "winthrop": {
+    "admission_rate": 0.7925,
+    "grad_rate": 0.5698,
+    "net_price": 15343,
+    "student_size": 3523,
+    "tuition_in_state": 14678,
+    "tuition_out_of_state": 28676
+  },
+  "wis-eau-claire": {
+    "admission_rate": 0.8234,
+    "grad_rate": 0.6381,
+    "net_price": 16550,
+    "student_size": 8895,
+    "tuition_in_state": 9642,
+    "tuition_out_of_state": 19228
+  },
+  "wis-lutheran": {
+    "admission_rate": 0.7816,
+    "grad_rate": 0.6357,
+    "net_price": 23245,
+    "student_size": 943,
+    "tuition_in_state": 36110,
+    "tuition_out_of_state": 36110
+  },
+  "wis-platteville": {
+    "admission_rate": 0.8938,
+    "grad_rate": 0.5576,
+    "net_price": 16032,
+    "student_size": 5837,
+    "tuition_in_state": 8644,
+    "tuition_out_of_state": 17603
+  },
+  "wis-river-falls": {
+    "admission_rate": 0.8172,
+    "grad_rate": 0.57,
+    "net_price": 14054,
+    "student_size": 4205,
+    "tuition_in_state": 9008,
+    "tuition_out_of_state": 17470
+  },
+  "wis-stevens-point": {
+    "admission_rate": 0.918,
+    "grad_rate": 0.5078,
+    "net_price": 14559,
+    "student_size": 7306,
+    "tuition_in_state": 9488,
+    "tuition_out_of_state": 18508
+  },
+  "wis-superior": {
+    "admission_rate": 0.9301,
+    "grad_rate": 0.4188,
+    "net_price": 12220,
+    "student_size": 1807,
+    "tuition_in_state": 8812,
+    "tuition_out_of_state": 16726
+  },
+  "wisconsin": {
+    "admission_rate": 0.452,
+    "grad_rate": 0.8955,
+    "net_price": 17354,
+    "student_size": 36902,
+    "tuition_in_state": 11603,
+    "tuition_out_of_state": 42103
+  },
+  "wittenberg": {
+    "admission_rate": 0.7235,
+    "grad_rate": 0.5269,
+    "net_price": 18649,
+    "student_size": 1215,
+    "tuition_in_state": 45940,
+    "tuition_out_of_state": 45940
+  },
+  "wm-paterson": {
+    "admission_rate": 0.9008,
+    "grad_rate": 0.4396,
+    "net_price": 18745,
+    "student_size": 6614,
+    "tuition_in_state": 15704,
+    "tuition_out_of_state": 25344
+  },
+  "wofford": {
+    "admission_rate": 0.5194,
+    "grad_rate": 0.842,
+    "net_price": 18732,
+    "student_size": 1816,
+    "tuition_in_state": 56005,
+    "tuition_out_of_state": 56005
+  },
+  "wooster": {
+    "admission_rate": 0.5953,
+    "grad_rate": 0.7394,
+    "net_price": 23458,
+    "student_size": 1730,
+    "tuition_in_state": 61640,
+    "tuition_out_of_state": 61640
+  },
+  "worcester-st": {
+    "admission_rate": 0.8799,
+    "grad_rate": 0.6145,
+    "net_price": 13381,
+    "student_size": 3930,
+    "tuition_in_state": 11786,
+    "tuition_out_of_state": 17866
+  },
+  "wpi": {
+    "admission_rate": 0.6016,
+    "grad_rate": 0.8971,
+    "net_price": 43071,
+    "student_size": 5447,
+    "tuition_in_state": 60965,
+    "tuition_out_of_state": 60965
+  },
+  "wright-st": {
+    "admission_rate": 0.9633,
+    "grad_rate": 0.4169,
+    "net_price": 15415,
+    "student_size": 6762,
+    "tuition_in_state": 11522,
+    "tuition_out_of_state": 21222
+  },
+  "xavier": {
+    "admission_rate": 0.8641,
+    "grad_rate": 0.6865,
+    "net_price": 32997,
+    "student_size": 4207,
+    "tuition_in_state": 50640,
+    "tuition_out_of_state": 50640
+  },
+  "yale": {
+    "admission_rate": 0.0387,
+    "grad_rate": 0.9574,
+    "net_price": 23777,
+    "student_size": 6758,
+    "tuition_in_state": 67250,
+    "tuition_out_of_state": 67250
+  },
+  "yeshiva": {
+    "admission_rate": 0.5562,
+    "grad_rate": 0.832,
+    "net_price": 49965,
+    "student_size": 2852,
+    "tuition_in_state": 51800,
+    "tuition_out_of_state": 51800
+  }
+}

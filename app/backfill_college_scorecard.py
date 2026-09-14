@@ -96,8 +96,11 @@ def _is_campus_of(school_name_lower: str, local_name_lower: str) -> bool:
 
 def fetch_all_schools() -> list[dict]:
     """Every school in College Scorecard's bulk institution CSV, as
-    {"name", "city", "state", "main"} dicts ("main" is IPEDS' "1"/"0"
-    main-campus flag, used by pass 3 above)."""
+    {"name", "city", "state", "main", "unitid"} dicts ("main" is IPEDS'
+    "1"/"0" main-campus flag, used by pass 3 above; "unitid" is the same id
+    the College Scorecard API keys its records by, used by
+    app/backfill_college_stats.py to look up a matched school's live stats
+    without a second name-matching pass)."""
     resp = requests.get(_BULK_ZIP_URL, timeout=60)
     resp.raise_for_status()
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
@@ -105,7 +108,10 @@ def fetch_all_schools() -> list[dict]:
         with zf.open(csv_name) as f:
             reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8"))
             return [
-                {"name": row["INSTNM"], "city": row["CITY"], "state": row["STABBR"], "main": row["MAIN"]}
+                {
+                    "name": row["INSTNM"], "city": row["CITY"], "state": row["STABBR"],
+                    "main": row["MAIN"], "unitid": row["UNITID"],
+                }
                 for row in reader
             ]
 
