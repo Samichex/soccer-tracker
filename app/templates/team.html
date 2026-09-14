@@ -19,21 +19,22 @@
     <div class="content-narrow">
     <div class="team-head">
         <div>
-            <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference, city=team_city) }}</h1>
+            <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
         </div>
-        <div class="chip-row">
-            {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
-            {% if team.head_coach %}<span class="chip-neutral">Coach &middot; {{ team.head_coach }}</span>{% endif %}
-            {% if team.is_private is not none %}<span class="chip-neutral">{{ "Private" if team.is_private else "Public" }}</span>{% endif %}
-            {% if team.athletic_url %}<a class="chip-neutral chip-icon" href="{{ team.athletic_url | site_href }}" target="_blank" rel="noopener noreferrer" title="{{ team.athletic_url | site_domain }}" aria-label="{{ team.athletic_url | site_domain }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>{% endif %}
-        </div>
+        {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
     </div>
+    <nav class="team-tabs" role="tablist">
+        <button type="button" class="team-tab active" role="tab" aria-selected="true" data-tab="team">Season</button>
+        <button type="button" class="team-tab" role="tab" aria-selected="false" data-tab="school">Info</button>
+    </nav>
+
+    <div class="team-tab-panel" data-panel="team">
 
     <div class="boxscore-card">
         <h2>Season</h2>
         <div class="record-row">
             <div class="record-tile"><div class="record-tile-value">{{ record.conf_w }}-{{ record.conf_l }}-{{ record.conf_d }}</div><div class="record-tile-label">Conference</div></div>
-            <div class="record-tile"><div class="record-tile-value">{{ record.nc_w }}-{{ record.nc_l }}-{{ record.nc_d }}</div><div class="record-tile-label">Non-Conference</div></div>
+            <div class="record-tile"><div class="record-tile-value">{{ record.nc_w }}-{{ record.nc_l }}-{{ record.nc_d }}</div><div class="record-tile-label">Non-Conf</div></div>
             <div class="record-tile"><div class="record-tile-value">{{ record.overall_w }}-{{ record.overall_l }}-{{ record.overall_d }}</div><div class="record-tile-label">Overall</div></div>
         </div>
         <div class="stat-divider"></div>
@@ -100,8 +101,36 @@
     </div>
     </div>
     {% endif %}
+
     </div>
 
+    <div class="team-tab-panel" data-panel="school" hidden>
+    <div class="boxscore-card">
+        <h2>Info</h2>
+        <div class="info-list">
+            {% if team.head_coach %}<div class="info-row"><span class="info-label">Coach</span><span class="info-value">{{ team.head_coach }}</span></div>{% endif %}
+            {% if team.athletic_url %}<div class="info-row"><span class="info-label">Athletics</span><a class="info-value info-value-link" href="{{ team.athletic_url | site_href }}" target="_blank" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>{{ team.athletic_url | site_domain }}</a></div>{% endif %}
+            {% if team.website_url %}<div class="info-row"><span class="info-label">Academics</span><a class="info-value info-value-link" href="{{ team.website_url | site_href }}" target="_blank" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>{{ team.website_url | site_domain }}</a></div>{% endif %}
+            {% if team_city and team_state %}<div class="info-row"><span class="info-label">Location</span><a class="info-value info-value-link" href="{{ google_maps_url(team.name_full or team.name, team_city, team_state) }}" target="_blank" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>{{ team_city }}, {{ team_state }}</a></div>{% endif %}
+            {% if team.is_private is not none %}<div class="info-row"><span class="info-label">Type</span><span class="info-value">{{ "Private" if team.is_private else "Public" }}</span></div>{% endif %}
+            {% if college_stats %}
+            {% if college_stats.tuition_in_state is not none %}<div class="info-row"><span class="info-label">In-State</span><span class="info-value">{{ college_stats.tuition_in_state | money }}</span></div>{% endif %}
+            {% if college_stats.tuition_out_of_state is not none %}<div class="info-row"><span class="info-label">Out-of-State</span><span class="info-value">{{ college_stats.tuition_out_of_state | money }}</span></div>{% endif %}
+            {% if college_stats.net_price is not none %}<div class="info-row"><span class="info-label">Avg Net Price</span><span class="info-value">{{ college_stats.net_price | money }}</span></div>{% endif %}
+            {% if college_stats.grad_rate is not none %}<div class="info-row"><span class="info-label">Grad Rate</span><span class="info-value">{{ college_stats.grad_rate | percent }}</span></div>{% endif %}
+            {% if college_stats.admission_rate is not none %}<div class="info-row"><span class="info-label">Admit Rate</span><span class="info-value">{{ college_stats.admission_rate | percent }}</span></div>{% endif %}
+            {% if college_stats.student_size is not none %}<div class="info-row"><span class="info-label">Undergrad #</span><span class="info-value">{{ college_stats.student_size | count }}</span></div>{% endif %}
+            {% endif %}
+        </div>
+        {% if not college_stats and not team_city and not team.website_url and not team.athletic_url and not team.head_coach and team.is_private is none %}
+        <p class="empty">No school data available.</p>
+        {% endif %}
+    </div>
+    </div>
+
+    </div>
+
+    <div class="team-tab-panel" data-panel="team">
     <h2>Roster</h2>
     {% if not roster %}
     <p class="empty">No roster data yet.</p>
@@ -150,7 +179,11 @@
     </div>
     <script src="/static/sort-table.js"></script>
     {% endif %}
+
+    </div>
+
     <script src="/static/toggle-leaders.js"></script>
+    <script src="/static/team-tabs.js"></script>
     {% endif %}
 </body>
 

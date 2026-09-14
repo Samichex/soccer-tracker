@@ -573,21 +573,19 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     border-radius: 999px;
     white-space: nowrap;
 }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-.chip-neutral {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--muted);
-    background: var(--neutral-soft);
-    padding: 0.32rem 0.7rem;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-a.chip-neutral:hover { color: var(--accent); }
-.icon-ext { vertical-align: -1px; margin-left: 4px; }
-.chip-icon { padding: 0.32rem; }
+.info-list { display: flex; flex-direction: column; }
+.info-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 0.82rem; color: var(--muted); }
+.info-value { font-size: 0.9rem; font-weight: 600; color: var(--text); text-align: right; }
+a.info-value:hover { color: var(--accent); }
+.info-value-link { display: inline-flex; align-items: center; gap: 5px; }
+.info-value-link svg { flex: none; }
+
+.team-tabs { display: flex; justify-content: flex-end; gap: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; margin-bottom: 1.1rem; }
+.team-tab { background: none; border: none; border-bottom: 2px solid transparent; font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--muted); padding: 0.5rem 0.1rem; margin-bottom: -1px; cursor: pointer; }
+.team-tab:hover { color: var(--accent); }
+.team-tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
 
 /* Team season record + stat tiles */
 .record-row { display: grid; grid-template-columns: repeat(3, 1fr); }

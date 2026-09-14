@@ -9,11 +9,13 @@ from . import config
 
 _TEAM_STATES_PATH = config.BASE_DIR / "app" / "data" / "team_states.json"
 _TEAM_CITIES_PATH = config.BASE_DIR / "app" / "data" / "team_cities.json"
+_TEAM_COLLEGE_STATS_PATH = config.BASE_DIR / "app" / "data" / "team_college_stats.json"
 _NON_D1_PATH = config.BASE_DIR / "app" / "data" / "non_d1.json"
 _CONFERENCES_PATH = config.BASE_DIR / "app" / "data" / "conferences.json"
 
 _cache: dict | None = None
 _cities_cache: dict | None = None
+_college_stats_cache: dict | None = None
 _non_d1_cache: dict | None = None
 _conferences_cache: dict | None = None
 
@@ -40,6 +42,43 @@ def get_team_cities() -> dict:
         else:
             _cities_cache = {}
     return _cities_cache
+
+
+def get_team_college_stats() -> dict:
+    """seo -> {tuition_in_state, tuition_out_of_state, net_price, grad_rate,
+    admission_rate, student_size}, from app/backfill_college_stats.py.
+    Coverage is partial (only schools matched to a College Scorecard
+    record), and any individual field can be missing if that school's
+    record didn't have it -- same partial-coverage caveat as
+    get_team_cities."""
+    global _college_stats_cache
+    if _college_stats_cache is None:
+        if _TEAM_COLLEGE_STATS_PATH.exists():
+            _college_stats_cache = json.loads(_TEAM_COLLEGE_STATS_PATH.read_text())
+        else:
+            _college_stats_cache = {}
+    return _college_stats_cache
+
+
+def format_money(value: float | int | None) -> str:
+    """1000-separated whole-dollar display, e.g. 17736 -> '$17,736'."""
+    if value is None:
+        return ""
+    return f"${value:,.0f}"
+
+
+def format_count(value: float | int | None) -> str:
+    """1000-separated whole-number display, e.g. 34177 -> '34,177'."""
+    if value is None:
+        return ""
+    return f"{value:,.0f}"
+
+
+def format_percent(value: float | None) -> str:
+    """Fraction as a whole-percent display, e.g. 0.9678 -> '97%'."""
+    if value is None:
+        return ""
+    return f"{value * 100:.0f}%"
 
 
 def google_maps_url(name: str, city: str, state: str) -> str:

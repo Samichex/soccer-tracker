@@ -48,6 +48,12 @@ NCAA_DIRECTORY_DIVISIONS = {
 
 DB_PATH = Path(os.environ.get("DB_PATH", str(BASE_DIR / "data" / "soccer.db")))
 
+# Personal key from https://collegescorecard.ed.gov/data/api-documentation/,
+# used only by the one-off app/backfill_college_stats.py script -- not read
+# anywhere in the request path, so it only needs to be set in the shell (or
+# Render env var) a backfill run happens in.
+COLLEGE_SCORECARD_API_KEY = os.environ.get("COLLEGE_SCORECARD_API_KEY", "")
+
 # How far around "today" to keep synced live (scores/times here can change,
 # so this window is re-pulled on every sync cycle and on manual refresh).
 DAYS_BACK = int(os.environ.get("DAYS_BACK", "3"))
