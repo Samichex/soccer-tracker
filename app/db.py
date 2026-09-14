@@ -760,7 +760,7 @@ def get_team_roster_stats(conn, seo: str):
         FROM player_stats ps
         WHERE ps.team_seo = ? AND COALESCE(ps.participated, 1) = 1
         GROUP BY ps.first_name, ps.last_name
-        ORDER BY CAST(number AS INTEGER) ASC, ps.last_name ASC
+        ORDER BY games_played DESC, avg_minutes DESC
         """,
         (seo,),
     ).fetchall()
