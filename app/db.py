@@ -553,6 +553,14 @@ def get_team(conn, seo: str):
     return conn.execute("SELECT * FROM teams WHERE seo = ?", (seo,)).fetchone()
 
 
+def get_team_privacy(conn) -> dict:
+    """seo -> is_private (0/1) for every team with a known value, from the
+    NCAA directory backfill. Teams not yet backfilled are simply absent --
+    treat a missing key as unknown, not as public (0)."""
+    rows = conn.execute("SELECT seo, is_private FROM teams WHERE is_private IS NOT NULL").fetchall()
+    return {r["seo"]: r["is_private"] for r in rows}
+
+
 def search_teams(conn, query: str, limit: int = 20):
     """Note: not division-filtered at the SQL level -- `teams.division` is
     only reliably set once the NCAA directory backfill has run for that

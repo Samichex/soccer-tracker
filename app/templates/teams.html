@@ -12,20 +12,78 @@
 <body class="wide">
     {% set filter_panel_html %}
     <form method="get" action="/teams" class="filter-form">
-        <select name="conference" onchange="this.form.submit()">
+        <span class="menu-section-label">Location</span>
+        <select name="conference">
             <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
             {% for c in conferences %}
             <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label_fn(c) }}</option>
             {% endfor %}
         </select>
-        <select name="state" onchange="this.form.submit()">
+        <select name="state">
             <option value="" {% if not selected_state %}selected{% endif %}>State</option>
             {% for s in states %}
             <option value="{{ s }}" {% if selected_state == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
-        <noscript><button type="submit">Go</button></noscript>
+
+        <span class="menu-section-label">School</span>
+        <select name="public">
+            <option value="" {% if not selected_public %}selected{% endif %}>Both</option>
+            <option value="public" {% if selected_public == 'public' %}selected{% endif %}>Public</option>
+            <option value="private" {% if selected_public == 'private' %}selected{% endif %}>Private</option>
+        </select>
+
+        <span class="menu-section-label">Cost</span>
+        <div class="filter-slider">
+            <div class="filter-slider-label">
+                <span>In-state tuition</span>
+                <span class="filter-slider-value">Max. <span id="tuition-in-max-value">{{ selected_tuition_in_max | money }}</span></span>
+            </div>
+            <input type="range" name="tuition_in_max" min="0" max="{{ bounds.tuition_in_state_max }}" step="1000"
+                   value="{{ selected_tuition_in_max }}" data-format="money" data-output="tuition-in-max-value">
+        </div>
+        <div class="filter-slider">
+            <div class="filter-slider-label">
+                <span>Out-of-state tuition</span>
+                <span class="filter-slider-value">Max. <span id="tuition-out-max-value">{{ selected_tuition_out_max | money }}</span></span>
+            </div>
+            <input type="range" name="tuition_out_max" min="0" max="{{ bounds.tuition_out_of_state_max }}" step="1000"
+                   value="{{ selected_tuition_out_max }}" data-format="money" data-output="tuition-out-max-value">
+        </div>
+
+        <span class="menu-section-label">Academics</span>
+        <div class="filter-slider">
+            <div class="filter-slider-label">
+                <span>Grad rate</span>
+                <span class="filter-slider-value">Min. <span id="grad-min-value">{{ selected_grad_min | percent }}</span></span>
+            </div>
+            <input type="range" name="grad_min" min="0" max="1" step="0.01"
+                   value="{{ selected_grad_min }}" data-format="percent" data-output="grad-min-value">
+        </div>
+        <div class="filter-slider">
+            <div class="filter-slider-label">
+                <span>Admit rate</span>
+                <span class="filter-slider-value">Max. <span id="admit-max-value">{{ selected_admit_max | percent }}</span></span>
+            </div>
+            <input type="range" name="admit_max" min="0" max="1" step="0.01"
+                   value="{{ selected_admit_max }}" data-format="percent" data-output="admit-max-value">
+        </div>
+        <div class="filter-slider">
+            <div class="filter-slider-label">
+                <span>Undergrad size</span>
+                <span class="filter-slider-value">Max. <span id="undergrad-max-value">{{ selected_undergrad_max | count }}</span></span>
+            </div>
+            <input type="range" name="undergrad_max" min="0" max="{{ bounds.student_size_max }}" step="500"
+                   value="{{ selected_undergrad_max }}" data-format="count" data-output="undergrad-max-value">
+        </div>
+
+        <p class="filter-hint">Cost and academics filters only apply to teams with available data.</p>
+        <div class="filter-actions">
+            <a href="/teams" class="filter-clear-btn">Clear</a>
+            <button type="submit" class="filter-apply-btn">Apply</button>
+        </div>
     </form>
+    <script src="/static/filter-sliders.js"></script>
     {% endset %}
     {% include "_nav.html" %}
 
