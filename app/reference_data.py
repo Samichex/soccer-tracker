@@ -260,14 +260,30 @@ def get_team_label_responsive(
     )
 
 
-def rank_prefix(rank: int | None, prev_rank: str | None = None) -> Markup:
+_REGION_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+
+
+def region_roman(region: int | None) -> str | None:
+    """1 -> "I", 10 -> "X", etc. None for anything outside the ten NCAA D3
+    regions (see config.REGIONAL_RANKINGS_DIVISIONS)."""
+    if not region or not (1 <= region <= len(_REGION_NUMERALS)):
+        return None
+    return _REGION_NUMERALS[region - 1]
+
+
+def rank_prefix(rank: int | None, prev_rank: str | None = None, region: int | None = None) -> Markup:
     """Rank badge prefix, e.g. '#3 ' for rank=3, '' if unranked. When
     `prev_rank` is given, leads with a colored move indicator: an arrow for
-    a rank gained/lost, or a dot the first week a team is ranked."""
+    a rank gained/lost, or a dot the first week a team is ranked.
+
+    `region` swaps the '#3' national-poll style for 'I-3' -- NCAA D3's
+    regional NPI rankings have no single national rank, only a rank within
+    one of ten regions (see config.REGIONAL_RANKINGS_DIVISIONS)."""
     if not rank:
         return Markup("")
     arrow = rank_arrow(rank, prev_rank)
-    return (arrow + Markup(" ") if arrow else Markup("")) + Markup(f"#{rank} ")
+    label = f"{region_roman(region)}-{rank}" if region else f"#{rank}"
+    return (arrow + Markup(" ") if arrow else Markup("")) + Markup(f"{label} ")
 
 
 def rank_arrow(rank: int | None, prev_rank: str | None) -> Markup:

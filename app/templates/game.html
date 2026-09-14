@@ -19,8 +19,8 @@
     <div class="game-header">
         <h1 class="matchup">
             <div class="matchup-names">
-                <a class="matchup-team left" href="/team/{{ game.away_seo }}">{{ rank_prefix(game.away_rank, game.away_prev_rank) }}{{ team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference) }}</a>
-                <a class="matchup-team right" href="/team/{{ game.home_seo }}">{{ rank_prefix(game.home_rank, game.home_prev_rank) }}{{ team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference) }}</a>
+                <a class="matchup-team left" href="/team/{{ game.away_seo }}">{{ rank_prefix(game.away_rank, game.away_prev_rank, game.away_region) }}{{ team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference) }}</a>
+                <a class="matchup-team right" href="/team/{{ game.home_seo }}">{{ rank_prefix(game.home_rank, game.home_prev_rank, game.home_region) }}{{ team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference) }}</a>
             </div>
             <div class="matchup-score">
                 <span class="score-big">{{ game.away_score }}</span>
