@@ -13,23 +13,26 @@
     {% set filter_panel_html %}
     <form method="get" action="/" class="filter-form">
         <input type="hidden" name="date" value="{{ day.isoformat() }}">
-        <select name="conference" onchange="this.form.submit()">
+        <select name="conference">
             <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
             {% for c in conferences %}
             <option value="{{ c }}" {% if selected_conference == c %}selected{% endif %}>{{ conference_label(c) }}</option>
             {% endfor %}
         </select>
-        <select name="state" onchange="this.form.submit()">
+        <select name="state">
             <option value="" {% if not selected_state %}selected{% endif %}>State</option>
             {% for s in states %}
             <option value="{{ s }}" {% if selected_state == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
         <label class="conf-only-toggle">
-            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %} onchange="this.form.submit()">
+            <input type="checkbox" name="conf_only" value="1" {% if conf_only %}checked{% endif %}>
             Conference Match
         </label>
-        <noscript><button type="submit">Go</button></noscript>
+        <div class="filter-actions">
+            <a href="{{ querystring_with(request, conference=None, state=None, conf_only=None) }}" class="filter-clear-btn">Clear</a>
+            <button type="submit" class="filter-apply-btn">Apply</button>
+        </div>
     </form>
     {% endset %}
     {% include "_nav.html" %}
