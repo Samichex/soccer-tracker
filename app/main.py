@@ -493,17 +493,27 @@ def teams_list(
     conference: str | None = None,
     state: str | None = None,
     division: str | None = None,
+    public: str | None = None,
+    tuition_in_max: int | None = None,
+    tuition_out_max: int | None = None,
+    grad_min: float | None = None,
+    admit_max: float | None = None,
+    undergrad_max: int | None = None,
 ):
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
         games = db.get_all_final_games(conn, division)
         conferences = db.get_conferences(conn, division)
         rank_map = _rank_map(db.get_latest_rankings(conn, division))
+        team_privacy = db.get_team_privacy(conn)
     table = standings.build_all_teams_table(games)
     team_states = reference_data.get_team_states()
+    college_stats = reference_data.get_team_college_stats()
     for t in table:
         t["state"] = team_states.get(t["seo"], "")
         t["rank"], t["prev_rank"] = _rank_lookup(rank_map, t["seo"])
+        t["is_private"] = team_privacy.get(t["seo"])
+        t["college"] = college_stats.get(t["seo"], {})
 
     table.sort(
         key=lambda t: (
@@ -513,11 +523,26 @@ def teams_list(
     )
 
     states = sorted({t["state"] for t in table if t["state"]})
+    bounds = reference_data.get_college_stat_bounds()
 
     if conference:
         table = [t for t in table if t["conference"] == conference]
     if state:
         table = [t for t in table if t["state"] == state]
+    if public == "public":
+        table = [t for t in table if t["is_private"] == 0]
+    elif public == "private":
+        table = [t for t in table if t["is_private"] == 1]
+    if tuition_in_max is not None and tuition_in_max < bounds["tuition_in_state_max"]:
+        table = [t for t in table if t["college"].get("tuition_in_state") is not None and t["college"]["tuition_in_state"] <= tuition_in_max]
+    if tuition_out_max is not None and tuition_out_max < bounds["tuition_out_of_state_max"]:
+        table = [t for t in table if t["college"].get("tuition_out_of_state") is not None and t["college"]["tuition_out_of_state"] <= tuition_out_max]
+    if grad_min is not None and grad_min > 0:
+        table = [t for t in table if t["college"].get("grad_rate") is not None and t["college"]["grad_rate"] >= grad_min]
+    if admit_max is not None and admit_max < 1:
+        table = [t for t in table if t["college"].get("admission_rate") is not None and t["college"]["admission_rate"] <= admit_max]
+    if undergrad_max is not None and undergrad_max < bounds["student_size_max"]:
+        table = [t for t in table if t["college"].get("student_size") is not None and t["college"]["student_size"] <= undergrad_max]
 
     return templates.TemplateResponse(
         "teams.html",
@@ -529,6 +554,13 @@ def teams_list(
             "states": states,
             "selected_conference": conference,
             "selected_state": state,
+            "bounds": bounds,
+            "selected_public": public,
+            "selected_tuition_in_max": tuition_in_max if tuition_in_max is not None else bounds["tuition_in_state_max"],
+            "selected_tuition_out_max": tuition_out_max if tuition_out_max is not None else bounds["tuition_out_of_state_max"],
+            "selected_grad_min": grad_min if grad_min is not None else 0,
+            "selected_admit_max": admit_max if admit_max is not None else 1,
+            "selected_undergrad_max": undergrad_max if undergrad_max is not None else bounds["student_size_max"],
         },
     )
 

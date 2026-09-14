@@ -1,5 +1,6 @@
 import datetime as dt
 import json
+import math
 import re
 from urllib.parse import quote
 
@@ -16,6 +17,7 @@ _CONFERENCES_PATH = config.BASE_DIR / "app" / "data" / "conferences.json"
 _cache: dict | None = None
 _cities_cache: dict | None = None
 _college_stats_cache: dict | None = None
+_college_stat_bounds_cache: dict | None = None
 _non_d1_cache: dict | None = None
 _conferences_cache: dict | None = None
 
@@ -58,6 +60,30 @@ def get_team_college_stats() -> dict:
         else:
             _college_stats_cache = {}
     return _college_stats_cache
+
+
+def get_college_stat_bounds() -> dict:
+    """Slider max values for the Teams filters, derived from the actual
+    College Scorecard data range and rounded up to a clean number so the
+    top of each slider means "no filter" for every team that has the
+    field. Percent fields (grad rate, admission rate) aren't included here
+    since they're already bounded 0-1 by definition."""
+    global _college_stat_bounds_cache
+    if _college_stat_bounds_cache is None:
+        stats = get_team_college_stats()
+
+        def _max_rounded(field: str, round_to: int) -> int:
+            values = [v[field] for v in stats.values() if v.get(field) is not None]
+            if not values:
+                return round_to
+            return math.ceil(max(values) / round_to) * round_to
+
+        _college_stat_bounds_cache = {
+            "tuition_in_state_max": _max_rounded("tuition_in_state", 5000),
+            "tuition_out_of_state_max": _max_rounded("tuition_out_of_state", 5000),
+            "student_size_max": _max_rounded("student_size", 5000),
+        }
+    return _college_stat_bounds_cache
 
 
 def format_money(value: float | int | None) -> str:
