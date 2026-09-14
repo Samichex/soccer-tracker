@@ -174,14 +174,20 @@ def _last_synced():
 templates.env.globals["last_synced"] = _last_synced
 
 
+_CONSECUTIVE_SYNC_FAILURES = 0  # same pattern as _last_manual_sync below
+
+
 def _background_sync_loop():
+    global _CONSECUTIVE_SYNC_FAILURES
     last_schedule_sync: dt.datetime | None = None
     schedule_interval = dt.timedelta(hours=config.SCHEDULE_SYNC_INTERVAL_HOURS)
     while True:
+        sync_failed = False
         try:
             sync.run_full_sync()
         except Exception:
             log.exception("sync failed")
+            sync_failed = True
 
         now = dt.datetime.utcnow()
         if last_schedule_sync is None or now - last_schedule_sync >= schedule_interval:
@@ -190,8 +196,37 @@ def _background_sync_loop():
                 last_schedule_sync = now
             except Exception:
                 log.exception("far schedule sync failed")
+                sync_failed = True
 
-        time.sleep(config.SYNC_INTERVAL_MINUTES * 60)
+        _CONSECUTIVE_SYNC_FAILURES = _CONSECUTIVE_SYNC_FAILURES + 1 if sync_failed else 0
+        circuit_open = _CONSECUTIVE_SYNC_FAILURES >= config.SYNC_FAILURE_BACKOFF_THRESHOLD
+
+        if circuit_open:
+            # Repeated failures across whole cycles (upstream down or
+            # rate-limiting for minutes) -- fall back to the slow interval
+            # even if a game is live, rather than keep hammering it fast.
+            log.warning(
+                "sync failing repeatedly (%d in a row); using slow interval",
+                _CONSECUTIVE_SYNC_FAILURES,
+            )
+            live = False
+            sleep_seconds = config.SYNC_INTERVAL_MINUTES * 60
+        else:
+            try:
+                with db.get_conn() as conn:
+                    live = db.has_live_games(conn)
+            except Exception:
+                log.exception("has_live_games check failed")
+                live = False
+            sleep_seconds = (
+                config.LIVE_SYNC_INTERVAL_SECONDS if live else config.SYNC_INTERVAL_MINUTES * 60
+            )
+
+        log.info(
+            "next sync in %ss (live=%s, consecutive_failures=%d)",
+            sleep_seconds, live, _CONSECUTIVE_SYNC_FAILURES,
+        )
+        time.sleep(sleep_seconds)
 
 
 @app.on_event("startup")
@@ -314,7 +349,7 @@ def _match_badge(g: dict) -> tuple[str, str] | None:
     if g["status"] == "final":
         return "b-final", "FT"
     if g["status"] == "live":
-        label = reference_data.period_short(g["current_period"])
+        label = reference_data.live_match_clock(g["current_period"], g["start_epoch"])
         if label == "HT":
             return "b-ht", "HT"
         return "b-live", label

@@ -214,7 +214,12 @@ def run_full_sync():
         for division in config.ENABLED_DIVISIONS:
             sport_path = config.DIVISIONS[division]
             for offset in range(-config.DAYS_BACK, config.DAYS_FORWARD + 1):
-                sync_date(conn, today + dt.timedelta(days=offset), division, sport_path)
+                date = today + dt.timedelta(days=offset)
+                try:
+                    sync_date(conn, date, division, sport_path)
+                except Exception:
+                    log.exception("failed to sync %s %s", division, date.isoformat())
+                    continue
         sync_missing_boxscores(conn)
         for division in config.ENABLED_DIVISIONS:
             if division not in config.RANKINGS_SUPPORTED_DIVISIONS:
@@ -241,7 +246,12 @@ def sync_far_schedule():
         for division in config.ENABLED_DIVISIONS:
             sport_path = config.DIVISIONS[division]
             for offset in range(config.DAYS_FORWARD + 1, config.SCHEDULE_DAYS_FORWARD + 1):
-                sync_date(conn, today + dt.timedelta(days=offset), division, sport_path)
+                date = today + dt.timedelta(days=offset)
+                try:
+                    sync_date(conn, date, division, sport_path)
+                except Exception:
+                    log.exception("failed to sync %s %s", division, date.isoformat())
+                    continue
 
 
 if __name__ == "__main__":

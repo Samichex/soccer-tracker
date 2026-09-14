@@ -181,6 +181,30 @@ def test_get_teams_with_orgid_only_returns_matched_teams(conn):
     assert rows[0]["orgid"] == 123
 
 
+def test_has_live_games_false_when_no_games(conn):
+    assert db.has_live_games(conn) is False
+
+
+def test_has_live_games_false_when_only_pre_and_final(conn):
+    pre = _game(id_="g1")
+    pre["game"]["gameState"] = "pre"
+    final = _game(id_="g2")
+    final["game"]["gameState"] = "final"
+    db.upsert_game(conn, pre, "2026-09-01")
+    db.upsert_game(conn, final, "2026-09-01")
+    assert db.has_live_games(conn) is False
+
+
+def test_has_live_games_true_when_a_game_is_live(conn):
+    pre = _game(id_="g1")
+    pre["game"]["gameState"] = "pre"
+    live = _game(id_="g2")
+    live["game"]["gameState"] = "live"
+    db.upsert_game(conn, pre, "2026-09-01")
+    db.upsert_game(conn, live, "2026-09-01")
+    assert db.has_live_games(conn) is True
+
+
 def test_player_stats_pk_does_not_catch_same_player_under_two_jersey_numbers(conn, caplog):
     # Known gap (see the two confirmed real-world instances found in
     # data/soccer.db, e.g. game 6616816 "Callum Lugton" as both #10 and
