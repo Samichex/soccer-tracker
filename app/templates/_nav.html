@@ -14,21 +14,21 @@
 {% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
 {% set sync = last_synced() %}
 <div class="topnav">
-    <a class="brand" href="/" aria-label="Full Time home">
+    <a class="brand" href="{{ base_path }}/" aria-label="Full Time home">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16 H30 M22 16 A6 6 0 0 1 10 16 A6 6 0 0 1 22 16" pathlength="1"></path></svg>
         <span class="brand-text">
             <span class="brand-word">Full Time</span>
         </span>
     </a>
-    <form class="topnav-search" action="/search" method="get">
+    <form class="topnav-search" action="{{ base_path }}/search" method="get">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input type="text" name="q" placeholder="Search teams or players..." value="{{ q or '' }}">
     </form>
     <div class="topnav-links">
-        <a href="/" {% if request.url.path == '/' %}class="active" aria-current="page"{% endif %}>Matches</a>
-        <a href="/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
-        <a href="/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
-        <a href="/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>
+        <a href="{{ base_path }}/" {% if request.url.path == '/' %}class="active" aria-current="page"{% endif %}>Matches</a>
+        <a href="{{ base_path }}/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
+        <a href="{{ base_path }}/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
+        <a href="{{ base_path }}/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>
 
         <div class="menu" id="ft-menu">
             <button type="button" class="menu-toggle" id="ft-menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="ft-menu-panel" aria-label="Open menu">
@@ -38,7 +38,7 @@
                 {% set rank_history_enabled = current_division in rankings_supported_divisions %}
                 <div class="menu-section">
                     {% if rank_history_enabled %}
-                    <a class="menu-row menu-link{% if request.url.path == '/rank-history' %} active{% endif %}" href="/rank-history"{% if request.url.path == '/rank-history' %} aria-current="page"{% endif %}>
+                    <a class="menu-row menu-link{% if request.url.path == '/rank-history' %} active{% endif %}" href="{{ base_path }}/rank-history"{% if request.url.path == '/rank-history' %} aria-current="page"{% endif %}>
                         <span>Rank History</span>
                     </a>
                     {% else %}
@@ -46,7 +46,7 @@
                         <span>Rank History</span>
                     </a>
                     {% endif %}
-                    <a class="menu-row menu-link{% if request.url.path == '/about' %} active{% endif %}" href="/about"{% if request.url.path == '/about' %} aria-current="page"{% endif %}>
+                    <a class="menu-row menu-link{% if request.url.path == '/about' %} active{% endif %}" href="{{ base_path }}/about"{% if request.url.path == '/about' %} aria-current="page"{% endif %}>
                         <span>About</span>
                     </a>
                 </div>
@@ -73,7 +73,7 @@
         {% set d3 = enabled_divisions[1] %}
         {% set is_d1 = current_division == d1 %}
         <a class="division-switch {{ 'is-on' if is_d1 else 'is-off' }}"
-           href="/set-division/{{ d3 if is_d1 else d1 }}?next={{ current_path(request) | urlencode }}"
+           href="{{ base_path }}/set-division/{{ d3 if is_d1 else d1 }}?next={{ current_path(request) | urlencode }}"
            aria-label="Viewing {{ division_label(current_division) }}. Switch to {{ division_label(d3 if is_d1 else d1) }}.">
             <span class="division-switch-label">{{ division_label(current_division) }}</span>
             <span class="division-switch-thumb"></span>
@@ -91,5 +91,5 @@
         {% endif %}
     </div>
 </div>
-<script src="/static/nav-menu.js"></script>
-<script src="/static/localize-time.js"></script>
+<script src="{{ base_path }}/static/nav-menu.js"></script>
+<script src="{{ base_path }}/static/localize-time.js"></script>

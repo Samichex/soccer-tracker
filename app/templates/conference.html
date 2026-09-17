@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: {{ conference_label }}</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body class="wide">
     {% include "_nav.html" %}
@@ -46,7 +46,7 @@
         {% for t in table %}
             <tr>
                 <td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {% if t.rank and t.region %}{{ region_roman(t.region) }}-{{ t.rank }}{% else %}{{ t.rank or '' }}{% endif %}</td>
-                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, conference) }}</a></td>
+                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="{{ base_path }}/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, conference) }}</a></td>
                 <td data-sort-key="state" data-sort-value="{{ t.state }}">{{ t.state }}</td>
                 <td class="num" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
                 <td class="num" data-sort-key="pts" data-sort-value="{{ t.conf_pts }}">{{ t.conf_pts }}</td>
@@ -62,7 +62,7 @@
     </div>
     </div>
     <p class="glossary">GF = Goals For &middot; GA = Goals Against &middot; GD = Goal Differential (GF-GA)</p>
-    <script src="/static/sort-table.js"></script>
+    <script src="{{ base_path }}/static/sort-table.js"></script>
     {% endif %}
 </body>
 </html>

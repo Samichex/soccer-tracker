@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: Search</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
     {% include "_nav.html" %}
@@ -30,7 +30,7 @@
         <tbody>
         {% for r in team_results %}
             <tr>
-                <td><a href="/team/{{ r.seo }}">{{ team_label(r.name_full or r.name, r.seo, r.conference) }}</a></td>
+                <td><a href="{{ base_path }}/team/{{ r.seo }}">{{ team_label(r.name_full or r.name, r.seo, r.conference) }}</a></td>
                 <td>{{ conference_label_fn(r.conference) if r.conference else '' }}</td>
             </tr>
         {% endfor %}
@@ -49,7 +49,7 @@
         <tbody>
         {% for p in player_results %}
             <tr>
-                <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                <td><a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                 <td>{{ team_label(p.team_name, p.team_seo, p.team_conference) if p.team_name else '' }}</td>
                 <td>{{ p.position | position_short }}</td>
             </tr>

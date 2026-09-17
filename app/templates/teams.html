@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: Teams</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body class="wide">
     {% set filter_panel_html %}
-    <form method="get" action="/teams" class="filter-form">
+    <form method="get" action="{{ base_path }}/teams" class="filter-form">
         <span class="menu-section-label">Location</span>
         <select name="conference">
             <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
@@ -79,11 +79,11 @@
 
         <p class="filter-hint">Cost and academics filters only apply to teams with available data.</p>
         <div class="filter-actions">
-            <a href="/teams" class="filter-clear-btn">Clear</a>
+            <a href="{{ base_path }}/teams" class="filter-clear-btn">Clear</a>
             <button type="submit" class="filter-apply-btn">Apply</button>
         </div>
     </form>
-    <script src="/static/filter-sliders.js"></script>
+    <script src="{{ base_path }}/static/filter-sliders.js"></script>
     {% endset %}
     {% include "_nav.html" %}
 
@@ -111,8 +111,8 @@
         {% for t in table %}
             <tr>
                 <td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {% if t.rank and t.region %}{{ region_roman(t.region) }}-{{ t.rank }}{% else %}{{ t.rank or '' }}{% endif %}</td>
-                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, t.conference) }}</a></td>
-                <td data-sort-key="conference" data-sort-value="{{ conference_label_fn(t.conference) }}"><a href="/conference/{{ t.conference }}">{{ conference_label_fn(t.conference) }}</a></td>
+                <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="{{ base_path }}/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, t.conference) }}</a></td>
+                <td data-sort-key="conference" data-sort-value="{{ conference_label_fn(t.conference) }}"><a href="{{ base_path }}/conference/{{ t.conference }}">{{ conference_label_fn(t.conference) }}</a></td>
                 <td class="num" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
                 <td class="num" data-sort-key="pts" data-sort-value="{{ t.conf_pts }}">{{ t.conf_pts }}</td>
                 <td class="num" data-sort-key="nc" data-sort-value="{{ t.nc_w * 3 + t.nc_d }}">{{ t.nc_w }}-{{ t.nc_l }}-{{ t.nc_d }}</td>
@@ -127,7 +127,7 @@
     </div>
     </div>
     <p class="glossary">GF = Goals For &middot; GA = Goals Against &middot; GD = Goal Differential (GF-GA)</p>
-    <script src="/static/sort-table.js"></script>
+    <script src="{{ base_path }}/static/sort-table.js"></script>
     {% endif %}
 </body>
 </html>

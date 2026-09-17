@@ -40,6 +40,7 @@ async def _security_headers(request: Request, call_next):
 
 app.mount("/static", StaticFiles(directory=str(config.BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
+templates.env.globals["base_path"] = config.BASE_PATH
 templates.env.globals["rank_prefix"] = reference_data.rank_prefix
 templates.env.globals["rank_arrow"] = reference_data.rank_arrow
 templates.env.globals["region_roman"] = reference_data.region_roman
@@ -58,7 +59,11 @@ templates.env.globals["rankings_supported_divisions"] = (
 
 
 def _current_path(request: Request) -> str:
-    return request.url.path + (f"?{request.url.query}" if request.url.query else "")
+    # request.url.path is what FastAPI sees, i.e. already stripped of
+    # base_path by the proxy -- prefix it back on since this is used to
+    # build links/redirects the browser will request through that proxy.
+    path = config.BASE_PATH + request.url.path
+    return path + (f"?{request.url.query}" if request.url.query else "")
 
 
 templates.env.globals["current_path"] = _current_path
@@ -112,11 +117,12 @@ templates.env.globals["team_label_responsive"] = _team_label_responsive
 
 
 @app.get("/set-division/{division}")
-def set_division(division: str, next: str = "/"):
+def set_division(division: str, next: str = config.BASE_PATH + "/"):
     """Persists the nav switcher's choice in a cookie (see _resolve_division)
     and bounces back to whatever page the switcher was clicked from.
     `next` is never trusted as an absolute/off-site redirect target."""
-    redirect_to = next if next.startswith("/") and not next.startswith("//") else "/"
+    fallback = config.BASE_PATH + "/"
+    redirect_to = next if next.startswith("/") and not next.startswith("//") else fallback
     response = RedirectResponse(redirect_to)
     if division in config.DIVISIONS:
         response.set_cookie("division", division, max_age=60 * 60 * 24 * 365, samesite="lax")
@@ -461,10 +467,10 @@ def search(request: Request, q: str = ""):
             ][:20]
         if len(team_results) + len(player_results) == 1:
             if team_results:
-                return RedirectResponse(f"/team/{team_results[0]['seo']}")
+                return RedirectResponse(f"{config.BASE_PATH}/team/{team_results[0]['seo']}")
             p = player_results[0]
             return RedirectResponse(
-                f"/player?team={p['team_seo']}&first={quote(p['first_name'] or '')}&last={quote(p['last_name'] or '')}"
+                f"{config.BASE_PATH}/player?team={p['team_seo']}&first={quote(p['first_name'] or '')}&last={quote(p['last_name'] or '')}"
             )
     return templates.TemplateResponse(
         "search.html",

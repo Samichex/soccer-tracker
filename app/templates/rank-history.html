@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: Rank History</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
     {% include "_nav.html" %}
@@ -56,7 +56,7 @@
             <tr data-seo="{{ t.seo }}">
                 <td data-sort-key="team" data-sort-value="{{ t.name }}">
                     <span class="rank-history-swatch" data-seo="{{ t.seo }}"></span>
-                    <a href="/team/{{ t.seo }}">{{ team_label(t.name, t.seo, t.conference) }}</a>
+                    <a href="{{ base_path }}/team/{{ t.seo }}">{{ team_label(t.name, t.seo, t.conference) }}</a>
                 </td>
                 {% for w in weeks %}
                 {% set cell = t.ranks_by_week.get(w) %}
@@ -70,8 +70,8 @@
     </table>
     </div>
     </div>
-    <script src="/static/rank-history.js"></script>
-    <script src="/static/sort-table.js"></script>
+    <script src="{{ base_path }}/static/rank-history.js"></script>
+    <script src="{{ base_path }}/static/sort-table.js"></script>
     {% endif %}
 </body>
 </html>

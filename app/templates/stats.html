@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: Stats</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body class="wide">
     {% include "_nav.html" %}
@@ -22,7 +22,7 @@
     <div class="toggle-section">
         <div class="card-list">
             {% for n in standouts %}
-            <a class="card-row standout{% if loop.index > 5 %} extra-row{% endif %}" href="/game/{{ n.id }}">
+            <a class="card-row standout{% if loop.index > 5 %} extra-row{% endif %}" href="{{ base_path }}/game/{{ n.id }}">
                 <span class="standout-player">{{ n.first_name | name_case }} {{ n.last_name | name_case }}</span>
                 <span class="standout-team-group">
                     <span class="standout-team">{{ n.player_team_name }}</span>
@@ -57,7 +57,7 @@
                 {% for p in goals_leaders %}
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
-                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td><a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                         <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.goals }}</td>
                     </tr>
@@ -86,7 +86,7 @@
                 {% for p in assists_leaders %}
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
-                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td><a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                         <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.assists }}</td>
                     </tr>
@@ -115,7 +115,7 @@
                 {% for p in clean_sheet_leaders %}
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
-                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td><a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                         <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.clean_sheets }}</td>
                     </tr>
@@ -144,7 +144,7 @@
                 {% for p in card_leaders %}
                     <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
                         <td class="num">{{ p.rank }}</td>
-                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td><a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
                         <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
                         <td class="num">{{ p.total_cards }} ({{ p.yellow_cards }}Y, {{ p.red_cards }}R)</td>
                     </tr>
@@ -161,6 +161,6 @@
         </div>
     </div>
 
-    <script src="/static/toggle-leaders.js"></script>
+    <script src="{{ base_path }}/static/toggle-leaders.js"></script>
 </body>
 </html>

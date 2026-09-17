@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: Players</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body class="wide">
     {% set filter_panel_html %}
-    <form method="get" action="/players" class="filter-form">
+    <form method="get" action="{{ base_path }}/players" class="filter-form">
         <input type="hidden" name="page" value="1">
         <input type="hidden" name="sort" value="{{ sort or '' }}">
         <input type="hidden" name="dir" value="{{ dir or '' }}">
@@ -60,10 +60,10 @@
         {% for p in roster %}
             <tr>
                 <td>
-                    <a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>{% if p.position %} ({{ p.position | position_short }}){% endif %}
+                    <a href="{{ base_path }}/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>{% if p.position %} ({{ p.position | position_short }}){% endif %}
                 </td>
                 <td>
-                    <a href="/team/{{ p.team_seo }}">{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</a>
+                    <a href="{{ base_path }}/team/{{ p.team_seo }}">{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</a>
                 </td>
                 <td class="num">{{ p.games_played }}</td>
                 <td class="num">{{ p.avg_minutes }}</td>

@@ -57,6 +57,16 @@ NCAA_DIRECTORY_DIVISIONS = {
 
 DB_PATH = Path(os.environ.get("DB_PATH", str(BASE_DIR / "data" / "soccer.db")))
 
+# Set when this app is mounted under a path prefix behind a reverse proxy
+# (e.g. "/projects/fulltime" behind the 180lunches.com Cloudflare Worker,
+# which strips the prefix before forwarding here -- so routes below are
+# untouched and match at "/", "/team/{seo}", etc. as always). Empty by
+# default, which is what this app's own direct Render URL uses. Every
+# template prefixes its root-relative hrefs/src/action with {{ base_path }},
+# so the browser's follow-up requests round-trip back through the same
+# prefix the Worker is stripping. No trailing slash.
+BASE_PATH = os.environ.get("BASE_PATH", "").rstrip("/")
+
 # Personal key from https://collegescorecard.ed.gov/data/api-documentation/,
 # used only by the one-off app/backfill_college_stats.py script -- not read
 # anywhere in the request path, so it only needs to be set in the shell (or

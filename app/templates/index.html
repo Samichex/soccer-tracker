@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Full Time</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
     {% set filter_panel_html %}
-    <form method="get" action="/" class="filter-form">
+    <form method="get" action="{{ base_path }}/" class="filter-form">
         <input type="hidden" name="date" value="{{ day.isoformat() }}">
         <select name="conference">
             <option value="" {% if not selected_conference %}selected{% endif %}>Conference</option>
@@ -39,14 +39,14 @@
     {% from "_macros.html" import match_row with context %}
 
     <div class="datebar">
-        <a class="datebar-side" href="/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
+        <a class="datebar-side" href="{{ base_path }}/?date={{ prev_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
             <span class="arrow-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </span>
             <span class="datebar-label">{{ prev_day.strftime('%a %d %b') }}</span>
         </a>
         <h1 class="datebar-title">{% if is_today %}Today{% else %}{{ day.strftime('%a %d %b') }}{% endif %}</h1>
-        <a class="datebar-side" href="/?date={{ next_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
+        <a class="datebar-side" href="{{ base_path }}/?date={{ next_day.isoformat() }}{% if selected_conference %}&conference={{ selected_conference }}{% endif %}{% if conf_only %}&conf_only=1{% endif %}{% if selected_state %}&state={{ selected_state }}{% endif %}">
             <span class="arrow-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </span>

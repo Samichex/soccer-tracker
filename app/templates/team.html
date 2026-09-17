@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FT: {% if team %}{{ team.name_full or team.name }}{% else %}Team{% endif %}</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ base_path }}/static/favicon.svg">
     {% include "_theme-init.html" %}
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body class="wide">
     {% include "_nav.html" %}
@@ -21,7 +21,7 @@
         <div>
             <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
         </div>
-        {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
+        {% if team.conference %}<a class="conf-link" href="{{ base_path }}/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
     </div>
     <nav class="team-tabs" role="tablist">
         <button type="button" class="team-tab active" role="tab" aria-selected="true" data-tab="team">Season</button>
@@ -56,8 +56,8 @@
             <div class="card-row history{% if not r.recent %} extra-row{% endif %}">
                 <div class="cell-date">{{ r.game.date | pretty_date }}</div>
                 <div class="cell-vs">{{ 'vs' if r.is_home else '@' }}{{ conference_tag(r.conference_match) }}</div>
-                <a class="team-link align-left" href="/team/{{ r.opponent_seo }}">{{ team_label_responsive(r.opponent_name_short, r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
-                <a class="score-link" href="/game/{{ r.game.id }}">
+                <a class="team-link align-left" href="{{ base_path }}/team/{{ r.opponent_seo }}">{{ team_label_responsive(r.opponent_name_short, r.opponent_name, r.opponent_seo, r.opponent_conference) }}</a>
+                <a class="score-link" href="{{ base_path }}/game/{{ r.game.id }}">
                     {% if r.game.status == 'final' %}{{ r.team_score }}-{{ r.opp_score }}
                     {% else %}<span data-epoch="{{ r.game.start_epoch or '' }}">{{ r.game.start_time }}</span>
                     {% endif %}
@@ -80,7 +80,7 @@
     </div>
 
     {% if rank_history %}
-    <h2 class="section-head">Rank History <a class="section-link" href="/rank-history">View Full History</a></h2>
+    <h2 class="section-head">Rank History <a class="section-link" href="{{ base_path }}/rank-history">View Full History</a></h2>
     <div class="boxscore-card">
     <div class="table-scroll">
     <table>
@@ -159,7 +159,7 @@
             <tr>
                 <td class="num" data-sort-key="number" data-sort-value="{{ p.number }}">{{ p.number }}</td>
                 <td data-sort-key="name" data-sort-value="{{ p.last_name }} {{ p.first_name }}">
-                    <a href="/player?team={{ seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>
+                    <a href="{{ base_path }}/player?team={{ seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a>
                 </td>
                 <td data-sort-key="pos" data-sort-value="{{ p.position }}">{{ p.position | position_short }}</td>
                 <td class="num" data-sort-key="gp" data-sort-value="{{ p.games_played }}">{{ p.games_played }}</td>
@@ -177,13 +177,13 @@
     </table>
     </div>
     </div>
-    <script src="/static/sort-table.js"></script>
+    <script src="{{ base_path }}/static/sort-table.js"></script>
     {% endif %}
 
     </div>
 
-    <script src="/static/toggle-leaders.js"></script>
-    <script src="/static/team-tabs.js"></script>
+    <script src="{{ base_path }}/static/toggle-leaders.js"></script>
+    <script src="{{ base_path }}/static/team-tabs.js"></script>
     {% endif %}
 </body>
 
