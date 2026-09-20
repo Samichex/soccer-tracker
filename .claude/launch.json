@@ -6,6 +6,12 @@
       "runtimeExecutable": ".venv\\Scripts\\uvicorn.exe",
       "runtimeArgs": ["app.main:app", "--reload"],
       "port": 8000
+    },
+    {
+      "name": "180lunches",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "C:\\Users\\wreck\\180lunches"],
+      "port": 4321
     }
   ]
 }
