@@ -859,12 +859,16 @@ td.num, th.num { text-align: right; white-space: nowrap; }
 table.leaders { table-layout: fixed; }
 table.leaders td, table.leaders th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem; align-items: start; }
+.leaders-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; align-items: start; }
 .leaders-grid .boxscore-card { margin-bottom: 0; }
 .leaders-grid table.leaders th:nth-child(1), .leaders-grid table.leaders td:nth-child(1) { width: 6%; }
 .leaders-grid table.leaders th:nth-child(2), .leaders-grid table.leaders td:nth-child(2) { width: 34%; }
 .leaders-grid table.leaders th:nth-child(3), .leaders-grid table.leaders td:nth-child(3) { width: 44%; }
 .leaders-grid table.leaders th:nth-child(4), .leaders-grid table.leaders td:nth-child(4) { width: 16%; white-space: normal; }
+
+@media (max-width: 700px) {
+    .leaders-grid { grid-template-columns: 1fr; }
+}
 
 .boxscore-card:not(.expanded) tr.extra-row,
 .toggle-section:not(.expanded) .card-row.extra-row { display: none; }
