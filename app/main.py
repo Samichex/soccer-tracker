@@ -787,6 +787,7 @@ def stats_page(request: Request, division: str | None = None):
 
     for r in roster:
         r["total_cards"] = (r["yellow_cards"] or 0) + (r["red_cards"] or 0)
+        r["g_plus_a"] = (r["goals"] or 0) + (r["assists"] or 0)
 
     return templates.TemplateResponse(
         "stats.html",
@@ -795,6 +796,8 @@ def stats_page(request: Request, division: str | None = None):
             "standouts": standouts,
             "goals_leaders": _leaderboard(roster, "goals"),
             "assists_leaders": _leaderboard(roster, "assists"),
+            "g_plus_a_leaders": _leaderboard(roster, "g_plus_a"),
+            "saves_leaders": _leaderboard(roster, "saves"),
             "card_leaders": _leaderboard(roster, "total_cards"),
             "clean_sheet_leaders": _leaderboard(clean_sheets, "clean_sheets"),
         },

@@ -103,6 +103,64 @@
         </div>
 
         <div class="boxscore-card">
+            <h3>G + A</h3>
+            {% if not g_plus_a_leaders %}
+            <p class="empty">No data yet.</p>
+            {% else %}
+            <table class="leaders">
+                <thead>
+                    <tr><th>#</th><th>Player</th><th>Team</th><th class="num">G+A</th></tr>
+                </thead>
+                <tbody>
+                {% for p in g_plus_a_leaders %}
+                    <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
+                        <td class="num">{{ p.rank }}</td>
+                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td class="num">{{ p.g_plus_a }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if g_plus_a_leaders|length > 3 %}
+            <button type="button" class="leaders-toggle" aria-expanded="false">
+                <span class="leaders-toggle-label">Show all</span>
+                <span class="leaders-toggle-arrow">&rarr;</span>
+            </button>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="boxscore-card">
+            <h3>Saves</h3>
+            {% if not saves_leaders %}
+            <p class="empty">No data yet.</p>
+            {% else %}
+            <table class="leaders">
+                <thead>
+                    <tr><th>#</th><th>Player</th><th>Team</th><th class="num">SV</th></tr>
+                </thead>
+                <tbody>
+                {% for p in saves_leaders %}
+                    <tr{% if loop.index > 3 %} class="extra-row"{% endif %}>
+                        <td class="num">{{ p.rank }}</td>
+                        <td><a href="/player?team={{ p.team_seo }}&first={{ p.first_name | urlencode }}&last={{ p.last_name | urlencode }}">{{ p.first_name | name_case }} {{ p.last_name | name_case }}</a></td>
+                        <td>{{ team_label_responsive(p.team_name_short, p.team_name, p.team_seo, p.team_conference) }}</td>
+                        <td class="num">{{ p.saves }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if saves_leaders|length > 3 %}
+            <button type="button" class="leaders-toggle" aria-expanded="false">
+                <span class="leaders-toggle-label">Show all</span>
+                <span class="leaders-toggle-arrow">&rarr;</span>
+            </button>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="boxscore-card">
             <h3>Clean Sheets</h3>
             {% if not clean_sheet_leaders %}
             <p class="empty">No data yet.</p>
