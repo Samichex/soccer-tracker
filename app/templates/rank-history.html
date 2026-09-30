@@ -46,8 +46,8 @@
         <thead>
             <tr>
                 <th data-sort="team" data-sort-default="asc">Team</th>
-                {% for w in weeks %}
-                <th class="num" data-sort="w{{ loop.index0 }}" data-sort-default="asc">{{ w | pretty_date }}</th>
+                {% for w in weeks | reverse %}
+                <th class="num" data-sort="w{{ loop.index0 }}" data-sort-default="asc">{% if loop.first %}Current{% else %}{{ w | week_date }}{% endif %}</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -58,7 +58,7 @@
                     <span class="rank-history-swatch" data-seo="{{ t.seo }}"></span>
                     <a href="/team/{{ t.seo }}">{{ team_label(t.name, t.seo, t.conference) }}</a>
                 </td>
-                {% for w in weeks %}
+                {% for w in weeks | reverse %}
                 {% set cell = t.ranks_by_week.get(w) %}
                 <td class="num" data-sort-key="w{{ loop.index0 }}" data-sort-value="{{ cell.rank if cell else 999 }}">
                     {% if cell %}{{ rank_arrow(cell.rank, cell.prev_rank) }}{{ cell.rank }}{% else %}<span class="muted-cell">&mdash;</span>{% endif %}
