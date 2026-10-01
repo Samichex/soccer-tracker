@@ -725,6 +725,9 @@ a.info-value:hover { color: var(--accent); }
 .info-value-link svg { flex: none; }
 
 .team-tabs { display: flex; justify-content: flex-end; gap: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; margin-bottom: 1.1rem; }
+.lineup-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); margin-bottom: 1.1rem; }
+.lineup-head h2 { margin: 0; border-bottom: none; padding-bottom: 0; }
+.lineup-head .team-tabs { border-bottom: none; margin-bottom: 0; }
 .team-tab { background: none; border: none; border-bottom: 2px solid transparent; font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--muted); padding: 0.5rem 0.1rem; margin-bottom: -1px; cursor: pointer; }
 .team-tab:hover { color: var(--accent); }
 .team-tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
