@@ -62,9 +62,16 @@
     </p>
     {% endif %}
     {% else %}
-    {% for team_name, stats in [(team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference), away_stats), (team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference), home_stats)] %}
+    <div class="lineup-head">
+        <h2>Lineup</h2>
+        <nav class="team-tabs" role="tablist">
+            <button type="button" class="team-tab active" role="tab" aria-selected="true" data-tab="away">{{ team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference) }}</button>
+            <button type="button" class="team-tab" role="tab" aria-selected="false" data-tab="home">{{ team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference) }}</button>
+        </nav>
+    </div>
+    {% for tab, stats in [("away", away_stats), ("home", home_stats)] %}
+    <div class="team-tab-panel" data-panel="{{ tab }}"{% if tab != "away" %} hidden{% endif %}>
     <div class="boxscore-card">
-        <h2>{{ team_name }}</h2>
         <div class="table-scroll">
         <table class="sortable">
             <thead>
@@ -104,8 +111,10 @@
         </table>
         </div>
     </div>
+    </div>
     {% endfor %}
     <script src="/static/sort-table.js"></script>
+    <script src="/static/team-tabs.js"></script>
     {% endif %}
     {% endif %}
 </body>
