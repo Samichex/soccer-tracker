@@ -334,18 +334,48 @@ def delete_superseded_games(conn, date_str: str, division: str, keep_ids: set[st
     omitted it."""
     if keep_ids:
         placeholders = ",".join("?" for _ in keep_ids)
-        cur = conn.execute(
+        rows = conn.execute(
             f"""
-            DELETE FROM games
-            WHERE date = ? AND division = ? AND status != 'final' AND id NOT IN ({placeholders})
+            SELECT id FROM games
+            WHERE date = ? AND division = ? AND id NOT IN ({placeholders})
+              AND (
+                status != 'final'
+                OR EXISTS (
+                    -- The reissue can also land after the old id already
+                    -- finaled (same Creighton/Marquette case: id 6616704
+                    -- reached status='final' -- with Creighton's score
+                    -- reversed, since the venue flipped too -- before the
+                    -- feed moved on to id 6642598). Once the feed just
+                    -- reconfirmed a kept row for the same two teams that
+                    -- date, any other row for that matchup is the stale
+                    -- leftover, final or not.
+                    SELECT 1 FROM games AS kept
+                    WHERE kept.id IN ({placeholders})
+                      AND kept.date = games.date AND kept.division = games.division
+                      AND ((kept.home_seo = games.home_seo AND kept.away_seo = games.away_seo)
+                           OR (kept.home_seo = games.away_seo AND kept.away_seo = games.home_seo))
+                )
+              )
             """,
-            (date_str, division, *keep_ids),
-        )
+            (date_str, division, *keep_ids, *keep_ids),
+        ).fetchall()
     else:
-        cur = conn.execute(
-            "DELETE FROM games WHERE date = ? AND division = ? AND status != 'final'",
+        rows = conn.execute(
+            "SELECT id FROM games WHERE date = ? AND division = ? AND status != 'final'",
             (date_str, division),
-        )
+        ).fetchall()
+
+    remove_ids = [r["id"] for r in rows]
+    if not remove_ids:
+        return 0
+
+    placeholders = ",".join("?" for _ in remove_ids)
+    # A final row being removed can have its own boxscore already synced
+    # under the old id -- drop those too, or they're left orphaned
+    # pointing at a game id that no longer exists.
+    conn.execute(f"DELETE FROM player_stats WHERE game_id IN ({placeholders})", remove_ids)
+    conn.execute(f"DELETE FROM game_boxscore_raw WHERE game_id IN ({placeholders})", remove_ids)
+    cur = conn.execute(f"DELETE FROM games WHERE id IN ({placeholders})", remove_ids)
     return cur.rowcount
 
 
