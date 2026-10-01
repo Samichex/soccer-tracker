@@ -213,6 +213,19 @@ def _week_date(date_str: str | None) -> str:
 templates.env.filters["week_date"] = _week_date
 
 
+def _full_date(date_str: str | None) -> str:
+    if not date_str:
+        return ""
+    try:
+        d = dt.date.fromisoformat(date_str)
+        return f"{d.strftime('%b')} {d.day} {d.year}"
+    except ValueError:
+        return date_str
+
+
+templates.env.filters["full_date"] = _full_date
+
+
 def _tojson(value) -> Markup:
     """Serialize for embedding in a <script type="application/json"> block
     -- also escape the sequences that would otherwise break out of it."""

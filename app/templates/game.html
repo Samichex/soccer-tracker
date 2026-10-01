@@ -29,7 +29,7 @@
             </div>
         </h1>
     </div>
-    <p class="game-meta">{{ game.date | pretty_date }} &middot; {{ game.current_period or game.status }}</p>
+    <p class="game-meta">{{ game.date | pretty_date }} &middot; {% if game.status == 'pre' %}<span data-epoch="{{ game.start_epoch or '' }}">{{ game.start_time }}</span>{% else %}{{ game.current_period or game.status }}{% endif %}</p>
 
     {% if team_stats %}
     <div class="boxscore-card stats-card">
@@ -49,10 +49,11 @@
     </div>
 
     {% if not away_stats and not home_stats %}
-    <p class="empty">No box score available yet{% if game.status != 'final' %} (game not finished){% endif %}.</p>
+    <p class="empty center-text">Box scores will be available after full time.</p>
     {% if previous_meeting %}
-    <p class="empty previous-meeting">
-        Last met in {{ previous_meeting.season }}:
+    <h2 class="previous-meeting-title">Previous Match Ups</h2>
+    <p class="empty center-text previous-meeting">
+        {{ previous_meeting.date | full_date }}:
         <a class="score-link" href="/game/{{ previous_meeting.id }}">
             {{ team_label_responsive(previous_meeting.away_name_short, previous_meeting.away_name, previous_meeting.away_seo, previous_meeting.away_conference) }}
             {{ previous_meeting.away_score }}-{{ previous_meeting.home_score }}
