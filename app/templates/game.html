@@ -50,6 +50,16 @@
 
     {% if not away_stats and not home_stats %}
     <p class="empty">No box score available yet{% if game.status != 'final' %} (game not finished){% endif %}.</p>
+    {% if previous_meeting %}
+    <p class="empty previous-meeting">
+        Last met in {{ previous_meeting.season }}:
+        <a class="score-link" href="/game/{{ previous_meeting.id }}">
+            {{ team_label_responsive(previous_meeting.away_name_short, previous_meeting.away_name, previous_meeting.away_seo, previous_meeting.away_conference) }}
+            {{ previous_meeting.away_score }}-{{ previous_meeting.home_score }}
+            {{ team_label_responsive(previous_meeting.home_name_short, previous_meeting.home_name, previous_meeting.home_seo, previous_meeting.home_conference) }}
+        </a>
+    </p>
+    {% endif %}
     {% else %}
     {% for team_name, stats in [(team_label_responsive(game.away_name_short, game.away_name, game.away_seo, game.away_conference), away_stats), (team_label_responsive(game.home_name_short, game.home_name, game.home_seo, game.home_conference), home_stats)] %}
     <div class="boxscore-card">

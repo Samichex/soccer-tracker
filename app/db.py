@@ -9,7 +9,7 @@ from . import config, validate
 # name (only known once its boxscore has synced) over the short scoreboard
 # name always stored on the game row itself.
 _GAME_COLUMNS = """
-    g.id, g.date, g.start_time, g.start_epoch, g.status, g.current_period,
+    g.id, g.date, g.season, g.start_time, g.start_epoch, g.status, g.current_period,
     g.home_seo, COALESCE(th.name_full, g.home_name) AS home_name, g.home_name AS home_name_short,
     g.home_score, g.home_conference,
     g.away_seo, COALESCE(ta.name_full, g.away_name) AS away_name, g.away_name AS away_name_short,
@@ -683,6 +683,29 @@ def get_team_games(conn, seo: str, season: str | None = None):
         """,
         params,
     ).fetchall()
+
+
+def get_previous_meeting(conn, home_seo: str, away_seo: str, exclude_season: str | None = None):
+    """Most recent completed game between these two teams, for the
+    "played before" indicator shown on a not-yet-played game's page.
+    `status = 'final'` already excludes the game being viewed (it can't be
+    final yet), but exclude_season also rules out an earlier meeting the
+    same season (e.g. a conference tournament rematch) since the feature
+    is specifically about *previous-season* history."""
+    season_clause = " AND g.season != ?" if exclude_season is not None else ""
+    params = (home_seo, away_seo, away_seo, home_seo)
+    if exclude_season is not None:
+        params += (exclude_season,)
+    return conn.execute(
+        f"""
+        SELECT {_GAME_COLUMNS} {_GAME_JOINS}
+        WHERE g.status = 'final'
+          AND ((g.home_seo = ? AND g.away_seo = ?) OR (g.home_seo = ? AND g.away_seo = ?)){season_clause}
+        ORDER BY g.start_epoch DESC
+        LIMIT 1
+        """,
+        params,
+    ).fetchone()
 
 
 def get_conference_games(conn, conference: str, division: str = "d1", season: str | None = None):

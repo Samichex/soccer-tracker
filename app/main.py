@@ -937,6 +937,12 @@ def game_detail(request: Request, game_id: str):
 
         team_stats = db.get_team_stats(conn, game_id)
 
+        previous_meeting = None
+        if game is not None and game["status"] != "final":
+            previous_meeting = db.get_previous_meeting(
+                conn, game["home_seo"], game["away_seo"], exclude_season=game["season"]
+            )
+
     home_stats = [s for s in stats if s["is_home"]]
     away_stats = [s for s in stats if not s["is_home"]]
 
@@ -948,6 +954,7 @@ def game_detail(request: Request, game_id: str):
             "home_stats": home_stats,
             "away_stats": away_stats,
             "team_stats": team_stats,
+            "previous_meeting": previous_meeting,
         },
     )
 
