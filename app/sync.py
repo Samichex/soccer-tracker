@@ -18,9 +18,12 @@ def sync_date(conn, date: dt.date, division: str = "d1", sport_path: str | None 
     sport_path = sport_path or config.DIVISIONS[division]
     data = ncaa_client.get_scoreboard(date, sport_path)
     games = data.get("games", [])
-    for game in games:
-        db.upsert_game(conn, game, date.isoformat(), division)
-    log.info("synced %s %s games for %s", len(games), division, date.isoformat())
+    date_str = date.isoformat()
+    seen_ids = {db.upsert_game(conn, game, date_str, division) for game in games}
+    removed = db.delete_superseded_games(conn, date_str, division, seen_ids)
+    log.info("synced %s %s games for %s", len(games), division, date_str)
+    if removed:
+        log.info("removed %s superseded %s game(s) for %s", removed, division, date_str)
 
 
 def _rows_from_boxscore(box: dict) -> list[dict]:

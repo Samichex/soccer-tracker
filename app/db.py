@@ -317,6 +317,36 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
             name=team["names"].get("short"),
             conference=(team.get("conferences") or [{}])[0].get("conferenceSeo"),
         )
+    return game_id
+
+
+def delete_superseded_games(conn, date_str: str, division: str, keep_ids: set[str]) -> int:
+    """Remove this date/division's games that the scoreboard feed no longer
+    returned, as long as they're still just a schedule placeholder.
+
+    The NCAA occasionally reissues a game under a brand-new gameID close to
+    kickoff (seen for Creighton @ Marquette on 2026-09-26: id 6616704 sat
+    stuck at status='pre' forever once the feed moved the game to id
+    6642598), leaving the old id as a duplicate "pre" entry that never
+    resolves and pads a team's schedule with a game that already happened
+    under a different id. Only a non-final row is ever removed here -- a
+    completed result is never deleted just because a later feed call
+    omitted it."""
+    if keep_ids:
+        placeholders = ",".join("?" for _ in keep_ids)
+        cur = conn.execute(
+            f"""
+            DELETE FROM games
+            WHERE date = ? AND division = ? AND status != 'final' AND id NOT IN ({placeholders})
+            """,
+            (date_str, division, *keep_ids),
+        )
+    else:
+        cur = conn.execute(
+            "DELETE FROM games WHERE date = ? AND division = ? AND status != 'final'",
+            (date_str, division),
+        )
+    return cur.rowcount
 
 
 def upsert_team_basic(conn, seo: str | None, name: str | None, conference: str | None):
