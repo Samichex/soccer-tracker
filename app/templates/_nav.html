@@ -12,6 +12,9 @@
 </script>
 {% set current_division = request.cookies.get('division') %}
 {% if not current_division or current_division not in enabled_divisions %}{% set current_division = enabled_divisions[0] %}{% endif %}
+{% set seasons = available_seasons(current_division) %}
+{% set current_season = request.cookies.get('season') %}
+{% if not current_season or current_season not in seasons %}{% set current_season = seasons[0] if seasons else '' %}{% endif %}
 {% set sync = last_synced() %}
 <div class="topnav">
     <a class="brand" href="/" aria-label="Full Time home">
@@ -68,6 +71,14 @@
 <div class="division-toggle-row">
     <span class="brand-sync" title="{{ sync.title }}">Synced {{ sync.label }}</span>
     <div class="division-toggle-right">
+        {% if seasons|length > 1 and request.url.path not in ('/', '/rank-history') %}
+        <select class="season-select" aria-label="Season"
+                onchange="window.location.href = '/set-season/' + this.value + '?next={{ current_path(request) | urlencode }}'">
+            {% for s in seasons %}
+            <option value="{{ s }}" {% if s == current_season %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
         {% if enabled_divisions|length > 1 %}
         {% set d1 = enabled_divisions[0] %}
         {% set d3 = enabled_divisions[1] %}

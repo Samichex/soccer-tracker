@@ -30,7 +30,7 @@
     <table class="sortable standings">
         <thead>
             <tr>
-                <th class="num" data-sort="rank" data-sort-default="asc">Rk</th>
+                {% if is_current_season %}<th class="num" data-sort="rank" data-sort-default="asc">Rk</th>{% endif %}
                 <th data-sort="team" data-sort-default="asc">Team</th>
                 <th data-sort="state" data-sort-default="asc">ST</th>
                 <th class="num" data-sort="conf" data-sort-default="desc">Conf.</th>
@@ -45,7 +45,7 @@
         <tbody>
         {% for t in table %}
             <tr>
-                <td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {% if t.rank and t.region %}{{ region_roman(t.region) }}-{{ t.rank }}{% else %}{{ t.rank or '' }}{% endif %}</td>
+                {% if is_current_season %}<td class="num" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {% if t.rank and t.region %}{{ region_roman(t.region) }}-{{ t.rank }}{% else %}{{ t.rank or '' }}{% endif %}</td>{% endif %}
                 <td data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, conference) }}</a></td>
                 <td data-sort-key="state" data-sort-value="{{ t.state }}">{{ t.state }}</td>
                 <td class="num" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
