@@ -78,6 +78,36 @@ def _resolve_division(request: Request, division: str | None = None) -> str:
     return config.ENABLED_DIVISIONS[0]
 
 
+def _resolve_season(conn, request: Request, division: str, season: str | None = None) -> str | None:
+    """Effective season for this request, same precedence as
+    _resolve_division: an explicit `season` query param wins if valid, else
+    the `season` cookie set by /set-season, else the season covering today,
+    else the newest season with any synced games. Returns None only when
+    this division has no games synced yet at all (nothing to scope by)."""
+    available = db.get_available_seasons(conn, division)
+    if not available:
+        return None
+    if season in available:
+        return season
+    cookie_value = request.cookies.get("season")
+    if cookie_value in available:
+        return cookie_value
+    current_year = str(_today_eastern().year)
+    return current_year if current_year in available else available[0]
+
+
+def _available_seasons(division: str = "d1") -> list[str]:
+    with db.get_conn() as conn:
+        return db.get_available_seasons(conn, division)
+
+
+templates.env.globals["available_seasons"] = _available_seasons
+
+
+def _current_season() -> str:
+    return str(_today_eastern().year)
+
+
 # team_label/team_label_responsive are registered as context functions (not
 # plain globals) so every one of their ~16 call sites across templates
 # automatically suppresses a team's division tag when it matches the page's
@@ -120,6 +150,21 @@ def set_division(division: str, next: str = "/"):
     response = RedirectResponse(redirect_to)
     if division in config.DIVISIONS:
         response.set_cookie("division", division, max_age=60 * 60 * 24 * 365, samesite="lax")
+    return response
+
+
+@app.get("/set-season/{season}")
+def set_season(season: str, next: str = "/"):
+    """Persists the nav switcher's choice in a cookie (see _resolve_season)
+    and bounces back to whatever page the switcher was clicked from.
+    `next` is never trusted as an absolute/off-site redirect target. Loose
+    format check only -- _resolve_season ignores any cookie value that
+    isn't an actual season with synced games, so a bogus value here is
+    harmless."""
+    redirect_to = next if next.startswith("/") and not next.startswith("//") else "/"
+    response = RedirectResponse(redirect_to)
+    if season.isdigit() and len(season) == 4:
+        response.set_cookie("season", season, max_age=60 * 60 * 24 * 365, samesite="lax")
     return response
 
 
@@ -404,9 +449,16 @@ def index(
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
         games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference, division)]
-        conferences = db.get_conferences(conn, division)
+        # Matches has no season switcher (it's always "today", which pins
+        # its own season already) -- these two aren't date-scoped though,
+        # so without an explicit season they'd silently blend in whatever
+        # historical seasons have been backfilled. Pin both to the current
+        # season rather than let that leak in.
+        conferences = db.get_conferences(conn, division, _current_season())
         rank_map = _rank_map(_latest_rankings_for_division(conn, division))
-        top30_seos = standings.top_teams_by_record(db.get_all_final_games(conn, division))
+        top30_seos = standings.top_teams_by_record(
+            db.get_all_final_games(conn, division, _current_season())
+        )
     team_states = reference_data.get_team_states()
     for g in games:
         g["away_rank"], g["away_prev_rank"], g["away_region"] = _rank_lookup(rank_map, g["away_seo"])
@@ -492,17 +544,29 @@ def search(request: Request, q: str = ""):
 
 
 @app.get("/team/{seo}", response_class=HTMLResponse)
-def team_detail(request: Request, seo: str):
+def team_detail(request: Request, seo: str, season: str | None = None):
     with db.get_conn() as conn:
         team = db.get_team(conn, seo)
-        games = db.get_team_games(conn, seo)
-        roster = db.get_team_roster_stats(conn, seo)
-        rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
-        # D1-only for now -- team pages don't yet resolve a team's own
-        # division to pick between get_latest_rankings/_regional (see
-        # _latest_rankings_for_division), so a D3 team's regional rank
-        # doesn't appear here.
-        current_rank, current_prev_rank, _current_region = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
+        division = _resolve_division(request)
+        season = _resolve_season(conn, request, division, season)
+        is_current_season = season == _current_season()
+        games = db.get_team_games(conn, seo, season)
+        roster = db.get_team_roster_stats(conn, seo, season)
+        # The national poll has no season of its own (see config's division
+        # notes), so it's always *today's* rank -- showing it while
+        # browsing a past season would misleadingly attach today's standing
+        # to a different year's record. Only fetch/show it for the current
+        # season.
+        if is_current_season:
+            rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
+            # D1-only for now -- team pages don't yet resolve a team's own
+            # division to pick between get_latest_rankings/_regional (see
+            # _latest_rankings_for_division), so a D3 team's regional rank
+            # doesn't appear here.
+            current_rank, current_prev_rank, _current_region = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
+        else:
+            rank_history = []
+            current_rank, current_prev_rank = None, None
     team_city = reference_data.get_team_cities().get(seo) if team else None
     team_state = reference_data.get_team_states().get(seo) if team else None
     college_stats = reference_data.get_team_college_stats().get(seo) if team else None
@@ -535,12 +599,16 @@ def team_detail(request: Request, seo: str):
 
 
 @app.get("/conference/{conference}", response_class=HTMLResponse)
-def conference_detail(request: Request, conference: str, division: str | None = None):
+def conference_detail(request: Request, conference: str, division: str | None = None, season: str | None = None):
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        conferences = db.get_conferences(conn, division)
-        games = db.get_conference_games(conn, conference, division)
-        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
+        season = _resolve_season(conn, request, division, season)
+        is_current_season = season == _current_season()
+        conferences = db.get_conferences(conn, division, season)
+        games = db.get_conference_games(conn, conference, division, season)
+        # The national poll has no season of its own (see team_detail) --
+        # only attach today's rank to teams while viewing the current season.
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division)) if is_current_season else {}
     table = standings.build_conference_table(games, conference)
     team_states = reference_data.get_team_states()
     for t in table:
@@ -557,6 +625,7 @@ def conference_detail(request: Request, conference: str, division: str | None = 
             "conferences": conferences,
             "conference_label_fn": _conference_label,
             "table": table,
+            "is_current_season": is_current_season,
         },
     )
 
@@ -567,6 +636,7 @@ def teams_list(
     conference: str | None = None,
     state: str | None = None,
     division: str | None = None,
+    season: str | None = None,
     public: str | None = None,
     tuition_in_max: int | None = None,
     tuition_out_max: int | None = None,
@@ -576,9 +646,13 @@ def teams_list(
 ):
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        games = db.get_all_final_games(conn, division)
-        conferences = db.get_conferences(conn, division)
-        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
+        season = _resolve_season(conn, request, division, season)
+        is_current_season = season == _current_season()
+        games = db.get_all_final_games(conn, division, season)
+        conferences = db.get_conferences(conn, division, season)
+        # The national poll has no season of its own (see team_detail) --
+        # only attach today's rank to teams while viewing the current season.
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division)) if is_current_season else {}
         team_privacy = db.get_team_privacy(conn)
     table = standings.build_all_teams_table(games)
     team_states = reference_data.get_team_states()
@@ -635,6 +709,7 @@ def teams_list(
             "selected_grad_min": grad_min if grad_min is not None else 0,
             "selected_admit_max": admit_max if admit_max is not None else 1,
             "selected_undergrad_max": undergrad_max if undergrad_max is not None else bounds["student_size_max"],
+            "is_current_season": is_current_season,
         },
     )
 
@@ -712,11 +787,13 @@ def players_list(
     dir: str | None = None,
     page: int = 1,
     division: str | None = None,
+    season: str | None = None,
 ):
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division)]
-        conferences = db.get_conferences(conn, division)
+        season = _resolve_season(conn, request, division, season)
+        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division, season)]
+        conferences = db.get_conferences(conn, division, season)
 
     team_states = reference_data.get_team_states()
     for p in roster:
@@ -768,18 +845,25 @@ def players_list(
 
 
 @app.get("/stats", response_class=HTMLResponse)
-def stats_page(request: Request, division: str | None = None):
+def stats_page(request: Request, division: str | None = None, season: str | None = None):
     division = _resolve_division(request, division)
     today = _today_eastern()
     since_date = today - dt.timedelta(days=6)
 
     with db.get_conn() as conn:
+        season = _resolve_season(conn, request, division, season)
+        # This rolling window is always relative to *today*, so it only
+        # means anything when the season being viewed is the one actually
+        # being played right now -- showing it under a past season would
+        # mix this week's current-season standouts into an unrelated
+        # season's page.
+        is_current_season = season == _current_season()
         standouts = [
             dict(s)
             for s in db.get_weekly_standouts(conn, since_date.isoformat(), today.isoformat(), division)
-        ]
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division)]
-        clean_sheets = [dict(r) for r in db.get_clean_sheet_leaders(conn, division)]
+        ] if is_current_season else []
+        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division, season)]
+        clean_sheets = [dict(r) for r in db.get_clean_sheet_leaders(conn, division, season)]
 
     for s in standouts:
         s["label"] = _weekly_standout_label(s)
@@ -794,6 +878,7 @@ def stats_page(request: Request, division: str | None = None):
         {
             "request": request,
             "standouts": standouts,
+            "is_current_season": is_current_season,
             "goals_leaders": _leaderboard(roster, "goals"),
             "assists_leaders": _leaderboard(roster, "assists"),
             "g_plus_a_leaders": _leaderboard(roster, "g_plus_a"),
@@ -805,9 +890,11 @@ def stats_page(request: Request, division: str | None = None):
 
 
 @app.get("/player", response_class=HTMLResponse)
-def player_detail(request: Request, team: str, first: str, last: str):
+def player_detail(request: Request, team: str, first: str, last: str, season: str | None = None):
     with db.get_conn() as conn:
-        rows = db.get_player_games(conn, team, first, last)
+        division = _resolve_division(request)
+        season = _resolve_season(conn, request, division, season)
+        rows = db.get_player_games(conn, team, first, last, season)
     if not rows:
         return templates.TemplateResponse(
             "player.html",

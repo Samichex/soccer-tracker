@@ -17,7 +17,7 @@
     <h2>Weekly Stand Outs</h2>
 
     {% if not standouts %}
-    <p class="empty">No standout performances in the last 7 days.</p>
+    <p class="empty">{% if is_current_season %}No standout performances in the last 7 days.{% else %}Historic seasons have no weekly standouts.{% endif %}</p>
     {% else %}
     <div class="toggle-section">
         <div class="card-list">

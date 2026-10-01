@@ -80,3 +80,28 @@ route, `POST /api/sync-now`, is throttled to at most once a minute so a
 public caller can't hammer the upstream NCAA API feed, but it's still an
 unauthenticated way to nudge the app to hit an external service — remove it
 or gate it behind a shared secret if that becomes a concern.
+
+### Adding a historic season
+
+Each game's `season` column (just the year it was played in) is backfilled
+automatically from its `date` on every startup (`db.init_db()`), so an
+already-synced season needs nothing manual — it just appears in the nav's
+season switcher once two or more seasons exist in the database.
+
+A season that predates this app's first live sync (anything before the
+`SEASON_START` in `app/backfill.py`) has no rows at all yet, though, and
+needs a one-off backfill to pull it in from the same upstream feed:
+
+```bash
+python -m app.backfill --start <season-start> --end <season-end> --division all
+```
+
+Run this from Render's Shell tab for the service, not locally — the
+database only exists on the service's persistent disk, and the single-
+instance rule above means nothing else can reach it. It's safe to re-run
+(idempotent per day) and runs alongside the live background sync loop in
+the same process, so expect it to take a while (one full season's worth of
+upstream NCAA API calls, same as the original D1 2026 backfill) and
+tolerate occasional SQLite lock-contention retries rather than failing
+outright. Once a season is in, it's in for good — there's nothing to
+re-run for it on later deploys.

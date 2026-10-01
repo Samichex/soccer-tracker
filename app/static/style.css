@@ -281,6 +281,18 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
 
 .division-toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 0.6rem 0 1.25rem; }
 .division-toggle-right { display: flex; align-items: center; gap: 0.6rem; }
+.season-select {
+    width: 5rem;
+    padding: 0.45rem 0.6rem;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    accent-color: var(--accent);
+}
 .division-switch {
     position: relative;
     display: inline-flex;
@@ -369,6 +381,7 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     color: var(--muted);
     font-family: var(--font);
     font-size: 0.85rem;
+    accent-color: var(--accent);
 }
 
 .filter-panel { width: 240px; }
@@ -382,6 +395,41 @@ html.brand-no-anim .brand-word { animation: none; clip-path: inset(0 0 0 0); }
     color: var(--muted);
     font-family: var(--font);
     font-size: 0.85rem;
+    accent-color: var(--accent);
+}
+
+/* accent-color alone doesn't reach the native option-list highlight; the
+   Customizable Select API (Chrome/Edge) does, and unsupporting browsers
+   just ignore these rules and keep the native highlight color. */
+.season-select,
+.conference-filter select,
+.filter-form select {
+    appearance: base-select;
+}
+.season-select::picker(select),
+.conference-filter select::picker(select),
+.filter-form select::picker(select) {
+    appearance: base-select;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+}
+.season-select option,
+.conference-filter select option,
+.filter-form select option {
+    padding: 0.4rem 0.6rem;
+    border-radius: calc(var(--radius-sm) - 2px);
+    color: var(--muted);
+}
+.season-select option:hover,
+.season-select option:checked,
+.conference-filter select option:hover,
+.conference-filter select option:checked,
+.filter-form select option:hover,
+.filter-form select option:checked {
+    background: var(--accent);
+    color: #fff;
 }
 
 .conf-only-toggle {

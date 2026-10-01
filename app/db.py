@@ -26,6 +26,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS games (
     id TEXT PRIMARY KEY,
     date TEXT NOT NULL,            -- YYYY-MM-DD
+    season TEXT,                   -- year the game was played, e.g. "2026" (see upsert_game)
     start_time TEXT,
     start_epoch INTEGER,
     status TEXT,                   -- pre | live | final
@@ -204,6 +205,22 @@ def init_db():
             conn.execute("ALTER TABLE games ADD COLUMN division TEXT")
             conn.execute("UPDATE games SET division = 'd1' WHERE division IS NULL")
 
+        if "season" not in game_cols:
+            # A game's season is just the calendar year it was played in --
+            # D1/D3 men's soccer never crosses a year boundary, so the first
+            # 4 characters of `date` (YYYY-MM-DD) are exactly the season for
+            # every row already in this table. New rows get it set directly
+            # in upsert_game instead of relying on this backfill.
+            conn.execute("ALTER TABLE games ADD COLUMN season TEXT")
+            conn.execute("UPDATE games SET season = substr(date, 1, 4) WHERE season IS NULL")
+        # Deferred until here (rather than in the static SCHEMA above)
+        # because an upgrading DB's `games` table already exists by the
+        # time executescript(SCHEMA) runs its CREATE TABLE IF NOT EXISTS as
+        # a no-op -- `season` wouldn't exist there yet for CREATE INDEX to
+        # reference. Safe to run unconditionally: IF NOT EXISTS, and by
+        # this point every games table (fresh or migrated) has the column.
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_games_season ON games(season)")
+
         tr_cols = {row["name"] for row in conn.execute("PRAGMA table_info(team_rankings)")}
         if "division" not in tr_cols:
             # A second division's national-poll-shaped rankings (were one
@@ -248,14 +265,15 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
     status = validate.validate_game_status(game_id, g.get("gameState"))
     home_score = validate.validate_score(game_id, "home", g["home"].get("score"))
     away_score = validate.validate_score(game_id, "away", g["away"].get("score"))
+    season = date_str[:4]
     conn.execute(
         """
         INSERT INTO games (
-            id, date, start_time, start_epoch, status, current_period,
+            id, date, season, start_time, start_epoch, status, current_period,
             home_seo, home_name, home_score, home_conference,
             away_seo, away_name, away_score, away_conference,
             network, url, division, updated_at
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
             start_time=excluded.start_time,
             start_epoch=excluded.start_epoch,
@@ -273,6 +291,7 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
         (
             game_id,
             date_str,
+            season,
             g.get("startTime"),
             _safe_int(g.get("startTimeEpoch")),
             status,
@@ -564,20 +583,33 @@ def get_game(conn, game_id: str):
     ).fetchone()
 
 
-def get_conferences(conn, division: str = "d1"):
+def get_conferences(conn, division: str = "d1", season: str | None = None):
+    season_clause = " AND season = ?" if season is not None else ""
+    params = (division, division) if season is None else (division, season, division, season)
     rows = conn.execute(
-        """
+        f"""
         SELECT DISTINCT conference FROM (
-            SELECT home_conference AS conference FROM games WHERE division = ?
+            SELECT home_conference AS conference FROM games WHERE division = ?{season_clause}
             UNION
-            SELECT away_conference AS conference FROM games WHERE division = ?
+            SELECT away_conference AS conference FROM games WHERE division = ?{season_clause}
         )
         WHERE conference IS NOT NULL AND conference != ''
         ORDER BY conference
         """,
-        (division, division),
+        params,
     ).fetchall()
     return [r["conference"] for r in rows]
+
+
+def get_available_seasons(conn, division: str = "d1") -> list[str]:
+    """Every season with at least one synced game, newest first. The first
+    entry is what nav/_resolve_season falls back to when nothing else picks
+    a season (mirrors ENABLED_DIVISIONS[0] being the default division)."""
+    rows = conn.execute(
+        "SELECT DISTINCT season FROM games WHERE division = ? AND season IS NOT NULL ORDER BY season DESC",
+        (division,),
+    ).fetchall()
+    return [r["season"] for r in rows]
 
 
 def get_team(conn, seo: str):
@@ -640,32 +672,42 @@ def search_players(conn, query: str, limit: int = 20):
     ).fetchall()
 
 
-def get_team_games(conn, seo: str):
+def get_team_games(conn, seo: str, season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (seo, seo) if season is None else (seo, seo, season)
     return conn.execute(
         f"""
         SELECT {_GAME_COLUMNS} {_GAME_JOINS}
-        WHERE g.home_seo = ? OR g.away_seo = ?
+        WHERE (g.home_seo = ? OR g.away_seo = ?){season_clause}
         ORDER BY g.start_epoch
         """,
-        (seo, seo),
+        params,
     ).fetchall()
 
 
-def get_conference_games(conn, conference: str, division: str = "d1"):
+def get_conference_games(conn, conference: str, division: str = "d1", season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (
+        (division, conference, conference)
+        if season is None
+        else (division, conference, conference, season)
+    )
     return conn.execute(
         f"""
         SELECT {_GAME_COLUMNS} {_GAME_JOINS}
-        WHERE g.status = 'final' AND g.division = ? AND (g.home_conference = ? OR g.away_conference = ?)
+        WHERE g.status = 'final' AND g.division = ? AND (g.home_conference = ? OR g.away_conference = ?){season_clause}
         ORDER BY g.start_epoch
         """,
-        (division, conference, conference),
+        params,
     ).fetchall()
 
 
-def get_all_final_games(conn, division: str = "d1"):
+def get_all_final_games(conn, division: str = "d1", season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (division,) if season is None else (division, season)
     return conn.execute(
-        f"SELECT {_GAME_COLUMNS} {_GAME_JOINS} WHERE g.status = 'final' AND g.division = ? ORDER BY g.start_epoch",
-        (division,),
+        f"SELECT {_GAME_COLUMNS} {_GAME_JOINS} WHERE g.status = 'final' AND g.division = ?{season_clause} ORDER BY g.start_epoch",
+        params,
     ).fetchall()
 
 
@@ -709,9 +751,11 @@ def get_player_stats(conn, game_id: str):
     ).fetchall()
 
 
-def get_all_players_roster_stats(conn, division: str = "d1"):
+def get_all_players_roster_stats(conn, division: str = "d1", season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (division,) if season is None else (division, season)
     return conn.execute(
-        """
+        f"""
         SELECT
             ps.first_name, ps.last_name, ps.team_seo,
             COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name,
@@ -731,19 +775,21 @@ def get_all_players_roster_stats(conn, division: str = "d1"):
         FROM player_stats ps
         JOIN games g ON g.id = ps.game_id
         LEFT JOIN teams t ON t.seo = ps.team_seo
-        WHERE COALESCE(ps.participated, 1) = 1 AND g.division = ?
+        WHERE COALESCE(ps.participated, 1) = 1 AND g.division = ?{season_clause}
         GROUP BY ps.first_name, ps.last_name, ps.team_seo
         ORDER BY ps.last_name ASC, ps.first_name ASC
         """,
-        (division,),
+        params,
     ).fetchall()
 
 
-def get_clean_sheet_leaders(conn, division: str = "d1"):
+def get_clean_sheet_leaders(conn, division: str = "d1", season: str | None = None):
     """Season clean-sheet counts per goalkeeper: a final game they
     participated in where their team conceded 0."""
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (division,) if season is None else (division, season)
     return conn.execute(
-        """
+        f"""
         SELECT
             ps.first_name, ps.last_name, ps.team_seo,
             COALESCE(MAX(t.name_full), MAX(t.name)) AS team_name,
@@ -756,19 +802,21 @@ def get_clean_sheet_leaders(conn, division: str = "d1"):
         WHERE ps.position = 'GK'
           AND CAST(ps.participated AS INTEGER) = 1
           AND g.status = 'final'
-          AND g.division = ?
+          AND g.division = ?{season_clause}
           AND ((ps.is_home = 1 AND CAST(g.away_score AS INTEGER) = 0)
             OR (ps.is_home = 0 AND CAST(g.home_score AS INTEGER) = 0))
         GROUP BY ps.team_id, ps.first_name, ps.last_name
         ORDER BY clean_sheets DESC
         """,
-        (division,),
+        params,
     ).fetchall()
 
 
-def get_team_roster_stats(conn, seo: str):
+def get_team_roster_stats(conn, seo: str, season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (seo,) if season is None else (seo, season)
     return conn.execute(
-        """
+        f"""
         SELECT
             ps.first_name, ps.last_name,
             MAX(ps.number) AS number,
@@ -783,15 +831,22 @@ def get_team_roster_stats(conn, seo: str):
             SUM(CAST(ps.yellow_cards AS INTEGER)) AS yellow_cards,
             SUM(CAST(ps.red_cards AS INTEGER)) AS red_cards
         FROM player_stats ps
-        WHERE ps.team_seo = ? AND COALESCE(ps.participated, 1) = 1
+        JOIN games g ON g.id = ps.game_id
+        WHERE ps.team_seo = ? AND COALESCE(ps.participated, 1) = 1{season_clause}
         GROUP BY ps.first_name, ps.last_name
         ORDER BY games_played DESC, avg_minutes DESC
         """,
-        (seo,),
+        params,
     ).fetchall()
 
 
-def get_player_games(conn, team_seo: str, first_name: str, last_name: str):
+def get_player_games(conn, team_seo: str, first_name: str, last_name: str, season: str | None = None):
+    season_clause = " AND g.season = ?" if season is not None else ""
+    params = (
+        (team_seo, first_name, last_name)
+        if season is None
+        else (team_seo, first_name, last_name, season)
+    )
     return conn.execute(
         f"""
         SELECT {_GAME_COLUMNS}, ps.*
@@ -799,10 +854,10 @@ def get_player_games(conn, team_seo: str, first_name: str, last_name: str):
         JOIN games g ON g.id = ps.game_id
         LEFT JOIN teams th ON th.seo = g.home_seo
         LEFT JOIN teams ta ON ta.seo = g.away_seo
-        WHERE ps.team_seo = ? AND UPPER(ps.first_name) = UPPER(?) AND UPPER(ps.last_name) = UPPER(?)
+        WHERE ps.team_seo = ? AND UPPER(ps.first_name) = UPPER(?) AND UPPER(ps.last_name) = UPPER(?){season_clause}
         ORDER BY g.start_epoch
         """,
-        (team_seo, first_name, last_name),
+        params,
     ).fetchall()
 
 
