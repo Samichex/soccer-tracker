@@ -227,3 +227,50 @@ def test_player_stats_pk_does_not_catch_same_player_under_two_jersey_numbers(con
     ).fetchall()
     assert len(rows) == 2
     assert "multiple jersey numbers" in caplog.text
+
+
+def test_delete_superseded_games_removes_non_final_placeholder_not_in_feed(conn):
+    stale = _game(id_="g1")
+    stale["game"]["gameState"] = "pre"
+    db.upsert_game(conn, stale, "2026-09-01")
+
+    removed = db.delete_superseded_games(conn, "2026-09-01", "d1", keep_ids={"g2"})
+
+    assert removed == 1
+    assert conn.execute("SELECT 1 FROM games WHERE id = 'g1'").fetchone() is None
+
+
+def test_delete_superseded_games_keeps_final_game_with_no_replacement(conn):
+    # A final result the feed just omitted (e.g. it aged out of that call's
+    # window) is never a reissue -- only removing a final row when another
+    # kept row covers the exact same matchup is safe.
+    final = _game(id_="g1")
+    db.upsert_game(conn, final, "2026-09-01")
+
+    removed = db.delete_superseded_games(conn, "2026-09-01", "d1", keep_ids={"g2"})
+
+    assert removed == 0
+    assert conn.execute("SELECT 1 FROM games WHERE id = 'g1'").fetchone() is not None
+
+
+def test_delete_superseded_games_removes_final_duplicate_for_reissued_matchup(conn):
+    # The Creighton/Marquette case: the old gameID (g1) already reached
+    # status='final' -- home/away and score reversed, since the venue
+    # flipped too -- before the feed moved the same matchup to a new id
+    # (g2, also final). The regular non-final cleanup never catches g1
+    # since it's final, so this has to match it by matchup instead.
+    old = _game(id_="g1", home="duke", away="unc")
+    db.upsert_game(conn, old, "2026-09-01")
+    db.replace_player_stats(conn, "g1", [_player_row()])
+    db.upsert_raw_boxscore(conn, "g1", "{}")
+
+    new = _game(id_="g2", home="unc", away="duke")
+    db.upsert_game(conn, new, "2026-09-01")
+
+    removed = db.delete_superseded_games(conn, "2026-09-01", "d1", keep_ids={"g2"})
+
+    assert removed == 1
+    assert conn.execute("SELECT 1 FROM games WHERE id = 'g1'").fetchone() is None
+    assert conn.execute("SELECT 1 FROM games WHERE id = 'g2'").fetchone() is not None
+    assert conn.execute("SELECT 1 FROM player_stats WHERE game_id = 'g1'").fetchone() is None
+    assert conn.execute("SELECT 1 FROM game_boxscore_raw WHERE game_id = 'g1'").fetchone() is None
