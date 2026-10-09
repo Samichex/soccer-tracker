@@ -571,15 +571,22 @@ def team_detail(request: Request, seo: str, season: str | None = None):
         # to a different year's record. Only fetch/show it for the current
         # season.
         if is_current_season:
-            rank_history = list(reversed(reference_data.group_rankings_by_week(db.get_ranking_history(conn, seo))))
-            # D1-only for now -- team pages don't yet resolve a team's own
-            # division to pick between get_latest_rankings/_regional (see
-            # _latest_rankings_for_division), so a D3 team's regional rank
-            # doesn't appear here.
-            current_rank, current_prev_rank, _current_region = _rank_lookup(_rank_map(db.get_latest_rankings(conn)), seo)
+            # A team lives in either the national D1 poll or one of the D3
+            # regional NPI leaderboards, never both, so try D1 first and
+            # fall back to the regional tables.
+            history_rows = db.get_ranking_history(conn, seo)
+            current_rank, current_prev_rank, current_region = _rank_lookup(
+                _rank_map(db.get_latest_rankings(conn)), seo
+            )
+            if not history_rows:
+                history_rows = db.get_regional_ranking_history(conn, seo)
+                current_rank, current_prev_rank, current_region = _rank_lookup(
+                    _rank_map(db.get_latest_regional_rankings(conn)), seo
+                )
+            rank_history = list(reversed(reference_data.group_rankings_by_week(history_rows)))
         else:
             rank_history = []
-            current_rank, current_prev_rank = None, None
+            current_rank, current_prev_rank, current_region = None, None, None
     team_city = reference_data.get_team_cities().get(seo) if team else None
     team_state = reference_data.get_team_states().get(seo) if team else None
     college_stats = reference_data.get_team_college_stats().get(seo) if team else None
@@ -605,6 +612,7 @@ def team_detail(request: Request, seo: str, season: str | None = None):
             "team_totals": team_totals,
             "current_rank": current_rank,
             "current_prev_rank": current_prev_rank,
+            "current_region": current_region,
             "rank_history": rank_history,
             "conference_label_fn": _conference_label,
         },

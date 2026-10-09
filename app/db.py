@@ -1011,6 +1011,13 @@ def get_ranking_history(conn, seo: str):
     ).fetchall()
 
 
+def get_regional_ranking_history(conn, seo: str, division: str = "d3"):
+    return conn.execute(
+        "SELECT * FROM team_rankings_regional WHERE seo = ? AND division = ? ORDER BY observed_date",
+        (seo, division),
+    ).fetchall()
+
+
 def get_all_ranking_history(conn, division: str = "d1"):
     """Every team_rankings row for every team ever ranked, joined with
     `teams` for a display name/conference. Ordered by seo then

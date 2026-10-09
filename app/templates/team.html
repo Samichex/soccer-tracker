@@ -19,7 +19,7 @@
     <div class="content-narrow">
     <div class="team-head">
         <div>
-            <h1>{{ rank_prefix(current_rank, current_prev_rank) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
+            <h1>{{ rank_prefix(current_rank, current_prev_rank, current_region) }}{{ team_label_responsive(team.name, team.name_full, team.seo, team.conference) }}</h1>
         </div>
         {% if team.conference %}<a class="conf-link" href="/conference/{{ team.conference }}">{{ conference_label_fn(team.conference) }}</a>{% endif %}
     </div>
@@ -80,7 +80,8 @@
     </div>
 
     {% if rank_history %}
-    <h2 class="section-head">Rank History <a class="section-link" href="/rank-history">View Full History</a></h2>
+    {% set history_region = rank_history[0].region %}
+    <h2 class="section-head">Rank History{% if history_region %} &middot; Region {{ region_roman(history_region) }}{% endif %} <a class="section-link" href="/rank-history{% if history_region %}?division=d3&region={{ history_region }}{% endif %}">View Full History</a></h2>
     <div class="boxscore-card">
     <div class="table-scroll">
     <table>
