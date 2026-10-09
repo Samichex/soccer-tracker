@@ -1153,6 +1153,54 @@ def get_latest_regional_rankings(conn, division: str = "d3"):
     return rows
 
 
+# Conferences whose members are assigned to regions school-by-school rather
+# than as a block (NCAA D3 soccer pre-championship manual, Appendix B), so a
+# single ranked member says nothing about the rest.
+_SPLIT_REGION_CONFERENCES = {"uaa", "c2c"}
+
+
+def get_team_regions(conn, division: str = "d3") -> dict[str, int]:
+    """seo -> NPI region (1-10), built only from the feed's own region data.
+
+    Teams that appear in any regional snapshot keep the region of their most
+    recent appearance. Every other team inherits its conference's region
+    when all ranked members of that conference sit in a single region --
+    unless the conference is split school-by-school (_SPLIT_REGION_CONFERENCES)
+    or ranked members already disagree. Coverage grows as more teams reach
+    the feed's top 7 per region; conferences with no ranked team yet stay
+    unmapped."""
+    ranked = conn.execute(
+        """
+        SELECT tr.seo, tr.region, t.conference
+        FROM team_rankings_regional tr
+        LEFT JOIN teams t ON t.seo = tr.seo
+        WHERE tr.division = ? AND tr.seo IS NOT NULL
+        ORDER BY tr.observed_date
+        """,
+        (division,),
+    ).fetchall()
+
+    by_team: dict[str, int] = {}
+    conference_regions: dict[str, set[int]] = {}
+    for r in ranked:
+        by_team[r["seo"]] = r["region"]  # ordered by date, so latest wins
+        if r["conference"]:
+            conference_regions.setdefault(r["conference"], set()).add(r["region"])
+
+    unanimous = {
+        conf: next(iter(regions))
+        for conf, regions in conference_regions.items()
+        if len(regions) == 1 and conf not in _SPLIT_REGION_CONFERENCES
+    }
+    for t in conn.execute(
+        "SELECT seo, conference FROM teams WHERE conference IN (%s)"
+        % ",".join("?" * len(unanimous)),
+        list(unanimous),
+    ) if unanimous else []:
+        by_team.setdefault(t["seo"], unanimous[t["conference"]])
+    return by_team
+
+
 def set_last_synced(conn, when: str):
     conn.execute(
         """

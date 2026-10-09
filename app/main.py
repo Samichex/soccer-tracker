@@ -727,6 +727,27 @@ def teams_list(
     )
 
 
+def _region_profile(conn, division: str, region: int) -> dict:
+    """States and conferences that make up one NPI region, from
+    db.get_team_regions."""
+    team_states = reference_data.get_team_states()
+    seos = [s for s, r in db.get_team_regions(conn, division).items() if r == region]
+    conferences = {
+        r["conference"]
+        for r in conn.execute(
+            f"SELECT conference FROM teams WHERE seo IN ({','.join('?' * len(seos))})", seos
+        )
+        if r["conference"]
+    } if seos else set()
+    return {
+        "states": sorted({team_states[s] for s in seos if team_states.get(s)}),
+        "conferences": sorted(
+            ({"seo": c, "label": reference_data.conference_short_name(c)} for c in conferences),
+            key=lambda c: c["label"],
+        ),
+    }
+
+
 @app.get("/rank-history", response_class=HTMLResponse)
 def rank_history_page(request: Request, division: str | None = None, region: int | None = None):
     division = _resolve_division(request, division)
@@ -739,8 +760,10 @@ def rank_history_page(request: Request, division: str | None = None, region: int
             # time, defaulting to Region I when none is picked yet.
             region = region if region in range(1, 11) else 1
             rows = db.get_all_regional_ranking_history(conn, division, region)
+            region_profile = _region_profile(conn, division, region)
         else:
             region = None
+            region_profile = None
             rows = db.get_all_ranking_history(conn, division)
     history = reference_data.build_rank_history(rows)
     week_index = {w: i for i, w in enumerate(history["weeks"])}
@@ -766,6 +789,7 @@ def rank_history_page(request: Request, division: str | None = None, region: int
             "is_regional": is_regional,
             "region": region,
             "regions": list(range(1, 11)),
+            "region_profile": region_profile,
         },
     )
 
