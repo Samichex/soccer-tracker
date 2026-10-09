@@ -6,6 +6,15 @@
       "runtimeExecutable": ".venv\\Scripts\\uvicorn.exe",
       "runtimeArgs": ["app.main:app", "--reload"],
       "port": 8000
+    },
+    {
+      "name": "soccer-tracker-d3",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": [
+        "/c",
+        "set ENABLED_DIVISIONS=d1,d3&& set DB_PATH=data\\soccer-d3.db&& .venv\\Scripts\\uvicorn.exe app.main:app --reload --port 8001"
+      ],
+      "port": 8001
     }
   ]
 }
