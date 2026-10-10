@@ -296,7 +296,7 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
             date_str,
             season,
             g.get("startTime"),
-            _safe_int(g.get("startTimeEpoch")),
+            validate.safe_int(g.get("startTimeEpoch")),
             status,
             g.get("currentPeriod"),
             g["home"]["names"].get("seo"),
@@ -614,13 +614,6 @@ def compress_raw_boxscores_batch(conn, batch_size: int = 200) -> int:
     return len(rows)
 
 
-def _as_int(value) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 0
-
-
 def get_team_stats(conn, game_id: str):
     raw_json = get_raw_boxscore(conn, game_id)
     if not raw_json:
@@ -635,14 +628,14 @@ def get_team_stats(conn, game_id: str):
         penalties = ts.get("penalties") or {}
         goalie = ts.get("goalie") or {}
         result[side] = {
-            "shots": _as_int(ts.get("shots")),
-            "shots_on_goal": _as_int(ts.get("shotsOnGoal")),
-            "corners": _as_int(ts.get("corners")),
-            "offsides": _as_int(ts.get("offsides")),
-            "fouls": _as_int(penalties.get("fouls")),
-            "yellow_cards": _as_int(penalties.get("yellowCards")),
-            "red_cards": _as_int(penalties.get("redCards")),
-            "saves": _as_int(goalie.get("saves")),
+            "shots": validate.safe_int(ts.get("shots")) or 0,
+            "shots_on_goal": validate.safe_int(ts.get("shotsOnGoal")) or 0,
+            "corners": validate.safe_int(ts.get("corners")) or 0,
+            "offsides": validate.safe_int(ts.get("offsides")) or 0,
+            "fouls": validate.safe_int(penalties.get("fouls")) or 0,
+            "yellow_cards": validate.safe_int(penalties.get("yellowCards")) or 0,
+            "red_cards": validate.safe_int(penalties.get("redCards")) or 0,
+            "saves": validate.safe_int(goalie.get("saves")) or 0,
         }
 
     if "home" not in result or "away" not in result:
@@ -1264,9 +1257,3 @@ def get_last_synced(conn):
     row = conn.execute("SELECT value FROM sync_meta WHERE key = 'last_synced'").fetchone()
     return row["value"] if row else None
 
-
-def _safe_int(value):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
