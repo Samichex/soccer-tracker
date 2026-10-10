@@ -70,7 +70,7 @@
 <div class="division-toggle-row">
     <span class="brand-sync" title="{{ sync.title }}">Synced {{ sync.label }}</span>
     <div class="division-toggle-right">
-        {% if seasons|length > 1 and request.url.path not in ('/', '/rank-history') %}
+        {% if seasons|length > 1 and request.url.path != '/' %}
         <select class="season-select" aria-label="Season"
                 onchange="window.location.href = '/set-season/' + this.value + '?next={{ current_path(request) | urlencode }}'">
             {% for s in seasons %}

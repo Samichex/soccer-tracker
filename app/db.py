@@ -1040,61 +1040,77 @@ def replace_rankings_for_date(conn, observed_date: str, rows: list[dict], divisi
     )
 
 
-def get_ranking_history(conn, seo: str):
+# The rankings tables have no season column: a snapshot's season is the
+# year of its observed_date, the same rule as games.season (the poll runs
+# August to December, never across a year boundary). Every reader below
+# takes an optional `season` so one year's polls never blend into the
+# next's -- None means every season (backfills, tests).
+def _season_clause(season: str | None, column: str = "observed_date") -> tuple[str, tuple]:
+    if season is None:
+        return "", ()
+    return f" AND substr({column}, 1, 4) = ?", (season,)
+
+
+def get_ranking_history(conn, seo: str, season: str | None = None):
+    clause, params = _season_clause(season)
     return conn.execute(
-        "SELECT * FROM team_rankings WHERE seo = ? ORDER BY observed_date", (seo,)
+        f"SELECT * FROM team_rankings WHERE seo = ?{clause} ORDER BY observed_date", (seo, *params)
     ).fetchall()
 
 
-def get_regional_ranking_history(conn, seo: str, division: str = "d3"):
+def get_regional_ranking_history(conn, seo: str, division: str = "d3", season: str | None = None):
+    clause, params = _season_clause(season)
     return conn.execute(
-        "SELECT * FROM team_rankings_regional WHERE seo = ? AND division = ? ORDER BY observed_date",
-        (seo, division),
+        f"SELECT * FROM team_rankings_regional WHERE seo = ? AND division = ?{clause} ORDER BY observed_date",
+        (seo, division, *params),
     ).fetchall()
 
 
-def get_all_ranking_history(conn, division: str = "d1"):
-    """Every team_rankings row for every team ever ranked, joined with
+def get_all_ranking_history(conn, division: str = "d1", season: str | None = None):
+    """Every team_rankings row for every team ranked in `season`, joined with
     `teams` for a display name/conference. Ordered by seo then
     observed_date so callers can group-by-seo and get each team's own
     snapshots in ascending order (same contract group_rankings_by_week
     already assumes for a single team). Rows with seo IS NULL are
     excluded -- no stable id to link/dedupe them to a team page."""
+    clause, params = _season_clause(season, "tr.observed_date")
     return conn.execute(
-        """
+        f"""
         SELECT tr.*, t.name AS team_name, t.name_full AS team_name_full,
                t.conference AS team_conference
         FROM team_rankings tr
         LEFT JOIN teams t ON t.seo = tr.seo
-        WHERE tr.seo IS NOT NULL AND tr.division = ?
+        WHERE tr.seo IS NOT NULL AND tr.division = ?{clause}
         ORDER BY tr.seo, tr.observed_date
         """,
-        (division,),
+        (division, *params),
     ).fetchall()
 
 
-def get_latest_rankings(conn, division: str = "d1"):
-    """Most recent day's poll snapshot for `division`, with `prev_rank`
-    backfilled from the prior snapshot's rank when the feed hasn't reported
-    it yet -- e.g. right after a new poll drops, before United Soccer
-    Coaches backfills that detail. Without this, rank-change arrows and
-    "prev rank" displays would show nothing/NR for every team on the day a
-    new poll lands."""
+def get_latest_rankings(conn, division: str = "d1", season: str | None = None):
+    """Most recent day's poll snapshot for `division` (within `season`), with
+    `prev_rank` backfilled from the prior snapshot's rank when the feed
+    hasn't reported it yet -- e.g. right after a new poll drops, before
+    United Soccer Coaches backfills that detail. Without this, rank-change
+    arrows and "prev rank" displays would show nothing/NR for every team on
+    the day a new poll lands. The prior snapshot comes from the same season
+    too, so a preseason poll never inherits last year's final ranks."""
+    clause, params = _season_clause(season)
     rows = [dict(r) for r in conn.execute(
-        """
+        f"""
         SELECT * FROM team_rankings
         WHERE division = ? AND observed_date = (
-            SELECT MAX(observed_date) FROM team_rankings WHERE division = ?
+            SELECT MAX(observed_date) FROM team_rankings WHERE division = ?{clause}
         )
         ORDER BY rank
         """,
-        (division, division),
+        (division, division, *params),
     )]
     missing = [r for r in rows if r["prev_rank"] in (None, "")]
     if rows and missing:
         prior_date = conn.execute(
-            "SELECT MAX(observed_date) AS d FROM team_rankings WHERE division = ? AND observed_date < ?",
-            (division, rows[0]["observed_date"]),
+            f"SELECT MAX(observed_date) AS d FROM team_rankings WHERE division = ? AND observed_date < ?{clause}",
+            (division, rows[0]["observed_date"], *params),
         ).fetchone()["d"]
         if prior_date:
             prior_ranks = {
@@ -1138,7 +1154,9 @@ def replace_regional_rankings_for_date(conn, observed_date: str, rows: list[dict
     )
 
 
-def get_all_regional_ranking_history(conn, division: str = "d3", region: int | None = None):
+def get_all_regional_ranking_history(
+    conn, division: str = "d3", region: int | None = None, season: str | None = None
+):
     """Same contract as get_all_ranking_history (rows shaped for
     reference_data.build_rank_history), but from team_rankings_regional.
     `region` narrows to one region's leaderboard -- the Rank History page
@@ -1154,31 +1172,34 @@ def get_all_regional_ranking_history(conn, division: str = "d3", region: int | N
     if region is not None:
         query += " AND tr.region = ?"
         params.append(region)
-    query += " ORDER BY tr.seo, tr.observed_date"
-    return conn.execute(query, params).fetchall()
+    clause, season_params = _season_clause(season, "tr.observed_date")
+    query += clause + " ORDER BY tr.seo, tr.observed_date"
+    return conn.execute(query, [*params, *season_params]).fetchall()
 
 
-def get_latest_regional_rankings(conn, division: str = "d3"):
-    """Most recent day's regional snapshots for `division`, across all
-    regions -- one row per currently-ranked team. Unlike get_latest_rankings,
-    prev_rank has no upstream backfill to fall back to (the feed never
-    reports it), so it's always derived here from the prior snapshot's own
-    rank for that team, the same fallback group_rankings_by_week applies
-    when building the Rank History chart."""
+def get_latest_regional_rankings(conn, division: str = "d3", season: str | None = None):
+    """Most recent day's regional snapshots for `division` (within
+    `season`), across all regions -- one row per currently-ranked team.
+    Unlike get_latest_rankings, prev_rank has no upstream backfill to fall
+    back to (the feed never reports it), so it's always derived here from
+    the prior same-season snapshot's own rank for that team, the same
+    fallback group_rankings_by_week applies when building the Rank History
+    chart."""
+    clause, params = _season_clause(season)
     rows = [dict(r) for r in conn.execute(
-        """
+        f"""
         SELECT * FROM team_rankings_regional
         WHERE division = ? AND observed_date = (
-            SELECT MAX(observed_date) FROM team_rankings_regional WHERE division = ?
+            SELECT MAX(observed_date) FROM team_rankings_regional WHERE division = ?{clause}
         )
         ORDER BY region, rank
         """,
-        (division, division),
+        (division, division, *params),
     )]
     if rows:
         prior_date = conn.execute(
-            "SELECT MAX(observed_date) AS d FROM team_rankings_regional WHERE division = ? AND observed_date < ?",
-            (division, rows[0]["observed_date"]),
+            f"SELECT MAX(observed_date) AS d FROM team_rankings_regional WHERE division = ? AND observed_date < ?{clause}",
+            (division, rows[0]["observed_date"], *params),
         ).fetchone()["d"]
         if prior_date:
             prior_ranks = {
@@ -1201,8 +1222,9 @@ def get_latest_regional_rankings(conn, division: str = "d3"):
 _SPLIT_REGION_CONFERENCES = {"uaa", "c2c"}
 
 
-def get_team_regions(conn, division: str = "d3") -> dict[str, int]:
-    """seo -> NPI region (1-10), built only from the feed's own region data.
+def get_team_regions(conn, division: str = "d3", season: str | None = None) -> dict[str, int]:
+    """seo -> NPI region (1-10), built only from the feed's own region data
+    for `season` (regions can be redrawn between seasons).
 
     Teams that appear in any regional snapshot keep the region of their most
     recent appearance. Every other team inherits its conference's region
@@ -1211,15 +1233,16 @@ def get_team_regions(conn, division: str = "d3") -> dict[str, int]:
     or ranked members already disagree. Coverage grows as more teams reach
     the feed's top 7 per region; conferences with no ranked team yet stay
     unmapped."""
+    clause, params = _season_clause(season, "tr.observed_date")
     ranked = conn.execute(
-        """
+        f"""
         SELECT tr.seo, tr.region, t.conference
         FROM team_rankings_regional tr
         LEFT JOIN teams t ON t.seo = tr.seo
-        WHERE tr.division = ? AND tr.seo IS NOT NULL
+        WHERE tr.division = ? AND tr.seo IS NOT NULL{clause}
         ORDER BY tr.observed_date
         """,
-        (division,),
+        (division, *params),
     ).fetchall()
 
     by_team: dict[str, int] = {}
