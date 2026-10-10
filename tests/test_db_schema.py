@@ -310,3 +310,32 @@ def test_delete_superseded_games_removes_final_duplicate_for_reissued_matchup(co
     assert conn.execute("SELECT 1 FROM games WHERE id = 'g2'").fetchone() is not None
     assert conn.execute("SELECT 1 FROM player_stats WHERE game_id = 'g1'").fetchone() is None
     assert conn.execute("SELECT 1 FROM game_boxscore_raw WHERE game_id = 'g1'").fetchone() is None
+
+
+_BOX = (
+    '{"teams": [{"teamId": 1, "isHome": true}, {"teamId": 2, "isHome": false}], '
+    '"teamBoxscore": [{"teamId": 1, "teamStats": {"shots": "9", "corners": "4"}}, '
+    '{"teamId": 2, "teamStats": {"shots": "5", "corners": "1"}}]}'
+)
+
+
+def test_raw_boxscore_is_stored_compressed_and_reads_back_unchanged(conn):
+    db.upsert_raw_boxscore(conn, "g1", _BOX)
+
+    stored = conn.execute("SELECT raw_json FROM game_boxscore_raw WHERE game_id = 'g1'").fetchone()[0]
+    assert isinstance(stored, bytes)
+    assert db.get_raw_boxscore(conn, "g1") == _BOX
+
+
+def test_legacy_plain_text_raw_boxscore_still_reads_and_converts(conn):
+    conn.execute("INSERT INTO game_boxscore_raw (game_id, raw_json) VALUES ('old', ?)", (_BOX,))
+    db.upsert_raw_boxscore(conn, "new", _BOX)
+
+    assert db.get_team_stats(conn, "old")["home"]["shots"] == 9
+
+    assert db.compress_raw_boxscores_batch(conn, batch_size=10) == 1  # only the legacy row
+    assert db.compress_raw_boxscores_batch(conn, batch_size=10) == 0
+    types = {r[0] for r in conn.execute("SELECT typeof(raw_json) FROM game_boxscore_raw")}
+    assert types == {"blob"}
+    assert db.get_raw_boxscore(conn, "old") == _BOX
+    assert db.get_team_stats(conn, "old")["away"]["corners"] == 1

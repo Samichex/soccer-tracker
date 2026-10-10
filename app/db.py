@@ -1,6 +1,7 @@
 import datetime as dt
 import json
 import sqlite3
+import zlib
 from contextlib import contextmanager
 
 from . import config, validate
@@ -141,7 +142,9 @@ CREATE TABLE IF NOT EXISTS teams (
 -- in player_stats so fields we don't parse yet aren't lost to a re-sync.
 CREATE TABLE IF NOT EXISTS game_boxscore_raw (
     game_id TEXT PRIMARY KEY,
-    raw_json TEXT NOT NULL,
+    raw_json TEXT NOT NULL,        -- zlib-compressed JSON as a BLOB (~7% of the text size);
+                                   -- rows from before 2026-10 may still be plain JSON text
+                                   -- until compress_raw_boxscores_batch converts them
     fetched_at TEXT
 );
 """
@@ -562,6 +565,19 @@ def replace_player_stats(conn, game_id: str, rows: list[dict]):
     )
 
 
+# Raw box scores were ~80% of the whole DB as plain text (~30KB each);
+# zlib brings each down to ~7% of that. Stored as a BLOB in the same TEXT
+# column -- SQLite keeps BLOBs as-is regardless of column affinity -- so
+# old plain-text rows and new compressed ones can coexist while
+# compress_raw_boxscores_batch converts the backlog.
+def _compress_raw(raw_json: str) -> bytes:
+    return zlib.compress(raw_json.encode("utf-8"))
+
+
+def _decompress_raw(value: bytes | str) -> str:
+    return zlib.decompress(value).decode("utf-8") if isinstance(value, bytes) else value
+
+
 def upsert_raw_boxscore(conn, game_id: str, raw_json: str):
     conn.execute(
         """
@@ -571,15 +587,31 @@ def upsert_raw_boxscore(conn, game_id: str, raw_json: str):
             raw_json=excluded.raw_json,
             fetched_at=excluded.fetched_at
         """,
-        (game_id, raw_json),
+        (game_id, _compress_raw(raw_json)),
     )
 
 
-def get_raw_boxscore(conn, game_id: str):
+def get_raw_boxscore(conn, game_id: str) -> str | None:
     row = conn.execute(
         "SELECT raw_json FROM game_boxscore_raw WHERE game_id = ?", (game_id,)
     ).fetchone()
-    return row["raw_json"] if row else None
+    return _decompress_raw(row["raw_json"]) if row else None
+
+
+def compress_raw_boxscores_batch(conn, batch_size: int = 200) -> int:
+    """Compress up to `batch_size` raw box scores still stored as plain JSON
+    text (from before compression was added). Returns how many it
+    converted; 0 means none are left. Doesn't commit -- the caller commits
+    each batch so the write lock is only held briefly."""
+    rows = conn.execute(
+        "SELECT game_id, raw_json FROM game_boxscore_raw WHERE typeof(raw_json) = 'text' LIMIT ?",
+        (batch_size,),
+    ).fetchall()
+    conn.executemany(
+        "UPDATE game_boxscore_raw SET raw_json = ? WHERE game_id = ?",
+        [(_compress_raw(r["raw_json"]), r["game_id"]) for r in rows],
+    )
+    return len(rows)
 
 
 def _as_int(value) -> int:
