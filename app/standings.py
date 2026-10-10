@@ -1,11 +1,5 @@
 from . import reference_data
-
-
-def _to_int(value):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
+from .validate import safe_int
 
 
 def _to_float(value):
@@ -15,94 +9,35 @@ def _to_float(value):
         return None
 
 
-def build_conference_table(games, conference: str):
-    """Compute conference and non-conference W-L-D records for every team
-    in `conference`, from a list of final games involving that conference."""
+def _result(team_score: int, opp_score: int) -> str:
+    """'w'/'l'/'d' for one side of a completed game."""
+    if team_score > opp_score:
+        return "w"
+    if team_score < opp_score:
+        return "l"
+    return "d"
+
+
+def _tally_records(games, only_conference: str | None = None) -> list[dict]:
+    """Conference and non-conference W-L-D, points and goals for every team
+    in `games` that has a conference -- or only `only_conference`'s teams.
+    A game counts as a conference game when both sides share a conference."""
     teams: dict[str, dict] = {}
 
     for g in games:
-        home_score = _to_int(g["home_score"])
-        away_score = _to_int(g["away_score"])
+        home_score = safe_int(g["home_score"])
+        away_score = safe_int(g["away_score"])
         if home_score is None or away_score is None:
             continue
 
-        is_conf_game = g["home_conference"] == conference and g["away_conference"] == conference
+        is_conf_game = bool(g["home_conference"]) and g["home_conference"] == g["away_conference"]
 
-        for side in ("home", "away"):
-            if g[f"{side}_conference"] != conference:
-                continue
-
-            seo = g[f"{side}_seo"]
-            team_score = home_score if side == "home" else away_score
-            opp_score = away_score if side == "home" else home_score
-
-            team = teams.setdefault(
-                seo,
-                {
-                    "seo": seo,
-                    "name": g[f"{side}_name"],
-                    "name_short": g[f"{side}_name_short"],
-                    "conf_w": 0,
-                    "conf_l": 0,
-                    "conf_d": 0,
-                    "nc_w": 0,
-                    "nc_l": 0,
-                    "nc_d": 0,
-                    "gf": 0,
-                    "ga": 0,
-                },
-            )
-
-            if team_score > opp_score:
-                result = "w"
-            elif team_score < opp_score:
-                result = "l"
-            else:
-                result = "d"
-
-            bucket = "conf" if is_conf_game else "nc"
-            team[f"{bucket}_{result}"] += 1
-            team["gf"] += team_score
-            team["ga"] += opp_score
-
-    rows = list(teams.values())
-    for t in rows:
-        t["conf_pts"] = 3 * t["conf_w"] + t["conf_d"]
-        t["overall_w"] = t["conf_w"] + t["nc_w"]
-        t["overall_l"] = t["conf_l"] + t["nc_l"]
-        t["overall_d"] = t["conf_d"] + t["nc_d"]
-        t["gd"] = t["gf"] - t["ga"]
-
-    rows.sort(key=lambda t: (-t["conf_pts"], t["name"]))
-    return rows
-
-
-def build_all_teams_table(games):
-    """Compute conference and non-conference W-L-D records for every team
-    across every conference, from a list of all final games. Unlike
-    build_conference_table, each team's conference-game bucket is determined
-    by its own conference rather than a single conference passed in."""
-    teams: dict[str, dict] = {}
-
-    for g in games:
-        home_score = _to_int(g["home_score"])
-        away_score = _to_int(g["away_score"])
-        if home_score is None or away_score is None:
-            continue
-
-        is_conf_game = (
-            g["home_conference"] and g["home_conference"] == g["away_conference"]
-        )
-
-        for side in ("home", "away"):
+        for side, team_score, opp_score in (("home", home_score, away_score), ("away", away_score, home_score)):
             conference = g[f"{side}_conference"]
-            if not conference:
+            if not conference or (only_conference is not None and conference != only_conference):
                 continue
 
             seo = g[f"{side}_seo"]
-            team_score = home_score if side == "home" else away_score
-            opp_score = away_score if side == "home" else home_score
-
             team = teams.setdefault(
                 seo,
                 {
@@ -110,26 +45,13 @@ def build_all_teams_table(games):
                     "name": g[f"{side}_name"],
                     "name_short": g[f"{side}_name_short"],
                     "conference": conference,
-                    "conf_w": 0,
-                    "conf_l": 0,
-                    "conf_d": 0,
-                    "nc_w": 0,
-                    "nc_l": 0,
-                    "nc_d": 0,
-                    "gf": 0,
-                    "ga": 0,
+                    "conf_w": 0, "conf_l": 0, "conf_d": 0,
+                    "nc_w": 0, "nc_l": 0, "nc_d": 0,
+                    "gf": 0, "ga": 0,
                 },
             )
-
-            if team_score > opp_score:
-                result = "w"
-            elif team_score < opp_score:
-                result = "l"
-            else:
-                result = "d"
-
             bucket = "conf" if is_conf_game else "nc"
-            team[f"{bucket}_{result}"] += 1
+            team[f"{bucket}_{_result(team_score, opp_score)}"] += 1
             team["gf"] += team_score
             team["ga"] += opp_score
 
@@ -140,7 +62,21 @@ def build_all_teams_table(games):
         t["overall_l"] = t["conf_l"] + t["nc_l"]
         t["overall_d"] = t["conf_d"] + t["nc_d"]
         t["gd"] = t["gf"] - t["ga"]
+    return rows
 
+
+def build_conference_table(games, conference: str):
+    """Records for every team in `conference`, from a list of final games
+    involving that conference, ranked by conference points."""
+    rows = _tally_records(games, only_conference=conference)
+    rows.sort(key=lambda t: (-t["conf_pts"], t["name"]))
+    return rows
+
+
+def build_all_teams_table(games):
+    """Records for every team across every conference, from a list of all
+    final games, sorted by name."""
+    rows = _tally_records(games)
     rows.sort(key=lambda t: t["name"])
     return rows
 
@@ -172,18 +108,13 @@ def build_team_schedule(games, seo: str, conference: str | None = None):
 
     for g in games:
         is_home = g["home_seo"] == seo
-        team_score = _to_int(g["home_score"] if is_home else g["away_score"])
-        opp_score = _to_int(g["away_score"] if is_home else g["home_score"])
+        team_score = safe_int(g["home_score"] if is_home else g["away_score"])
+        opp_score = safe_int(g["away_score"] if is_home else g["home_score"])
         opponent_conference = g["away_conference"] if is_home else g["home_conference"]
 
         result = None
         if g["status"] == "final" and team_score is not None and opp_score is not None:
-            if team_score > opp_score:
-                result = "w"
-            elif team_score < opp_score:
-                result = "l"
-            else:
-                result = "d"
+            result = _result(team_score, opp_score)
             bucket = "conf" if conference and opponent_conference == conference else "nc"
             record[f"{bucket}_{result}"] += 1
 
@@ -230,7 +161,7 @@ def build_team_totals(roster, schedule_rows):
     }
     for p in roster:
         for key in totals:
-            totals[key] += _to_int(p[key]) or 0
+            totals[key] += safe_int(p[key]) or 0
 
     totals["goals_against"] = sum(
         r["opp_score"] for r in schedule_rows if r["game"]["status"] == "final" and r["opp_score"] is not None
@@ -250,28 +181,23 @@ def build_player_game_log(rows):
 
     for r in rows:
         is_home = bool(r["is_home"])
-        goals = _to_int(r["goals"]) or 0
-        assists = _to_int(r["assists"]) or 0
-        shots = _to_int(r["shots"]) or 0
-        shots_on_goal = _to_int(r["shots_on_goal"]) or 0
+        goals = safe_int(r["goals"]) or 0
+        assists = safe_int(r["assists"]) or 0
+        shots = safe_int(r["shots"]) or 0
+        shots_on_goal = safe_int(r["shots_on_goal"]) or 0
         minutes = _to_float(r["minutes_played"]) or 0
-        fouls = _to_int(r["fouls"]) or 0
-        yellow_cards = _to_int(r["yellow_cards"]) or 0
-        red_cards = _to_int(r["red_cards"]) or 0
-        game_winning_goals = _to_int(r["game_winning_goals"]) or 0
-        penalty_goals = _to_int(r["penalty_goals"]) or 0
+        fouls = safe_int(r["fouls"]) or 0
+        yellow_cards = safe_int(r["yellow_cards"]) or 0
+        red_cards = safe_int(r["red_cards"]) or 0
+        game_winning_goals = safe_int(r["game_winning_goals"]) or 0
+        penalty_goals = safe_int(r["penalty_goals"]) or 0
         is_hat_trick = goals >= 3
 
-        team_score = _to_int(r["home_score"] if is_home else r["away_score"])
-        opp_score = _to_int(r["away_score"] if is_home else r["home_score"])
+        team_score = safe_int(r["home_score"] if is_home else r["away_score"])
+        opp_score = safe_int(r["away_score"] if is_home else r["home_score"])
         result = None
         if r["status"] == "final" and team_score is not None and opp_score is not None:
-            if team_score > opp_score:
-                result = "w"
-            elif team_score < opp_score:
-                result = "l"
-            else:
-                result = "d"
+            result = _result(team_score, opp_score)
 
         totals["games"] += 1
         totals["minutes"] += minutes

@@ -27,7 +27,9 @@ NONNEGATIVE_STAT_FIELDS = [
 KNOWN_GAME_STATUSES = {"pre", "live", "final"}
 
 
-def _as_int_or_none(value):
+def safe_int(value) -> int | None:
+    """int(value), or None for anything that isn't a whole number (None, "",
+    "NR", ...). The one place upstream strings get parsed as ints."""
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -38,7 +40,7 @@ def sanitize_player_row_stats(game_id: str, row: dict) -> None:
     """Blank out (in place) any stat value on `row` that can't be trusted."""
     who = f"{row.get('first_name')} {row.get('last_name')} (#{row.get('number')})"
 
-    minutes = _as_int_or_none(row.get("minutes_played"))
+    minutes = safe_int(row.get("minutes_played"))
     if minutes is not None and not (0 <= minutes <= MAX_PLAUSIBLE_MINUTES):
         log.warning(
             "game %s: %s has implausible minutes_played=%r, discarding",
@@ -47,7 +49,7 @@ def sanitize_player_row_stats(game_id: str, row: dict) -> None:
         row["minutes_played"] = ""
 
     for field in NONNEGATIVE_STAT_FIELDS:
-        value = _as_int_or_none(row.get(field))
+        value = safe_int(row.get(field))
         if value is not None and value < 0:
             log.warning(
                 "game %s: %s has negative %s=%r, discarding",
@@ -93,7 +95,7 @@ def validate_score(game_id: str, side: str, score) -> str | None:
     out anything else so it can't be silently CAST to an unintended int."""
     if score is None or score == "":
         return score
-    value = _as_int_or_none(score)
+    value = safe_int(score)
     if value is None or value < 0:
         log.warning("game %s: unrecognized %s score %r, discarding", game_id, side, score)
         return None

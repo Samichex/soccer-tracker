@@ -1,7 +1,6 @@
 import pytest
 
-from app import sync
-from app import db as db_module
+from app import sync, validate
 
 
 def _player(**overrides):
@@ -131,8 +130,7 @@ def test_rows_from_boxscore_missing_team_metadata_yields_no_seo():
     ("abc", None),
 ])
 def test_safe_int(value, expected):
-    assert sync._safe_int(value) == expected
-    assert db_module._safe_int(value) == expected
+    assert validate.safe_int(value) == expected
 
 
 def test_parse_rankings_maps_expected_fields():

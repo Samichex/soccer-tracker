@@ -2,7 +2,7 @@ import datetime as dt
 import json
 import logging
 
-from . import config, db, ncaa_client, normalize
+from . import config, db, ncaa_client, normalize, validate
 
 log = logging.getLogger("soccer-tracker.sync")
 
@@ -140,13 +140,6 @@ def sync_missing_boxscores(conn, since_date: str | None = None):
     sync_boxscores(conn, db.games_missing_boxscore(conn, since_date))
 
 
-def _safe_int(value):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
 def _parse_rank(value) -> int | None:
     """The feed denotes a tie for a rank with a "T" prefix, e.g. "T23" --
     we don't track the tie itself, just the numeric rank, so multiple
@@ -156,7 +149,7 @@ def _parse_rank(value) -> int | None:
     text = str(value).strip() if value is not None else ""
     if text[:1] in ("T", "t"):
         text = text[1:]
-    return _safe_int(text)
+    return validate.safe_int(text)
 
 
 # The United Soccer Coaches poll is a top 25 (ties share a rank, never
