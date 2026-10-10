@@ -83,13 +83,17 @@ automatically from its `date` on every startup (`db.init_db()`), so an
 already-synced season needs nothing manual — it just appears in the nav's
 season switcher once two or more seasons exist in the database.
 
-A season that predates this app's first live sync (anything before the
-`SEASON_START` in `app/backfill.py`) has no rows at all yet, though, and
-needs a one-off backfill to pull it in from the same upstream feed:
+A season the live sync never covered (one from before this app existed,
+or days missed while it was down) has no rows yet, though, and needs a
+one-off backfill to pull it in from the same upstream feed:
 
 ```bash
-python -m app.backfill --start <season-start> --end <season-end> --division all
+python -m app.backfill --season 2025 --division all
 ```
+
+`--season` covers that season's whole window (July 30 to December 31, never
+past today); leave it out for the most recent season, or pass
+`--start`/`--end` (YYYY-MM-DD) for an exact range instead.
 
 Run this from Render's Shell tab for the service, not locally — the
 database only exists on the service's persistent disk, and the single-
@@ -103,6 +107,8 @@ as the original D1 2026 backfill). Once a season is in, it's in for good —
 there's nothing to re-run for it on later deploys.
 
 If the Render disk is ever recreated, rebuild history the same way:
-`python -m app.backfill` for games and box scores, then
-`python -m app.backfill_rankings` for the D1 poll weeks before this app's
-own daily snapshots began.
+`python -m app.backfill --season <year> --division all` for each season's
+games and box scores, then `python -m app.backfill_rankings --season <year>`
+for the D1 poll weeks stored in `app/backfill_rankings.py` (today: 2026's
+weeks before this app's own daily snapshots began). Ranking weeks after
+that only existed as the app's own snapshots, so a lost disk loses them.
