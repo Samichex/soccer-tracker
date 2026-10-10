@@ -140,16 +140,6 @@ def sync_missing_boxscores(conn, since_date: str | None = None):
     sync_boxscores(conn, db.games_missing_boxscore(conn, since_date))
 
 
-def resync_boxscores(conn, game_ids: list[str]):
-    """Re-fetch and replace box scores for games already synced.
-
-    Use this to pick up upstream corrections — e.g. the NCAA feed initially
-    listing bench players who never entered the match (0 minutes played),
-    then trimming them once the box score is finalized.
-    """
-    sync_boxscores(conn, game_ids)
-
-
 def _safe_int(value):
     try:
         return int(value)
@@ -303,8 +293,8 @@ def run_full_sync():
     """Sync the live window: recent results plus the near-term schedule.
 
     Scores and game times in this window change, so it's cheap to re-pull on
-    every background cycle and safe to trigger from the manual refresh
-    endpoint. Days further out belong to sync_far_schedule instead.
+    every background cycle. Days further out belong to sync_far_schedule
+    instead.
 
     Loops over config.ENABLED_DIVISIONS -- just "d1" by default, so this is
     unchanged in shape and volume from before D3 support existed unless
@@ -350,8 +340,7 @@ def sync_far_schedule():
     """Sync the rest-of-season schedule beyond the live window.
 
     These fixtures rarely change day to day, so this runs on its own slower
-    cadence (SCHEDULE_SYNC_INTERVAL_HOURS) from the background loop only —
-    it's not tied to the manual /api/sync-now refresh.
+    cadence (SCHEDULE_SYNC_INTERVAL_HOURS) from the background loop.
     """
     today = dt.date.today()
     with db.get_conn() as conn:
