@@ -370,13 +370,15 @@ def _rank_lookup(rank_map: dict, seo: str | None) -> tuple[int | None, str | Non
     return (info["rank"], info["prev_rank"], info["region"]) if info else (None, None, None)
 
 
-def _latest_rankings_for_division(conn, division: str):
+def _latest_rankings_for_division(conn, division: str, season: str | None):
     """db.get_latest_rankings or db.get_latest_regional_rankings, whichever
-    shape `division`'s rankings feed actually uses -- see
-    config.REGIONAL_RANKINGS_DIVISIONS."""
+    shape `division`'s rankings feed actually uses (see
+    config.REGIONAL_RANKINGS_DIVISIONS), limited to `season`'s polls -- so
+    before a new season's first poll, last season's final ranks don't get
+    attached to this season's games."""
     if division in config.REGIONAL_RANKINGS_DIVISIONS:
-        return db.get_latest_regional_rankings(conn, division)
-    return db.get_latest_rankings(conn, division)
+        return db.get_latest_regional_rankings(conn, division, season)
+    return db.get_latest_rankings(conn, division, season)
 
 
 def _upset_winner(g: dict) -> str | None:
@@ -485,12 +487,12 @@ def index(
     with db.get_conn() as conn:
         games = [dict(g) for g in db.get_games_for_date(conn, day.isoformat(), conference, division)]
         # Matches has no season switcher (it's always "today", which pins
-        # its own season already) -- these two aren't date-scoped though,
-        # so without an explicit season they'd silently blend in whatever
-        # historical seasons have been backfilled. Pin both to the current
+        # its own season already) -- these aren't date-scoped though, so
+        # without an explicit season they'd silently blend in whatever
+        # historical seasons have been backfilled. Pin them to the current
         # season rather than let that leak in.
         conferences = db.get_conferences(conn, division, _current_season())
-        rank_map = _rank_map(_latest_rankings_for_division(conn, division))
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division, _current_season()))
         top30_seos = standings.top_teams_by_record(
             db.get_all_final_games(conn, division, _current_season())
         )
@@ -587,23 +589,20 @@ def team_detail(request: Request, seo: str, season: str | None = None):
         is_current_season = season == _current_season()
         games = db.get_team_games(conn, seo, season)
         roster = db.get_team_roster_stats(conn, seo, season)
-        # The national poll has no season of its own (see config's division
-        # notes), so it's always *today's* rank -- showing it while
-        # browsing a past season would misleadingly attach today's standing
-        # to a different year's record. Only fetch/show it for the current
-        # season.
+        # Rank history and the rank badge only show for the current season
+        # (polls weren't tracked before 2026, so a past season has none).
         if is_current_season:
             # A team lives in either the national D1 poll or one of the D3
             # regional NPI leaderboards, never both, so try D1 first and
             # fall back to the regional tables.
-            history_rows = db.get_ranking_history(conn, seo)
+            history_rows = db.get_ranking_history(conn, seo, season)
             current_rank, current_prev_rank, current_region = _rank_lookup(
-                _rank_map(db.get_latest_rankings(conn)), seo
+                _rank_map(db.get_latest_rankings(conn, season=season)), seo
             )
             if not history_rows:
-                history_rows = db.get_regional_ranking_history(conn, seo)
+                history_rows = db.get_regional_ranking_history(conn, seo, season=season)
                 current_rank, current_prev_rank, current_region = _rank_lookup(
-                    _rank_map(db.get_latest_regional_rankings(conn)), seo
+                    _rank_map(db.get_latest_regional_rankings(conn, season=season)), seo
                 )
             rank_history = list(reversed(reference_data.group_rankings_by_week(history_rows)))
         else:
@@ -649,9 +648,8 @@ def conference_detail(request: Request, conference: str, division: str | None = 
         is_current_season = season == _current_season()
         conferences = db.get_conferences(conn, division, season)
         games = db.get_conference_games(conn, conference, division, season)
-        # The national poll has no season of its own (see team_detail) --
-        # only attach today's rank to teams while viewing the current season.
-        rank_map = _rank_map(_latest_rankings_for_division(conn, division)) if is_current_season else {}
+        # Ranks only show for the current season (see team_detail).
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division, season)) if is_current_season else {}
     table = standings.build_conference_table(games, conference)
     team_states = reference_data.get_team_states()
     for t in table:
@@ -693,9 +691,8 @@ def teams_list(
         is_current_season = season == _current_season()
         games = db.get_all_final_games(conn, division, season)
         conferences = db.get_conferences(conn, division, season)
-        # The national poll has no season of its own (see team_detail) --
-        # only attach today's rank to teams while viewing the current season.
-        rank_map = _rank_map(_latest_rankings_for_division(conn, division)) if is_current_season else {}
+        # Ranks only show for the current season (see team_detail).
+        rank_map = _rank_map(_latest_rankings_for_division(conn, division, season)) if is_current_season else {}
         team_privacy = db.get_team_privacy(conn)
     table = standings.build_all_teams_table(games)
     team_states = reference_data.get_team_states()
@@ -757,11 +754,11 @@ def teams_list(
     )
 
 
-def _region_profile(conn, division: str, region: int) -> dict:
-    """States and conferences that make up one NPI region, from
+def _region_profile(conn, division: str, region: int, season: str | None) -> dict:
+    """States and conferences that make up one NPI region in `season`, from
     db.get_team_regions."""
     team_states = reference_data.get_team_states()
-    seos = [s for s, r in db.get_team_regions(conn, division).items() if r == region]
+    seos = [s for s, r in db.get_team_regions(conn, division, season).items() if r == region]
     conferences = {
         r["conference"]
         for r in conn.execute(
@@ -779,22 +776,27 @@ def _region_profile(conn, division: str, region: int) -> dict:
 
 
 @app.get("/rank-history", response_class=HTMLResponse)
-def rank_history_page(request: Request, division: str | None = None, region: int | None = None):
+def rank_history_page(
+    request: Request, division: str | None = None, region: int | None = None, season: str | None = None
+):
     division = _resolve_division(request, division)
     is_regional = division in config.REGIONAL_RANKINGS_DIVISIONS
     with db.get_conn() as conn:
+        # One season's polls at a time, picked like every other page's
+        # season (query param, then the nav's season cookie, then current).
+        season = _resolve_season(conn, request, division, season)
         if is_regional:
             # Ten independent regional leaderboards, not one national poll
             # (see config.REGIONAL_RANKINGS_DIVISIONS) -- show one at a
             # time, same as the rest of the site shows one division at a
             # time, defaulting to Region I when none is picked yet.
             region = region if region in range(1, 11) else 1
-            rows = db.get_all_regional_ranking_history(conn, division, region)
-            region_profile = _region_profile(conn, division, region)
+            rows = db.get_all_regional_ranking_history(conn, division, region, season)
+            region_profile = _region_profile(conn, division, region, season)
         else:
             region = None
             region_profile = None
-            rows = db.get_all_ranking_history(conn, division)
+            rows = db.get_all_ranking_history(conn, division, season)
     history = reference_data.build_rank_history(rows)
     week_index = {w: i for i, w in enumerate(history["weeks"])}
     chart_data = {
@@ -820,6 +822,7 @@ def rank_history_page(request: Request, division: str | None = None, region: int
             "region": region,
             "regions": list(range(1, 11)),
             "region_profile": region_profile,
+            "season": season,
         },
     )
 
@@ -1044,7 +1047,10 @@ def game_detail(request: Request, game_id: str):
 
         if game is not None:
             game = dict(game)
-            rank_map = _rank_map(_latest_rankings_for_division(conn, game["division"] or "d1"))
+            # The game's own season's polls: a 2025 game never wears 2026 ranks.
+            rank_map = _rank_map(
+                _latest_rankings_for_division(conn, game["division"] or "d1", game["season"])
+            )
             game["away_rank"], game["away_prev_rank"], game["away_region"] = _rank_lookup(rank_map, game["away_seo"])
             game["home_rank"], game["home_prev_rank"], game["home_region"] = _rank_lookup(rank_map, game["home_seo"])
 

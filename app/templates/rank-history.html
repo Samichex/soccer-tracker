@@ -17,7 +17,7 @@
                 {% endfor %}
             </select>
         </form>
-        <p class="team-meta">NCAA D3 Regional NPI &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d3" target="_blank" rel="noopener noreferrer">NCAA D3 2026 Season</a></p>
+        <p class="team-meta">NCAA D3 Regional NPI &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d3" target="_blank" rel="noopener noreferrer">NCAA D3 {{ season }} Season</a></p>
         {% if region_profile and region_profile.conferences %}
         <p class="team-meta rank-history-region-info">Conferences:
             {% for c in region_profile.conferences %}<a class="conf-link" href="/conference/{{ c.seo }}">{{ c.label }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
@@ -28,14 +28,14 @@
     {% else %}
     <h1>Rank History</h1>
     {% if rankings_supported %}
-    <p class="team-meta">US Coaches Top 25 &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d1/united-soccer-coaches" target="_blank" rel="noopener noreferrer">NCAA D1 2026 Season</a></p>
+    <p class="team-meta">US Coaches Top 25 &middot; <a class="section-link" href="https://www.ncaa.com/rankings/soccer-men/d1/united-soccer-coaches" target="_blank" rel="noopener noreferrer">NCAA D1 {{ season }} Season</a></p>
     {% endif %}
     {% endif %}
 
     {% if not teams %}
     <p class="empty">
-        {% if is_regional %}No ranking data yet for Region {{ region_roman(region) }}.
-        {% elif rankings_supported %}No ranking data yet.
+        {% if is_regional %}No ranking data for Region {{ region_roman(region) }} in {{ season }}.
+        {% elif rankings_supported %}No ranking data for {{ season }}.
         {% else %}No national ranking for this division yet.{% endif %}
     </p>
     {% else %}
