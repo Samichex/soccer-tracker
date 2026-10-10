@@ -14,13 +14,28 @@ def _group_by_team_seo(rows: list[dict]) -> dict[str, list[dict]]:
     return groups
 
 
+def live_window_start() -> str:
+    """First date (YYYY-MM-DD) of the window run_full_sync re-pulls every
+    cycle. Games older than this are never revisited by the live sync."""
+    return (dt.date.today() - dt.timedelta(days=config.DAYS_BACK)).isoformat()
+
+
+# Every sync step below fetches from upstream *before* touching the DB, then
+# does its writes inside `with conn:` -- committed together on success,
+# rolled back on error. Python's sqlite3 otherwise holds a write
+# transaction open from the first write until an explicit commit, which
+# used to mean one run_full_sync kept the DB write-locked across every
+# network call it made, so any other writer (the game page's box score
+# fetch, a backfill run from the Render shell) waited out busy_timeout and
+# then failed with "database is locked".
 def sync_date(conn, date: dt.date, division: str = "d1", sport_path: str | None = None):
     sport_path = sport_path or config.DIVISIONS[division]
     data = ncaa_client.get_scoreboard(date, sport_path)
     games = data.get("games", [])
     date_str = date.isoformat()
-    seen_ids = {db.upsert_game(conn, game, date_str, division) for game in games}
-    removed = db.delete_superseded_games(conn, date_str, division, seen_ids)
+    with conn:
+        seen_ids = {db.upsert_game(conn, game, date_str, division) for game in games}
+        removed = db.delete_superseded_games(conn, date_str, division, seen_ids)
     log.info("synced %s %s games for %s", len(games), division, date_str)
     if removed:
         log.info("removed %s superseded %s game(s) for %s", removed, division, date_str)
@@ -96,25 +111,33 @@ def _sync_teams(conn, box: dict) -> None:
 
 def _sync_boxscore(conn, game_id: str) -> int:
     box = ncaa_client.get_boxscore(game_id)
-    db.upsert_raw_boxscore(conn, game_id, json.dumps(box))
-    _sync_teams(conn, box)
-    rows = _rows_from_boxscore(box)
-    for team_seo, team_rows in _group_by_team_seo(rows).items():
-        normalize.normalize_rows(conn, team_seo, team_rows)
-    if rows:
-        db.replace_player_stats(conn, game_id, rows)
+    with conn:
+        db.upsert_raw_boxscore(conn, game_id, json.dumps(box))
+        _sync_teams(conn, box)
+        rows = _rows_from_boxscore(box)
+        for team_seo, team_rows in _group_by_team_seo(rows).items():
+            normalize.normalize_rows(conn, team_seo, team_rows)
+        if rows:
+            db.replace_player_stats(conn, game_id, rows)
     return len(rows)
 
 
-def sync_missing_boxscores(conn):
-    pending = db.games_missing_boxscore(conn)
-    for game_id in pending:
+def sync_boxscores(conn, game_ids: list[str]):
+    """Fetch and store box scores for `game_ids`, replacing any already
+    stored. A failure for one game is logged and skipped, not raised."""
+    for game_id in game_ids:
         try:
             count = _sync_boxscore(conn, game_id)
         except Exception:
             log.exception("failed to fetch boxscore for game %s", game_id)
             continue
         log.info("stored boxscore for game %s (%s players)", game_id, count)
+
+
+def sync_missing_boxscores(conn, since_date: str | None = None):
+    """Box scores for final games that don't have one yet -- only those
+    played on/after `since_date` when given (see db.games_missing_boxscore)."""
+    sync_boxscores(conn, db.games_missing_boxscore(conn, since_date))
 
 
 def resync_boxscores(conn, game_ids: list[str]):
@@ -124,13 +147,7 @@ def resync_boxscores(conn, game_ids: list[str]):
     listing bench players who never entered the match (0 minutes played),
     then trimming them once the box score is finalized.
     """
-    for game_id in game_ids:
-        try:
-            count = _sync_boxscore(conn, game_id)
-        except Exception:
-            log.exception("failed to resync boxscore for game %s", game_id)
-            continue
-        log.info("resynced boxscore for game %s (%s players)", game_id, count)
+    sync_boxscores(conn, game_ids)
 
 
 def _safe_int(value):
@@ -223,7 +240,8 @@ def sync_regional_rankings(
     rows = _parse_regional_rankings(data)
     for r in rows:
         r["seo"] = db.resolve_seo_by_name(conn, r["school"])
-    db.replace_regional_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
+    with conn:
+        db.replace_regional_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
     unresolved = [r["school"] for r in rows if not r["seo"]]
     if unresolved:
         log.warning("could not resolve seo for regionally-ranked %s schools: %s", division, unresolved)
@@ -257,7 +275,8 @@ def sync_rankings(
     rows = _parse_rankings(data)
     for r in rows:
         r["seo"] = db.resolve_seo_by_name(conn, r["school"])
-    db.replace_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
+    with conn:
+        db.replace_rankings_for_date(conn, observed_date.isoformat(), rows, division=division)
     unresolved = [r["school"] for r in rows if not r["seo"]]
     if unresolved:
         log.warning("could not resolve seo for ranked %s schools: %s", division, unresolved)
@@ -288,7 +307,10 @@ def run_full_sync():
                 except Exception:
                     log.exception("failed to sync %s %s", division, date.isoformat())
                     continue
-        sync_missing_boxscores(conn)
+        # Only this window's games -- an older one upstream never serves a
+        # box score for would otherwise be retried (with backoff) every
+        # cycle forever. sync_all_missing_boxscores sweeps the rest daily.
+        sync_missing_boxscores(conn, live_window_start())
         for division in config.ENABLED_DIVISIONS:
             if division not in config.RANKINGS_SUPPORTED_DIVISIONS:
                 # See config.RANKINGS_SUPPORTED_DIVISIONS -- this division's
@@ -328,6 +350,18 @@ def sync_far_schedule():
                 except Exception:
                     log.exception("failed to sync %s %s", division, date.isoformat())
                     continue
+
+
+def sync_all_missing_boxscores():
+    """Retry every final game still missing a box score, however old.
+
+    run_full_sync only retries games inside its live window, so this daily
+    pass (run alongside sync_far_schedule from the background loop) is what
+    picks up a game that aged out of that window without ever getting one,
+    e.g. after an outage longer than DAYS_BACK.
+    """
+    with db.get_conn() as conn:
+        sync_missing_boxscores(conn)
 
 
 if __name__ == "__main__":

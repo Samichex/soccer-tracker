@@ -253,8 +253,8 @@ _CONSECUTIVE_SYNC_FAILURES = 0  # same pattern as _last_manual_sync below
 
 def _background_sync_loop():
     global _CONSECUTIVE_SYNC_FAILURES
-    last_schedule_sync: dt.datetime | None = None
-    schedule_interval = dt.timedelta(hours=config.SCHEDULE_SYNC_INTERVAL_HOURS)
+    last_daily_sync: dt.datetime | None = None
+    daily_interval = dt.timedelta(hours=config.SCHEDULE_SYNC_INTERVAL_HOURS)
     while True:
         sync_failed = False
         try:
@@ -264,12 +264,13 @@ def _background_sync_loop():
             sync_failed = True
 
         now = dt.datetime.utcnow()
-        if last_schedule_sync is None or now - last_schedule_sync >= schedule_interval:
+        if last_daily_sync is None or now - last_daily_sync >= daily_interval:
             try:
                 sync.sync_far_schedule()
-                last_schedule_sync = now
+                sync.sync_all_missing_boxscores()
+                last_daily_sync = now
             except Exception:
-                log.exception("far schedule sync failed")
+                log.exception("daily schedule/boxscore sync failed")
                 sync_failed = True
 
         _CONSECUTIVE_SYNC_FAILURES = _CONSECUTIVE_SYNC_FAILURES + 1 if sync_failed else 0
@@ -288,7 +289,7 @@ def _background_sync_loop():
         else:
             try:
                 with db.get_conn() as conn:
-                    live = db.has_live_games(conn)
+                    live = db.has_live_games(conn, sync.live_window_start())
             except Exception:
                 log.exception("has_live_games check failed")
                 live = False
@@ -970,8 +971,17 @@ def game_detail(request: Request, game_id: str):
         game = db.get_game(conn, game_id)
         stats = db.get_player_stats(conn, game_id)
 
-        if game is not None and game["status"] == "final" and not stats:
-            sync.sync_missing_boxscores(conn)
+        # Just this game's box score, and only while it's recent enough for
+        # the background sync to still be retrying it -- an older one is
+        # usually a box score upstream never serves, and fetching it here
+        # would stall the page through the client's retry backoff.
+        if (
+            game is not None
+            and game["status"] == "final"
+            and not stats
+            and game["date"] >= sync.live_window_start()
+        ):
+            sync.sync_boxscores(conn, [game_id])
             stats = db.get_player_stats(conn, game_id)
 
         if game is not None:

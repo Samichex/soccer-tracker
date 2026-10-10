@@ -485,20 +485,35 @@ def get_teams_with_orgid(conn):
     ).fetchall()
 
 
-def games_missing_boxscore(conn):
+def games_missing_boxscore(conn, since_date: str | None = None):
+    """Final games with no player_stats yet. `since_date` (YYYY-MM-DD)
+    limits this to games played on/after that date -- the background sync
+    passes the start of its live window so a box score upstream will never
+    serve (e.g. a handful of 2025 D3 games that 502 every time) isn't
+    re-fetched every cycle forever. None means every game, however old."""
+    date_clause = " AND g.date >= ?" if since_date is not None else ""
+    params = (since_date,) if since_date is not None else ()
     rows = conn.execute(
-        """
+        f"""
         SELECT g.id FROM games g
-        WHERE g.status = 'final'
+        WHERE g.status = 'final'{date_clause}
         AND NOT EXISTS (SELECT 1 FROM player_stats p WHERE p.game_id = g.id)
-        """
+        """,
+        params,
     ).fetchall()
     return [r["id"] for r in rows]
 
 
-def has_live_games(conn) -> bool:
-    """True if any synced game is currently in progress."""
-    row = conn.execute("SELECT 1 FROM games WHERE status = 'live' LIMIT 1").fetchone()
+def has_live_games(conn, since_date: str) -> bool:
+    """True if a game played on/after `since_date` (YYYY-MM-DD) is
+    currently in progress. Only the live sync window counts: a game that
+    aged out of it while still marked 'live' (the app was down when it
+    finished, or upstream never finalized a suspended match) is never
+    re-synced, so counting it would pin the background loop to its fast
+    live-game interval forever."""
+    row = conn.execute(
+        "SELECT 1 FROM games WHERE status = 'live' AND date >= ? LIMIT 1", (since_date,)
+    ).fetchone()
     return row is not None
 
 
@@ -603,36 +618,31 @@ def get_team_stats(conn, game_id: str):
     return result
 
 
-_RED_CARD_JOINS = """
-    LEFT JOIN (
-        SELECT game_id, SUM(CAST(red_cards AS INTEGER)) AS red_cards
-        FROM player_stats WHERE is_home = 1 GROUP BY game_id
-    ) rh ON rh.game_id = g.id
-    LEFT JOIN (
-        SELECT game_id, SUM(CAST(red_cards AS INTEGER)) AS red_cards
-        FROM player_stats WHERE is_home = 0 GROUP BY game_id
-    ) ra ON ra.game_id = g.id
-"""
+# Correlated subqueries rather than joined GROUP BYs: each one is an
+# index lookup (player_stats' primary key leads with game_id) for just the
+# games being returned, where a joined aggregate summed every row in
+# player_stats on every call (~185ms vs. <1ms on a two-season DB).
 _GAME_COLUMNS_WITH_CARDS = f"""
     {_GAME_COLUMNS},
-    COALESCE(rh.red_cards, 0) AS home_red_cards,
-    COALESCE(ra.red_cards, 0) AS away_red_cards
+    (SELECT COALESCE(SUM(CAST(ps.red_cards AS INTEGER)), 0) FROM player_stats ps
+     WHERE ps.game_id = g.id AND ps.is_home = 1) AS home_red_cards,
+    (SELECT COALESCE(SUM(CAST(ps.red_cards AS INTEGER)), 0) FROM player_stats ps
+     WHERE ps.game_id = g.id AND ps.is_home = 0) AS away_red_cards
 """
 
 
 def get_games_for_date(conn, date_str: str, conference: str | None = None, division: str = "d1"):
-    joins = f"{_GAME_JOINS} {_RED_CARD_JOINS}"
     if conference:
         return conn.execute(
             f"""
-            SELECT {_GAME_COLUMNS_WITH_CARDS} {joins}
+            SELECT {_GAME_COLUMNS_WITH_CARDS} {_GAME_JOINS}
             WHERE g.date = ? AND g.division = ? AND (g.home_conference = ? OR g.away_conference = ?)
             ORDER BY g.start_epoch
             """,
             (date_str, division, conference, conference),
         ).fetchall()
     return conn.execute(
-        f"SELECT {_GAME_COLUMNS_WITH_CARDS} {joins} WHERE g.date = ? AND g.division = ? ORDER BY g.start_epoch",
+        f"SELECT {_GAME_COLUMNS_WITH_CARDS} {_GAME_JOINS} WHERE g.date = ? AND g.division = ? ORDER BY g.start_epoch",
         (date_str, division),
     ).fetchall()
 
