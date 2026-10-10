@@ -3,6 +3,7 @@ import json
 import logging
 import threading
 import time
+from contextlib import asynccontextmanager
 from typing import NamedTuple
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
@@ -20,7 +21,17 @@ from . import config, db, reference_data, standings, sync
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("soccer-tracker")
 
-app = FastAPI(title="Full Time")
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Startup: make sure the schema is current, then start the background
+    sync thread (see _background_sync_loop). It's a daemon thread, so
+    there's nothing to tear down at shutdown."""
+    db.init_db()
+    threading.Thread(target=_background_sync_loop, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Full Time", lifespan=_lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 EASTERN = ZoneInfo("America/New_York")
@@ -281,7 +292,7 @@ def _background_sync_loop():
             log.exception("sync failed")
             sync_failed = True
 
-        now = dt.datetime.utcnow()
+        now = dt.datetime.now(dt.timezone.utc)
         if last_daily_sync is None or now - last_daily_sync >= daily_interval:
             try:
                 sync.sync_far_schedule()
@@ -321,13 +332,6 @@ def _background_sync_loop():
             sleep_seconds, live, _CONSECUTIVE_SYNC_FAILURES,
         )
         time.sleep(sleep_seconds)
-
-
-@app.on_event("startup")
-def on_startup():
-    db.init_db()
-    thread = threading.Thread(target=_background_sync_loop, daemon=True)
-    thread.start()
 
 
 def _parse_date(date_str: str | None) -> dt.date:
@@ -521,9 +525,9 @@ def index(
     games = [g for g in games if not _is_featured(g, top30_seos)]
     has_upset = any(g["is_upset"] for g in games + featured_games)
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "day": day,
             "is_today": day == _today_eastern(),
             "prev_day": day - dt.timedelta(days=1),
@@ -569,9 +573,9 @@ def search(request: Request, q: str = ""):
                 f"/player?team={p['team_seo']}&first={quote(p['first_name'] or '')}&last={quote(p['last_name'] or '')}"
             )
     return templates.TemplateResponse(
+        request,
         "search.html",
         {
-            "request": request,
             "q": q,
             "team_results": team_results,
             "player_results": player_results,
@@ -619,9 +623,9 @@ def team_detail(request: Request, seo: str, season: str | None = None):
         rank_history[0] = dict(rank_history[0])
         rank_history[0]["record"] = f"{record['overall_w']}-{record['overall_l']}-{record['overall_d']}"
     return templates.TemplateResponse(
+        request,
         "team.html",
         {
-            "request": request,
             "team": team,
             "team_city": team_city,
             "team_state": team_state,
@@ -658,9 +662,9 @@ def conference_detail(request: Request, conference: str, division: str | None = 
 
     table.sort(key=lambda t: -(t["overall_w"] * 3 + t["overall_d"]))
     return templates.TemplateResponse(
+        request,
         "conference.html",
         {
-            "request": request,
             "conference": conference,
             "conference_label": _conference_label(conference, full=True),
             "conferences": conferences,
@@ -733,9 +737,9 @@ def teams_list(
         table = [t for t in table if t["college"].get("student_size") is not None and t["college"]["student_size"] <= undergrad_max]
 
     return templates.TemplateResponse(
+        request,
         "teams.html",
         {
-            "request": request,
             "table": table,
             "conference_label_fn": _conference_label,
             "conferences": conferences,
@@ -811,9 +815,9 @@ def rank_history_page(
         ],
     }
     return templates.TemplateResponse(
+        request,
         "rank-history.html",
         {
-            "request": request,
             "weeks": history["weeks"],
             "teams": history["teams"],
             "chart_data": chart_data,
@@ -829,7 +833,7 @@ def rank_history_page(
 
 @app.get("/about", response_class=HTMLResponse)
 def about_page(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+    return templates.TemplateResponse(request, "about.html")
 
 
 class _SeasonRoster(NamedTuple):
@@ -935,9 +939,9 @@ def players_list(
     roster_page = roster[start : start + PLAYERS_PER_PAGE]
 
     return templates.TemplateResponse(
+        request,
         "players.html",
         {
-            "request": request,
             "roster": roster_page,
             "conference_label_fn": _conference_label,
             "conferences": conferences,
@@ -981,9 +985,9 @@ def stats_page(request: Request, division: str | None = None, season: str | None
         s["opponent_name"] = s["away_name"] if s["is_home"] else s["home_name"]
 
     return templates.TemplateResponse(
+        request,
         "stats.html",
         {
-            "request": request,
             "standouts": standouts,
             "is_current_season": is_current_season,
             "goals_leaders": _leaderboard(roster, "goals"),
@@ -1004,8 +1008,9 @@ def player_detail(request: Request, team: str, first: str, last: str, season: st
         rows = db.get_player_games(conn, team, first, last, season)
     if not rows:
         return templates.TemplateResponse(
+            request,
             "player.html",
-            {"request": request, "player": None, "log": [], "totals": None},
+            {"player": None, "log": [], "totals": None},
         )
     log, totals = standings.build_player_game_log(rows)
     is_home = bool(rows[0]["is_home"])
@@ -1021,8 +1026,9 @@ def player_detail(request: Request, team: str, first: str, last: str, season: st
         "number": latest["number"],
     }
     return templates.TemplateResponse(
+        request,
         "player.html",
-        {"request": request, "player": player, "log": log, "totals": totals},
+        {"player": player, "log": log, "totals": totals},
     )
 
 
@@ -1066,9 +1072,9 @@ def game_detail(request: Request, game_id: str):
     away_stats = [s for s in stats if not s["is_home"]]
 
     return templates.TemplateResponse(
+        request,
         "game.html",
         {
-            "request": request,
             "game": game,
             "home_stats": home_stats,
             "away_stats": away_stats,
