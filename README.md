@@ -1,8 +1,8 @@
 # Full Time
 
-Local app that syncs NCAA Division I men's soccer scores/schedule/box scores
-from the [ncaa-api](https://github.com/henrygd/ncaa-api) public instance into
-a local SQLite database, and serves a small dashboard to browse them.
+Syncs NCAA Division I and III men's soccer scores, schedules, box scores and
+rankings from the [ncaa-api](https://github.com/henrygd/ncaa-api) public
+instance into a SQLite database, and serves a small site to browse them.
 
 ## Setup
 
@@ -21,7 +21,8 @@ uvicorn app.main:app --reload
 Then open http://127.0.0.1:8000
 
 On startup it runs a full sync (today +/- a few days) and repeats every
-`SYNC_INTERVAL_MINUTES` (default 30). Final games get their box score
+`SYNC_INTERVAL_MINUTES` (default 30), or every `LIVE_SYNC_INTERVAL_SECONDS`
+(default 90) while a game is in progress. Final games get their box score
 (per-player goals/assists/shots/cards) pulled in automatically once synced.
 
 ## Config (env vars)
@@ -33,22 +34,19 @@ On startup it runs a full sync (today +/- a few days) and repeats every
   Setting `d1,d3` syncs D3 games/rosters/standings too; every page and read
   query is division-scoped (default D1, switchable via the nav's Division
   pills once more than one division is enabled), so D3 data won't mix into
-  D1 pages. One gap: D3 men's soccer's rankings feed is ten separate
-  *regional* NPI leaderboards, not one national poll like D1's, so it's a
-  different data model this app doesn't support yet — rankings sync is
-  skipped for any division not in `app/config.py`'s
-  `RANKINGS_SUPPORTED_DIVISIONS` (`d1` only today), and D3 pages simply show
-  no ranking badges/history until that's built.
+  D1 pages. D1 rankings are the United Soccer Coaches national poll; D3's
+  feed is instead ten *regional* NPI leaderboards, synced separately and
+  shown as e.g. "I-3" (Region I, #3) with a per-region Rank History.
 - `DAYS_BACK` / `DAYS_FORWARD` — live sync window around today (default 3 / 4).
   Scores and game times in this window change, so it's re-pulled every
-  `SYNC_INTERVAL_MINUTES` and on manual refresh.
+  `SYNC_INTERVAL_MINUTES`.
 - `SCHEDULE_DAYS_FORWARD` / `SCHEDULE_SYNC_INTERVAL_HOURS` — further-out
   schedule window (default 65 days forward, i.e. the rest of the regular
   season from an early-September start; the upstream API returns nothing
   past that until postseason brackets are published) and how often it's
   refreshed (default every 24h). Fixtures out there barely change day to
-  day, so this runs on its own slower cadence in the background only —
-  it isn't triggered by the manual refresh button.
+  day, so this runs on its own slower cadence in the background. The same
+  daily pass also retries box scores for older games that never got one.
 - `SYNC_INTERVAL_MINUTES` — background sync frequency (default 30).
 
 ## Deploying
@@ -75,11 +73,8 @@ autoscaling available at that tier anyway):
   itself only speaks plain HTTP.
 
 The site and its JSON endpoints are intentionally open with no
-authentication (read-only public scores/stats). The one write-triggering
-route, `POST /api/sync-now`, is throttled to at most once a minute so a
-public caller can't hammer the upstream NCAA API feed, but it's still an
-unauthenticated way to nudge the app to hit an external service — remove it
-or gate it behind a shared secret if that becomes a concern.
+authentication (read-only public scores/stats). Nothing a visitor can do
+triggers a sync; only the background loop calls the upstream NCAA API.
 
 ### Adding a historic season
 
@@ -99,9 +94,15 @@ python -m app.backfill --start <season-start> --end <season-end> --division all
 Run this from Render's Shell tab for the service, not locally — the
 database only exists on the service's persistent disk, and the single-
 instance rule above means nothing else can reach it. It's safe to re-run
-(idempotent per day) and runs alongside the live background sync loop in
-the same process, so expect it to take a while (one full season's worth of
-upstream NCAA API calls, same as the original D1 2026 backfill) and
-tolerate occasional SQLite lock-contention retries rather than failing
-outright. Once a season is in, it's in for good — there's nothing to
-re-run for it on later deploys.
+(idempotent per day) and can run while the live site keeps syncing:
+each day and each box score is saved as soon as it's fetched, so the two
+never hold the database locked against each other for long, and if the
+backfill stops partway, re-running it picks up where it left off. Expect it
+to take a while (one full season's worth of upstream NCAA API calls, same
+as the original D1 2026 backfill). Once a season is in, it's in for good —
+there's nothing to re-run for it on later deploys.
+
+If the Render disk is ever recreated, rebuild history the same way:
+`python -m app.backfill` for games and box scores, then
+`python -m app.backfill_rankings` for the D1 poll weeks before this app's
+own daily snapshots began.

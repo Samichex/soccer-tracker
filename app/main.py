@@ -265,7 +265,7 @@ def _last_synced():
 templates.env.globals["last_synced"] = _last_synced
 
 
-_CONSECUTIVE_SYNC_FAILURES = 0  # same pattern as _last_manual_sync below
+_CONSECUTIVE_SYNC_FAILURES = 0
 
 
 def _background_sync_loop():
@@ -1045,20 +1045,3 @@ def api_boxscore(game_id: str):
     with db.get_conn() as conn:
         stats = db.get_player_stats(conn, game_id)
     return JSONResponse([dict(s) for s in stats])
-
-
-_last_manual_sync: dt.datetime | None = None
-_MANUAL_SYNC_COOLDOWN = dt.timedelta(minutes=1)
-
-
-@app.post("/api/sync-now")
-def api_sync_now():
-    """Unauthenticated by design (read-only site, nothing to protect), but
-    throttled so a public caller can't hammer the upstream NCAA API feed."""
-    global _last_manual_sync
-    now = dt.datetime.now(dt.timezone.utc)
-    if _last_manual_sync and now - _last_manual_sync < _MANUAL_SYNC_COOLDOWN:
-        return JSONResponse({"status": "throttled"}, status_code=429)
-    _last_manual_sync = now
-    sync.run_full_sync()
-    return {"status": "ok"}

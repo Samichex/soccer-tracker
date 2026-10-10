@@ -15,12 +15,11 @@ DIVISIONS = {
     "d3": "soccer-men/d3",
 }
 
-# Which of the divisions above the background sync actually pulls. D3
-# support (schema, client, sync loop) exists but stays off by default:
-# the read-side queries in app/db.py and every page/route in app/main.py
-# are not division-aware yet, so enabling "d3" here before that filtering
-# lands would silently mix D3 games/rankings into every D1 page. Flip on
-# via ENABLED_DIVISIONS="d1,d3" once that work ships.
+# Which of the divisions above the background sync actually pulls, and
+# which the nav's division switch offers (it only appears once more than
+# one is enabled). Every page and read query is scoped to one division,
+# so enabling "d3" alongside "d1" (ENABLED_DIVISIONS="d1,d3") never mixes
+# the two. The first entry is the default for a visitor with no choice set.
 ENABLED_DIVISIONS = [
     d.strip() for d in os.environ.get("ENABLED_DIVISIONS", "d1").split(",") if d.strip()
 ]
@@ -31,10 +30,9 @@ ENABLED_DIVISIONS = [
 # soccer's rankings endpoint instead returns ten separate *regional* NPI
 # leaderboards (Region I-X, fields RANK/SCHOOL/IN-DIVISION RECORD/NPI only)
 # -- ten different teams all "rank 1", ten "rank 2", etc, and no
-# prev_rank/points/votes at all. That's a different data model this app
-# doesn't support yet, so rankings sync is deliberately skipped for any
-# division not listed here rather than stored as if it were a national
-# poll. Confirmed by inspecting the live feed 2026-09-11.
+# prev_rank/points/votes at all, so it's synced separately (see
+# REGIONAL_RANKINGS_DIVISIONS below) rather than stored as if it were a
+# national poll. Confirmed by inspecting the live feed 2026-09-11.
 RANKINGS_SUPPORTED_DIVISIONS = {"d1"}
 
 # Divisions whose rankings feed is the ten-region NPI split described above,
@@ -64,7 +62,7 @@ DB_PATH = Path(os.environ.get("DB_PATH", str(BASE_DIR / "data" / "soccer.db")))
 COLLEGE_SCORECARD_API_KEY = os.environ.get("COLLEGE_SCORECARD_API_KEY", "")
 
 # How far around "today" to keep synced live (scores/times here can change,
-# so this window is re-pulled on every sync cycle and on manual refresh).
+# so this window is re-pulled on every sync cycle).
 DAYS_BACK = int(os.environ.get("DAYS_BACK", "3"))
 DAYS_FORWARD = int(os.environ.get("DAYS_FORWARD", "4"))
 
