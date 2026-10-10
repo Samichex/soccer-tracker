@@ -367,6 +367,32 @@ def sync_all_missing_boxscores():
         sync_missing_boxscores(conn)
 
 
+def compress_legacy_boxscores(batch_size: int = 200) -> int:
+    """Compress raw box scores still stored as plain JSON text, one
+    committed batch at a time so the live sync is never locked out for
+    long. A no-op once they're all converted.
+
+    When it did convert something (in practice, once: the first daily pass
+    after compression shipped), it VACUUMs afterward so the DB file
+    actually shrinks -- otherwise the freed space only gets reused by later
+    writes. On a two-season DB that's 260MB -> ~57MB in about a second
+    locally; page requests keep reading throughout (WAL mode)."""
+    total = 0
+    with db.get_conn() as conn:
+        while True:
+            with conn:
+                converted = db.compress_raw_boxscores_batch(conn, batch_size)
+            if not converted:
+                break
+            total += converted
+        if total:
+            log.info("compressed %s legacy raw box scores; vacuuming", total)
+            conn.execute("VACUUM")
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            log.info("vacuum done")
+    return total
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     db.init_db()

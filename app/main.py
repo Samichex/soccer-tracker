@@ -286,9 +286,10 @@ def _background_sync_loop():
             try:
                 sync.sync_far_schedule()
                 sync.sync_all_missing_boxscores()
+                sync.compress_legacy_boxscores()
                 last_daily_sync = now
             except Exception:
-                log.exception("daily schedule/boxscore sync failed")
+                log.exception("daily schedule/boxscore maintenance failed")
                 sync_failed = True
 
         _CONSECUTIVE_SYNC_FAILURES = _CONSECUTIVE_SYNC_FAILURES + 1 if sync_failed else 0

@@ -116,3 +116,16 @@ def test_sync_rankings_skips_a_partial_poll_and_keeps_the_last_full_one(conn, mo
 
     n = conn.execute("SELECT COUNT(*) AS n FROM team_rankings WHERE observed_date = ?", (day.isoformat(),))
     assert n.fetchone()["n"] == 25
+
+
+def test_compress_legacy_boxscores_converts_in_committed_batches(conn):
+    for i in range(5):
+        conn.execute(
+            "INSERT INTO game_boxscore_raw (game_id, raw_json) VALUES (?, ?)", (f"g{i}", '{"a": 1}')
+        )
+    conn.commit()
+
+    assert sync.compress_legacy_boxscores(batch_size=2) == 5
+    _assert_write_lock_free()
+    assert sync.compress_legacy_boxscores(batch_size=2) == 0
+    assert db.get_raw_boxscore(conn, "g4") == '{"a": 1}'
