@@ -182,7 +182,7 @@ def test_get_teams_with_orgid_only_returns_matched_teams(conn):
 
 
 def test_has_live_games_false_when_no_games(conn):
-    assert db.has_live_games(conn) is False
+    assert db.has_live_games(conn, "2026-09-01") is False
 
 
 def test_has_live_games_false_when_only_pre_and_final(conn):
@@ -192,7 +192,7 @@ def test_has_live_games_false_when_only_pre_and_final(conn):
     final["game"]["gameState"] = "final"
     db.upsert_game(conn, pre, "2026-09-01")
     db.upsert_game(conn, final, "2026-09-01")
-    assert db.has_live_games(conn) is False
+    assert db.has_live_games(conn, "2026-09-01") is False
 
 
 def test_has_live_games_true_when_a_game_is_live(conn):
@@ -202,7 +202,43 @@ def test_has_live_games_true_when_a_game_is_live(conn):
     live["game"]["gameState"] = "live"
     db.upsert_game(conn, pre, "2026-09-01")
     db.upsert_game(conn, live, "2026-09-01")
-    assert db.has_live_games(conn) is True
+    assert db.has_live_games(conn, "2026-09-01") is True
+
+
+def test_has_live_games_ignores_stale_live_game_before_since_date(conn):
+    # A game left 'live' after aging out of the sync window (seen locally:
+    # two 2026-09-17 games still 'live' weeks later) is never re-synced,
+    # so it must not keep the background loop on its fast interval.
+    stale = _game(id_="g1")
+    stale["game"]["gameState"] = "live"
+    db.upsert_game(conn, stale, "2026-09-17")
+    assert db.has_live_games(conn, "2026-10-06") is False
+
+
+def test_games_missing_boxscore_since_date_skips_older_games(conn):
+    db.upsert_game(conn, _game(id_="old"), "2025-09-03")
+    db.upsert_game(conn, _game(id_="recent"), "2026-10-07")
+    db.upsert_game(conn, _game(id_="has_box", home="a", away="b"), "2026-10-07")
+    db.replace_player_stats(conn, "has_box", [_player_row()])
+
+    assert sorted(db.games_missing_boxscore(conn)) == ["old", "recent"]
+    assert db.games_missing_boxscore(conn, "2026-10-06") == ["recent"]
+
+
+def test_get_games_for_date_sums_red_cards_per_side(conn):
+    db.upsert_game(conn, _game(id_="g1"), "2026-09-01")
+    db.upsert_game(conn, _game(id_="g2", home="a", away="b"), "2026-09-01")
+    db.replace_player_stats(conn, "g1", [
+        _player_row(number="1", is_home=1, red_cards="1"),
+        _player_row(number="2", is_home=1, red_cards="1"),
+        _player_row(number="3", is_home=0, red_cards="0"),
+    ])
+
+    rows = {r["id"]: r for r in db.get_games_for_date(conn, "2026-09-01")}
+
+    assert (rows["g1"]["home_red_cards"], rows["g1"]["away_red_cards"]) == (2, 0)
+    # No box score synced yet -> 0, not NULL.
+    assert (rows["g2"]["home_red_cards"], rows["g2"]["away_red_cards"]) == (0, 0)
 
 
 def test_player_stats_pk_does_not_catch_same_player_under_two_jersey_numbers(conn, caplog):

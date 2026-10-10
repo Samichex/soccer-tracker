@@ -77,7 +77,10 @@ def backfill_coaches(conn, force: bool = False, delay_seconds: float = 1.0):
 
         coach = extract_head_coach(page_html)
         if coach:
-            db.set_head_coach(conn, seo, coach)
+            # Commit per team, so the delayed fetch loop never holds the
+            # DB write-locked against the live sync (see app/sync.py).
+            with conn:
+                db.set_head_coach(conn, seo, coach)
             found += 1
         else:
             log.warning("no Men's Soccer head coach found for %s (orgid=%s)", seo, orgid)
