@@ -3,6 +3,7 @@ import json
 import logging
 import threading
 import time
+from typing import NamedTuple
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
@@ -418,11 +419,13 @@ def _leaderboard(rows, key: str, n: int = 5) -> list[dict]:
     """Top n rows by `key`, descending, extended to include every row tied
     with the row at the cutoff (so ties aren't split arbitrarily). Adds a
     "rank" field using standard competition ranking (tied rows share a rank,
-    e.g. 1, 2, 2, 4)."""
-    ordered = sorted((dict(r) for r in rows), key=lambda r: r[key] or 0, reverse=True)
+    e.g. 1, 2, 2, 4). Only the kept rows are copied (to hold "rank"), so
+    `rows` itself is never modified."""
+    ordered = sorted(rows, key=lambda r: r[key] or 0, reverse=True)
     if len(ordered) > n:
         cutoff = ordered[n - 1][key] or 0
         ordered = [r for r in ordered if (r[key] or 0) >= cutoff]
+    ordered = [dict(r) for r in ordered]
     rank = 0
     prev_value = None
     for i, r in enumerate(ordered, start=1):
@@ -825,6 +828,54 @@ def about_page(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
 
 
+class _SeasonRoster(NamedTuple):
+    rows: list[dict]  # db.get_all_players_roster_stats + state/total_cards/g_plus_a
+    states: list[str]  # every state with a player, for the /players filter
+    teams: list[tuple]  # (seo, name, conference) per team, for the /players filter
+
+
+# (division, season) -> (last_synced value it was built under, roster).
+# Aggregating every player's season totals is the slowest query on the site
+# (~100ms locally, well over a second on Render), yet its answer only
+# changes when a sync stores new box scores, so it's rebuilt once per
+# completed sync rather than on every /players or /stats request.
+_season_roster_cache: dict[tuple[str, str | None], tuple[str | None, _SeasonRoster]] = {}
+
+
+def _season_roster(conn, division: str, season: str | None) -> _SeasonRoster:
+    """Cached season roster for /players and /stats, refreshed whenever
+    last_synced moves on. Shared across requests: callers must copy before
+    sorting or mutating rather than change the cached lists/rows in place.
+
+    A box score stored outside run_full_sync (the game page, the daily
+    sweep) shows up here at the next completed sync, at most
+    SYNC_INTERVAL_MINUTES later."""
+    key = (division, season)
+    marker = db.get_last_synced(conn)
+    cached = _season_roster_cache.get(key)
+    if cached and cached[0] == marker:
+        return cached[1]
+
+    team_states = reference_data.get_team_states()
+    rows = []
+    for r in db.get_all_players_roster_stats(conn, division, season):
+        p = dict(r)
+        p["state"] = team_states.get(p["team_seo"], "")
+        p["total_cards"] = (p["yellow_cards"] or 0) + (p["red_cards"] or 0)
+        p["g_plus_a"] = (p["goals"] or 0) + (p["assists"] or 0)
+        rows.append(p)
+    roster = _SeasonRoster(
+        rows=rows,
+        states=sorted({p["state"] for p in rows if p["state"]}),
+        teams=sorted(
+            {(p["team_seo"], p["team_name"], p["team_conference"]) for p in rows if p["team_seo"]},
+            key=lambda x: x[1] or "",
+        ),
+    )
+    _season_roster_cache[key] = (marker, roster)
+    return roster
+
+
 PLAYERS_PER_PAGE = 50
 
 _PLAYER_SORT_KEYS = {
@@ -855,19 +906,11 @@ def players_list(
     division = _resolve_division(request, division)
     with db.get_conn() as conn:
         season = _resolve_season(conn, request, division, season)
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division, season)]
+        season_roster = _season_roster(conn, division, season)
         conferences = db.get_conferences(conn, division, season)
 
-    team_states = reference_data.get_team_states()
-    for p in roster:
-        p["state"] = team_states.get(p["team_seo"], "")
-
-    states = sorted({p["state"] for p in roster if p["state"]})
-    teams = sorted(
-        {(p["team_seo"], p["team_name"], p["team_conference"]) for p in roster if p["team_seo"]},
-        key=lambda x: x[1] or "",
-    )
-
+    states, teams = season_roster.states, season_roster.teams
+    roster = list(season_roster.rows)  # our own copy to filter/sort
     if conference:
         roster = [p for p in roster if p["team_conference"] == conference]
     if team:
@@ -925,16 +968,13 @@ def stats_page(request: Request, division: str | None = None, season: str | None
             dict(s)
             for s in db.get_weekly_standouts(conn, since_date.isoformat(), today.isoformat(), division)
         ] if is_current_season else []
-        roster = [dict(r) for r in db.get_all_players_roster_stats(conn, division, season)]
+        # _leaderboard copies each row it keeps, so the cached rows are safe.
+        roster = _season_roster(conn, division, season).rows
         clean_sheets = [dict(r) for r in db.get_clean_sheet_leaders(conn, division, season)]
 
     for s in standouts:
         s["label"] = _weekly_standout_label(s)
         s["opponent_name"] = s["away_name"] if s["is_home"] else s["home_name"]
-
-    for r in roster:
-        r["total_cards"] = (r["yellow_cards"] or 0) + (r["red_cards"] or 0)
-        r["g_plus_a"] = (r["goals"] or 0) + (r["assists"] or 0)
 
     return templates.TemplateResponse(
         "stats.html",
