@@ -326,7 +326,8 @@ def run_full_sync():
                 sync_regional_rankings(conn, division, config.DIVISIONS[division])
             except Exception:
                 log.exception("failed to sync regional rankings for %s", division)
-        db.set_last_synced(conn, dt.datetime.utcnow().isoformat())
+        # Stored as naive UTC ISO text, the format reference_data.format_last_synced reads.
+        db.set_last_synced(conn, dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat())
 
 
 def sync_far_schedule():
