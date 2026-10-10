@@ -136,15 +136,17 @@ def test_safe_int(value, expected):
 
 
 def test_parse_rankings_maps_expected_fields():
+    # Field names as the live rankings/soccer-men/d1 feed sends them
+    # (checked 2026-10-09).
     data = {
         "data": [
             {
                 "RANK": "1",
                 "SCHOOL": " Duke ",
-                "PREV": "2",
-                "TOTAL POINTS": "100",
-                "1ST VOTES": "5",
-                "W-L-T": "10-1-0",
+                "PREVIOUS": "2",
+                "POINTS": "100",
+                "FIRST-PLACE VOTES": "5",
+                "RECORD": "10-1-0",
             }
         ]
     }

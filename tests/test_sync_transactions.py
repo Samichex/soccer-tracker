@@ -100,3 +100,19 @@ def test_sync_missing_boxscores_only_fetches_games_since_date(conn, monkeypatch)
     sync.sync_missing_boxscores(conn, "2026-10-06")
 
     assert fetched == ["recent"]
+
+
+def _poll(n):
+    return {"data": [{"RANK": str(i), "SCHOOL": f"School {i}"} for i in range(1, n + 1)]}
+
+
+def test_sync_rankings_skips_a_partial_poll_and_keeps_the_last_full_one(conn, monkeypatch):
+    day = dt.date(2026, 9, 8)
+    monkeypatch.setattr(ncaa_client, "get_rankings", lambda path: _poll(25))
+    sync.sync_rankings(conn, observed_date=day)
+
+    monkeypatch.setattr(ncaa_client, "get_rankings", lambda path: _poll(22))
+    sync.sync_rankings(conn, observed_date=day)
+
+    n = conn.execute("SELECT COUNT(*) AS n FROM team_rankings WHERE observed_date = ?", (day.isoformat(),))
+    assert n.fetchone()["n"] == 25
