@@ -3,7 +3,7 @@ import json
 import logging
 import threading
 import time
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, Request
@@ -69,13 +69,28 @@ def _resolve_division(request: Request, division: str | None = None) -> str:
     param wins if valid, else the `division` cookie set by /set-division,
     else the first ENABLED_DIVISIONS entry. At the default
     ENABLED_DIVISIONS=["d1"] this always returns "d1" -- the cookie/switcher
-    path is inert until a second division is enabled."""
+    path is inert until a second division is enabled.
+
+    Callers that don't take `division` themselves (the nav, team labels,
+    routes without a division param) still honor one in the URL, so the
+    nav's switcher can't disagree with the data a ?division= link shows."""
+    division = division or request.query_params.get("division")
     if division in config.ENABLED_DIVISIONS:
         return division
     cookie_value = request.cookies.get("division")
     if cookie_value in config.ENABLED_DIVISIONS:
         return cookie_value
     return config.ENABLED_DIVISIONS[0]
+
+
+templates.env.globals["resolve_division"] = _resolve_division
+
+
+def _without_query_param(path: str, param: str) -> str:
+    """`path` (a same-site path + query) minus any `param=` in its query."""
+    parts = urlsplit(path)
+    query = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != param]
+    return urlunsplit(("", "", parts.path, urlencode(query), parts.fragment))
 
 
 def _resolve_season(conn, request: Request, division: str, season: str | None = None) -> str | None:
@@ -145,9 +160,11 @@ templates.env.globals["team_label_responsive"] = _team_label_responsive
 def set_division(division: str, next: str = "/"):
     """Persists the nav switcher's choice in a cookie (see _resolve_division)
     and bounces back to whatever page the switcher was clicked from.
-    `next` is never trusted as an absolute/off-site redirect target."""
+    `next` is never trusted as an absolute/off-site redirect target. Any
+    `division=` already in `next` is dropped -- it would outrank the cookie
+    just set (see _resolve_division) and undo the switch."""
     redirect_to = next if next.startswith("/") and not next.startswith("//") else "/"
-    response = RedirectResponse(redirect_to)
+    response = RedirectResponse(_without_query_param(redirect_to, "division"))
     if division in config.DIVISIONS:
         response.set_cookie("division", division, max_age=60 * 60 * 24 * 365, samesite="lax")
     return response

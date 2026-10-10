@@ -169,6 +169,11 @@ def _parse_rank(value) -> int | None:
     return _safe_int(text)
 
 
+# The United Soccer Coaches poll is a top 25 (ties share a rank, never
+# shrink the list), so fewer rows than this means a partial feed response.
+_FULL_POLL_SIZE = 25
+
+
 def _parse_rankings(data: dict) -> list[dict]:
     rows = []
     for entry in data.get("data", []):
@@ -273,6 +278,15 @@ def sync_rankings(
     observed_date = observed_date or dt.date.today()
     data = ncaa_client.get_rankings(sport_path)
     rows = _parse_rankings(data)
+    if len(rows) < _FULL_POLL_SIZE:
+        # Seen 2026-09-08/09: mid-update, the feed briefly served 22 teams
+        # with every field but rank blank. Keep the last full snapshot
+        # rather than overwrite today's with a partial one.
+        log.warning(
+            "skipping %s rankings for %s: feed returned %s ranked teams, expected %s",
+            division, observed_date.isoformat(), len(rows), _FULL_POLL_SIZE,
+        )
+        return
     for r in rows:
         r["seo"] = db.resolve_seo_by_name(conn, r["school"])
     with conn:

@@ -23,12 +23,10 @@ NUMERIC_STAT_COLUMNS = [
 # certainly a unit error upstream (e.g. seconds instead of minutes).
 MAX_PLAUSIBLE_MINUTES = 130
 
-# Confirmed 2026-09-06: the same physical player recorded twice under two
-# different jersey numbers within one game. The player_stats PK includes
-# `number`, so this isn't rejected at write time (see
-# tests/test_db_schema.py::test_player_stats_pk_does_not_catch_same_player_under_two_jersey_numbers).
-# Likely an in-game number correction faithfully replicated from the feed.
-KNOWN_DUPLICATE_PLAYER_GAMES = {"6616816", "6617211"}
+# Confirmed 2026-10-09: on these two days the rankings feed was mid-update
+# and served 22 teams with every field but rank blank, which got stored.
+# sync.sync_rankings now skips a partial poll like this instead.
+KNOWN_PARTIAL_RANKING_SNAPSHOTS = {"2026-09-08", "2026-09-09"}
 
 # Confirmed 2026-09-06: game 6617023 (Mount St. Mary's vs. Bard) has no
 # `teams` row for the away side ("bard"). Bard isn't an NCAA D1 program,
@@ -57,17 +55,28 @@ def test_no_implausible_minutes_played(live_conn):
     assert row["n"] == 0
 
 
-def test_no_unexpected_duplicate_players_within_a_game(live_conn):
-    rows = live_conn.execute(
+def test_duplicate_players_within_a_game_stay_rare(live_conn):
+    # Was an exact allowlist (KNOWN_DUPLICATE_PLAYER_GAMES), which stopped
+    # holding once the 2025 season and D3 were backfilled: 2026-10-09 found
+    # 15 such games out of 7,111, mostly small non-NCAA D3 opponents with
+    # sloppy box scores and "--" placeholder players, all present that way in
+    # the raw feed. A rate catches an ingestion bug (which would duplicate
+    # players broadly) without needing an update for every upstream quirk.
+    games = live_conn.execute(
         """
-        SELECT game_id, team_seo, first_name, last_name, COUNT(DISTINCT number) AS n
-        FROM player_stats
-        GROUP BY game_id, team_seo, first_name, last_name
-        HAVING n > 1
+        SELECT COUNT(DISTINCT game_id) AS n FROM (
+            SELECT game_id FROM player_stats
+            GROUP BY game_id, team_seo, first_name, last_name
+            HAVING COUNT(DISTINCT number) > 1
+        )
         """
-    ).fetchall()
-    unexpected = {r["game_id"] for r in rows} - KNOWN_DUPLICATE_PLAYER_GAMES
-    assert not unexpected, f"new duplicate-player-in-game instances: {unexpected}"
+    ).fetchone()["n"]
+    total = live_conn.execute("SELECT COUNT(DISTINCT game_id) AS n FROM player_stats").fetchone()["n"]
+    assert total, "expected at least one synced box score"
+    assert games / total <= 0.01, (
+        f"{games}/{total} games have a player listed under two jersey numbers -- "
+        "well above the ~0.2% upstream-quirk baseline"
+    )
 
 
 def test_no_unexpected_orphaned_team_references(live_conn):
@@ -146,8 +155,12 @@ def test_each_ranking_snapshot_has_exactly_25_teams_ranked_1_to_25(live_conn):
     ).fetchall()
     assert rows, "expected at least one rankings snapshot"
     for r in rows:
+        if r["observed_date"] in KNOWN_PARTIAL_RANKING_SNAPSHOTS:
+            continue
         assert r["n"] == 25, f"{r['observed_date']} has {r['n']} ranked teams, expected 25"
-        assert r["mn"] == 1 and r["mx"] == 25, f"{r['observed_date']} rank range is {r['mn']}-{r['mx']}"
+        # Ties share a rank ("T23" x3 that week of 2026-09-10), so the last
+        # team can sit below 25 -- just never outside 1-25.
+        assert r["mn"] == 1 and r["mx"] <= 25, f"{r['observed_date']} rank range is {r['mn']}-{r['mx']}"
 
 
 def test_goals_sum_matches_recorded_score_within_own_goal_tolerance(live_conn):

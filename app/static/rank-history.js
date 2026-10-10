@@ -199,7 +199,11 @@
     function showTooltipFor(seo, clientX, clientY) {
         var byWeek = rankByWeekBySeo[seo];
         var containerRect = chartEl.getBoundingClientRect();
-        var relX = clientX - containerRect.left;
+        // The SVG scales to the container's width, so convert the pointer
+        // from screen pixels into viewBox units before comparing it to
+        // MARGIN/plotW -- otherwise any width but 800px picks the wrong week.
+        var svgRect = svg.getBoundingClientRect();
+        var relX = (clientX - svgRect.left) * (VIEW_W / svgRect.width);
         var frac = Math.min(1, Math.max(0, (relX - MARGIN.left) / plotW));
         var weekIndex = Math.round(frac * (weeks.length - 1));
         var nearest = null;
