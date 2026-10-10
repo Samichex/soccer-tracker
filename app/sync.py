@@ -28,17 +28,29 @@ def live_window_start() -> str:
 # network call it made, so any other writer (the game page's box score
 # fetch, a backfill run from the Render shell) waited out busy_timeout and
 # then failed with "database is locked".
-def sync_date(conn, date: dt.date, division: str = "d1", sport_path: str | None = None):
+def sync_date(
+    conn, date: dt.date, division: str = "d1", sport_path: str | None = None, skip_if_empty: bool = False
+) -> bool:
+    """Store the scoreboard feed's games for one date, and drop that date's
+    placeholders the feed no longer lists (db.delete_superseded_games).
+    `skip_if_empty` leaves the date untouched when the feed returns no games
+    at all -- for a past date known to have games, that's an upstream
+    glitch, and storing it would delete every unfinished game on that date.
+    Returns whether anything was stored."""
     sport_path = sport_path or config.DIVISIONS[division]
     data = ncaa_client.get_scoreboard(date, sport_path)
     games = data.get("games", [])
     date_str = date.isoformat()
+    if skip_if_empty and not games:
+        log.warning("feed returned no %s games for %s; leaving that date as is", division, date_str)
+        return False
     with conn:
         seen_ids = {db.upsert_game(conn, game, date_str, division) for game in games}
         removed = db.delete_superseded_games(conn, date_str, division, seen_ids)
     log.info("synced %s %s games for %s", len(games), division, date_str)
     if removed:
         log.info("removed %s superseded %s game(s) for %s", removed, division, date_str)
+    return True
 
 
 def _rows_from_boxscore(box: dict) -> list[dict]:
@@ -347,6 +359,40 @@ def sync_far_schedule():
                 except Exception:
                     log.exception("failed to sync %s %s", division, date.isoformat())
                     continue
+
+
+def catch_up_stuck_games() -> int:
+    """Re-pull past dates that still have a game not marked final.
+
+    run_full_sync only revisits the last DAYS_BACK days, so a game that
+    finished while the app was down -- or that upstream finalized late --
+    would otherwise stay "upcoming"/"live" on every page forever, with no
+    result in any record. Once a day this re-syncs each such date from the
+    last CATCHUP_DAYS_BACK days (outside the live window), which also drops
+    placeholders upstream has since replaced with a reissued gameID. Box
+    scores for newly-final games come from the daily sync_all_missing_boxscores
+    pass right after this. Returns how many unfinished games were resolved.
+    """
+    since = (dt.date.today() - dt.timedelta(days=config.CATCHUP_DAYS_BACK)).isoformat()
+    until = live_window_start()
+    with db.get_conn() as conn:
+        before = {
+            key: n for key, n in db.unfinished_games_by_date(conn, since, until).items()
+            if key[1] in config.ENABLED_DIVISIONS
+        }
+        for date_str, division in before:
+            try:
+                sync_date(conn, dt.date.fromisoformat(date_str), division, skip_if_empty=True)
+            except Exception:
+                log.exception("catch-up failed for %s %s", division, date_str)
+        after = db.unfinished_games_by_date(conn, since, until)
+    resolved = sum(n - after.get(key, 0) for key, n in before.items())
+    if before:
+        log.info(
+            "catch-up: re-checked %s past date(s) with unfinished games; %s game(s) resolved",
+            len(before), resolved,
+        )
+    return resolved
 
 
 def sync_all_missing_boxscores():

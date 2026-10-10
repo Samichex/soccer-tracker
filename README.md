@@ -47,6 +47,11 @@ On startup it runs a full sync (today +/- a few days) and repeats every
   refreshed (default every 24h). Fixtures out there barely change day to
   day, so this runs on its own slower cadence in the background. The same
   daily pass also retries box scores for older games that never got one.
+- `CATCHUP_DAYS_BACK` — how far back (default 120 days, about a season) the
+  daily pass re-checks past dates that still have a game not marked final,
+  e.g. one that finished while the app was down. Cancelled matches never
+  finalize upstream, so their dates drop out of this check once they're
+  older than this.
 - `SYNC_INTERVAL_MINUTES` — background sync frequency (default 30).
 
 ## Deploying

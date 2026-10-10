@@ -296,6 +296,7 @@ def _background_sync_loop():
         if last_daily_sync is None or now - last_daily_sync >= daily_interval:
             try:
                 sync.sync_far_schedule()
+                sync.catch_up_stuck_games()  # before the box score sweep, so it covers newly-final games
                 sync.sync_all_missing_boxscores()
                 sync.compress_legacy_boxscores()
                 last_daily_sync = now
