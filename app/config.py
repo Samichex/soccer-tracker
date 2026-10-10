@@ -71,6 +71,13 @@ DAYS_FORWARD = int(os.environ.get("DAYS_FORWARD", "4"))
 # rather than every SYNC_INTERVAL_MINUTES. 65 days covers the rest of a
 # regular season from an early-September start.
 SCHEDULE_DAYS_FORWARD = int(os.environ.get("SCHEDULE_DAYS_FORWARD", "65"))
+
+# Behind the live window, the daily catch-up pass (sync.catch_up_stuck_games)
+# re-pulls any date this recent that still has a game not marked final --
+# e.g. one that finished while the app was down. 120 days covers a whole
+# season, without re-checking cancelled matches (never finalized upstream)
+# forever.
+CATCHUP_DAYS_BACK = int(os.environ.get("CATCHUP_DAYS_BACK", "120"))
 SCHEDULE_SYNC_INTERVAL_HOURS = int(os.environ.get("SCHEDULE_SYNC_INTERVAL_HOURS", "24"))
 
 SYNC_INTERVAL_MINUTES = int(os.environ.get("SYNC_INTERVAL_MINUTES", "30"))

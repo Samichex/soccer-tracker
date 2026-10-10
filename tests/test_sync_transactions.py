@@ -129,3 +129,57 @@ def test_compress_legacy_boxscores_converts_in_committed_batches(conn):
     _assert_write_lock_free()
     assert sync.compress_legacy_boxscores(batch_size=2) == 0
     assert db.get_raw_boxscore(conn, "g4") == '{"a": 1}'
+
+
+def _days_ago(n):
+    return dt.date.today() - dt.timedelta(days=n)
+
+
+def _stuck(id_, home, away, state="pre"):
+    game = _scoreboard_game(id_, home, away)
+    game["game"]["gameState"] = state
+    return game
+
+
+def test_unfinished_games_by_date_counts_only_non_final_games_in_range(conn):
+    db.upsert_game(conn, _stuck("a", "x", "y"), "2026-09-10")
+    db.upsert_game(conn, _stuck("b", "x", "z", state="live"), "2026-09-10")
+    db.upsert_game(conn, _scoreboard_game("c", "y", "z"), "2026-09-10")  # final
+    db.upsert_game(conn, _stuck("d", "y", "x"), "2026-10-07")  # on/after the end bound
+    db.upsert_game(conn, _stuck("e", "z", "x"), "2026-05-01")  # before the start bound
+
+    assert db.unfinished_games_by_date(conn, "2026-06-01", "2026-10-06") == {("2026-09-10", "d1"): 2}
+
+
+def test_catch_up_resyncs_stuck_past_dates_only(conn, monkeypatch):
+    stuck_day, old_day, live_day = _days_ago(10), _days_ago(config.CATCHUP_DAYS_BACK + 30), _days_ago(1)
+    db.upsert_game(conn, _stuck("stuck", "duke", "unc", state="live"), stuck_day.isoformat())
+    db.upsert_game(conn, _stuck("ancient", "duke", "smu"), old_day.isoformat())
+    db.upsert_game(conn, _stuck("recent", "unc", "smu"), live_day.isoformat())
+    db.upsert_game(conn, _stuck("other_div", "a", "b"), stuck_day.isoformat(), division="d3")
+    conn.commit()
+    monkeypatch.setattr(config, "ENABLED_DIVISIONS", ["d1"])
+    fetched = []
+
+    def fake_scoreboard(date, path):
+        fetched.append((date, path))
+        return {"games": [_scoreboard_game("stuck", "duke", "unc")]}  # upstream: now final
+
+    monkeypatch.setattr(ncaa_client, "get_scoreboard", fake_scoreboard)
+
+    assert sync.catch_up_stuck_games() == 1
+
+    # Only the stuck date, and only for an enabled division -- not the live
+    # window (run_full_sync's job), nor dates past the lookback.
+    assert fetched == [(stuck_day, config.DIVISIONS["d1"])]
+    statuses = {r["id"]: r["status"] for r in conn.execute("SELECT id, status FROM games")}
+    assert statuses == {"stuck": "final", "ancient": "pre", "recent": "pre", "other_div": "pre"}
+
+
+def test_catch_up_leaves_a_date_alone_when_the_feed_comes_back_empty(conn, monkeypatch):
+    db.upsert_game(conn, _stuck("stuck", "duke", "unc"), _days_ago(10).isoformat())
+    conn.commit()
+    monkeypatch.setattr(ncaa_client, "get_scoreboard", lambda date, path: {"games": []})
+
+    assert sync.catch_up_stuck_games() == 0
+    assert conn.execute("SELECT status FROM games WHERE id = 'stuck'").fetchone()["status"] == "pre"

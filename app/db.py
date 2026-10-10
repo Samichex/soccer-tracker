@@ -507,6 +507,22 @@ def games_missing_boxscore(conn, since_date: str | None = None):
     return [r["id"] for r in rows]
 
 
+def unfinished_games_by_date(conn, since_date: str, before_date: str) -> dict[tuple[str, str], int]:
+    """{(date, division): count} of games dated in [since_date, before_date)
+    that aren't marked final (pre, live, or an unrecognized status) -- what
+    the daily catch-up pass re-checks once a date has left the live window."""
+    rows = conn.execute(
+        """
+        SELECT date, division, COUNT(*) AS n FROM games
+        WHERE date >= ? AND date < ? AND (status IS NULL OR status != 'final')
+        GROUP BY date, division
+        ORDER BY date, division
+        """,
+        (since_date, before_date),
+    ).fetchall()
+    return {(r["date"], r["division"]): r["n"] for r in rows}
+
+
 def has_live_games(conn, since_date: str) -> bool:
     """True if a game played on/after `since_date` (YYYY-MM-DD) is
     currently in progress. Only the live sync window counts: a game that
