@@ -122,6 +122,26 @@ h3 {
     color: var(--text);
 }
 .topnav .brand:hover { color: var(--text); }
+
+/* Back button: only in standalone mode (iOS home-screen web app), where there's
+   no browser back button. Safari/desktop never see it. back-button.js adds
+   html.standalone for the legacy navigator.standalone flag. */
+.nav-back {
+    display: none;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: -12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+.nav-back:hover { color: var(--text); }
+@media (display-mode: standalone) { .nav-back { display: flex; } }
+html.standalone .nav-back { display: flex; }
 .brand-mark {
     width: 20px;
     height: 20px;
