@@ -15,7 +15,21 @@
 {% set current_season = request.cookies.get('season') %}
 {% if not current_season or current_season not in seasons %}{% set current_season = seasons[0] if seasons else '' %}{% endif %}
 {% set sync = last_synced() %}
+{# Back button for detail pages. Hidden everywhere except when the site is
+   launched from the iOS home screen (standalone mode, no browser chrome) --
+   see static/back-button.js and the .nav-back rules in style.css. The href is
+   the no-history fallback (and the no-JS behavior). #}
+{% set path = request.url.path %}
+{% if path.startswith('/team/') or path.startswith('/conference/') %}{% set back_fallback = '/teams' %}
+{% elif path == '/player' %}{% set back_fallback = ('/team/' ~ player.team_seo) if player and player.team_seo else '/players' %}
+{% elif path.startswith('/game/') or path == '/rank-history' %}{% set back_fallback = '/' %}
+{% endif %}
 <div class="topnav">
+    {% if back_fallback %}
+    <a class="nav-back" href="{{ back_fallback }}" aria-label="Go back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </a>
+    {% endif %}
     <a class="brand" href="/" aria-label="Full Time home">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16 H30 M22 16 A6 6 0 0 1 10 16 A6 6 0 0 1 22 16" pathlength="1"></path></svg>
         <span class="brand-text">
@@ -72,7 +86,7 @@
     <div class="division-toggle-right">
         {% if seasons|length > 1 and request.url.path != '/' %}
         <select class="season-select" aria-label="Season"
-                onchange="window.location.href = '/set-season/' + this.value + '?next={{ current_path(request) | urlencode }}'">
+                onchange="window.location.replace('/set-season/' + this.value + '?next={{ current_path(request) | urlencode }}')">
             {% for s in seasons %}
             <option value="{{ s }}" {% if s == current_season %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
@@ -102,4 +116,5 @@
     </div>
 </div>
 <script src="/static/nav-menu.js"></script>
+{% if back_fallback %}<script src="/static/back-button.js"></script>{% endif %}
 <script src="/static/localize-time.js"></script>
