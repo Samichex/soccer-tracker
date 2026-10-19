@@ -348,6 +348,10 @@ def detect(records: list[dict], since: str | None = None) -> list[dict]:
                 lo, hi = sorted(
                     (a, b), key=lambda n: _canonical_sort_key(n, len(team_games[(team, n.first, n.last)])), reverse=True
                 )
+                if reason in ("truncated", "first-name initial"):
+                    # The feed cuts names off, never pads them: the longer spelling is the intact one,
+                    # however few games it appears in.
+                    lo, hi = sorted((a, b), key=lambda n: len(n.kf) + len(n.kl))
                 review.append({
                     "tier": REVIEW, "reason": reason, "score": score, "team": team, "season": season,
                     "number": number, "from": lo, "to": hi,
@@ -414,6 +418,29 @@ def merge_aliases(existing: list[dict], new: list[dict]) -> list[dict]:
             continue
         out.append({"team": src[0], "from": [src[1], src[2]], "to": [dst[1], dst[2]]})
     return sorted(out, key=lambda e: (e["team"], e["from"]))
+
+
+def find_conflicts(aliases: list[dict]) -> list[str]:
+    """Names that the given answers send to more than one final spelling,
+    e.g. "K Hance" -> Kagan and also -> Keegan. Following each chain of
+    merges to its end must give a single spelling."""
+    targets: dict[tuple, set] = defaultdict(set)
+    for a in aliases:
+        targets[(a["team"], *a["from"])].add((a["team"], *a["to"]))
+
+    def ends(name, seen=()):
+        found = set()
+        for dst in targets.get(name, ()):
+            found |= ends(dst, (*seen, name)) if dst in targets and dst not in seen else {dst}
+        return found
+
+    problems = []
+    for src in targets:
+        final = ends(src)
+        if len(final) > 1:
+            options = " or ".join(f"{f} {l}" for _, f, l in sorted(final))
+            problems.append(f"{src[0]}: {src[1]} {src[2]} -> {options}")
+    return sorted(problems)
 
 
 def to_alias_entries(rows: list[dict]) -> list[dict]:
@@ -486,6 +513,12 @@ def main(argv: list[str] | None = None) -> None:
     file_data = normalize.load_aliases_file()
     if args.import_decisions:
         aliases, not_same = read_decisions(args.import_decisions)
+        conflicts = find_conflicts(aliases)
+        if conflicts:
+            raise SystemExit(
+                "Nothing recorded. These names are sent to more than one spelling; "
+                "blank or fix their decision cells:\n  " + "\n  ".join(conflicts)
+            )
         file_data["aliases"] = merge_aliases(file_data["aliases"], aliases)
         file_data["not_same"] = [*file_data["not_same"], *(d for d in not_same if d not in file_data["not_same"])]
         write_aliases_file(file_data)

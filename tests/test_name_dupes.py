@@ -200,3 +200,19 @@ def test_mojibake_spelling_never_wins_as_canonical():
     rows = detect([rec("t", "4", "Joao", "T", "g1"), rec("t", "4", "Joã\u0083o", "T", "g2"),
                    rec("t", "4", "Joã\u0083o", "T", "g3"), rec("t", "4", "João", "T", "g4")])
     assert {r["to"].first for r in rows} == {"João"}
+
+
+def test_truncated_and_initial_point_at_the_longer_spelling_even_with_fewer_games():
+    trunc = detect([rec("t", "3", "Henry", "Ibarguen-londono", "g1"), rec("t", "3", "Henry", "Ibarguen-londono", "g2"),
+                    rec("t", "3", "Henry", "Ibarguen-Londo", "g3")])
+    assert (trunc[0]["from"].last, trunc[0]["to"].last) == ("Ibarguen-Londo", "Ibarguen-londono")
+    init = detect([rec("t", "4", "K", "Hance", "g1"), rec("t", "4", "K", "Hance", "g2"), rec("t", "4", "Keegan", "Hance", "g3")])
+    assert (init[0]["from"].first, init[0]["to"].first) == ("K", "Keegan")
+
+
+def test_find_conflicts_flags_names_sent_to_two_final_spellings_but_not_converging_chains():
+    from app.name_dupes import find_conflicts
+    converge = [alias("t", "R", "O", "Rain", "O"), alias("t", "R", "O", "Rainer", "O"), alias("t", "Rain", "O", "Rainer", "O")]
+    assert find_conflicts(converge) == []
+    diverge = [alias("t", "K", "Hance", "Kagan", "Hance"), alias("t", "K", "Hance", "Keegan", "Hance")]
+    assert find_conflicts(diverge) == ["t: K Hance -> Kagan Hance or Keegan Hance"]
