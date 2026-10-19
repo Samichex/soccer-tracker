@@ -98,3 +98,26 @@ def test_normalize_rows_applies_both_helpers_in_place():
     assert rows[0]["first_name"] == "John"
     assert rows[0]["last_name"] == "Smith"
     assert rows[0]["position"] == "ATK"
+
+
+def test_split_suffix_first_name_moves_suffix_to_last_name():
+    assert normalize.split_suffix_first_name("jr.,victor", "Thompson") == ("Victor", "Thompson Jr.")
+    assert normalize.split_suffix_first_name("iii,john", "Shannon") == ("John", "Shannon III")
+    assert normalize.split_suffix_first_name("Jr., Pablo", "Gonzalez") == ("Pablo", "Gonzalez Jr.")
+    assert normalize.split_suffix_first_name("II,Max", "Lee") == ("Max", "Lee II")
+
+
+def test_split_suffix_first_name_leaves_everything_else_alone():
+    for first, last in [("Victor", "Thompson"), ("JR.", "THOMPSON"), ("Jr", "Gawel"), ("Jarrett", "Ng"),
+                        ("jr.,victor", ""), (None, "X"), ("Smith, John", "Lee")]:
+        assert normalize.split_suffix_first_name(first, last) == (first, last)
+
+
+def test_split_suffix_first_name_does_not_duplicate_an_existing_suffix():
+    assert normalize.split_suffix_first_name("jr.,victor", "Thompson Jr.") == ("Victor", "Thompson Jr.")
+
+
+def test_normalize_rows_repairs_the_comma_suffix_form(conn):
+    rows = [{"first_name": "jr.,victor", "last_name": "Thompson", "position": "D"}]
+    normalize.normalize_rows(conn, "robert-morris", rows)
+    assert (rows[0]["first_name"], rows[0]["last_name"]) == ("Victor", "Thompson Jr.")
