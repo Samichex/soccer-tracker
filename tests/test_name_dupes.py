@@ -122,3 +122,81 @@ def test_safe_cluster_chains_to_one_canonical_spelling():
                    rec("t", "9", "Gabriel", "Smyth", "g5")])
     assert {(r["from"].first, r["from"].last) for r in rows} == {("Gabe", "Smyth"), ("GABE", "SMYTH")}
     assert {(r["to"].first, r["to"].last) for r in rows} == {("Gabriel", "Smyth")}
+
+
+# --- aliases file: merge / filter / decisions -------------------------------
+
+import json  # noqa: E402
+
+from app.name_dupes import filter_decided, merge_aliases, read_decisions, write_aliases_file  # noqa: E402
+
+
+def alias(team, f1, l1, f2, l2):
+    return {"team": team, "from": [f1, l1], "to": [f2, l2]}
+
+
+def test_merge_aliases_keeps_existing_flattens_chains_and_drops_loops():
+    existing = [alias("t", "A", "x", "B", "x")]
+    new = [alias("t", "A", "x", "Z", "x"),   # conflicts with existing: existing wins
+           alias("t", "B", "x", "C", "x"),   # chain A -> B -> C
+           alias("t", "P", "x", "Q", "x"), alias("t", "Q", "x", "P", "x"),  # loop
+           alias("t", "S", "x", "S", "x")]  # self-map
+    merged = merge_aliases(existing, new)
+    assert merged == [alias("t", "A", "x", "C", "x"), alias("t", "B", "x", "C", "x")]
+
+
+def test_aliases_file_round_trips_and_is_one_entry_per_line(tmp_path):
+    path = tmp_path / "aliases.json"
+    data = {"aliases": [alias("t", "Gabe", "Smyth", "Gabriel", "Smyth"), alias("u", "José", "X", "Jose", "X")],
+            "not_same": [{"team": "t", "names": [["A", "B"], ["C", "D"]]}]}
+    write_aliases_file(data, path)
+    assert json.loads(path.read_text(encoding="utf-8")) == data
+    assert path.read_text(encoding="utf-8").count("\n") == 9  # 2 aliases + 1 not_same, one per line
+    write_aliases_file({"aliases": [], "not_same": []}, path)
+    assert json.loads(path.read_text(encoding="utf-8")) == {"aliases": [], "not_same": []}
+
+
+def test_read_decisions_merge_swap_different_and_unknown(tmp_path):
+    header = "tier,reason,score,team,season,number,from_first,from_last,from_games,to_first,to_last,to_games,decision\n"
+    ok = tmp_path / "ok.csv"
+    ok.write_text(header
+                  + "review,typo,0.9,t,2026,9,Kack,K,1,Kaeck,K,5,merge\n"
+                  + "review,typo,0.9,t,2026,9,Aa,K,1,Bb,K,5,swap\n"
+                  + "review,typo,0.9,t,2026,9,Cc,K,1,Dd,K,5,different\n"
+                  + "review,typo,0.9,t,2026,9,Ee,K,1,Ff,K,5,\n", encoding="utf-8")
+    aliases, not_same = read_decisions(ok)
+    assert aliases == [alias("t", "Kack", "K", "Kaeck", "K"), alias("t", "Bb", "K", "Aa", "K")]
+    assert not_same == [{"team": "t", "names": [["Cc", "K"], ["Dd", "K"]]}]
+    bad = tmp_path / "bad.csv"
+    bad.write_text(header + "review,typo,0.9,t,2026,9,A,K,1,B,K,5,yes\n", encoding="utf-8")
+    try:
+        read_decisions(bad)
+    except ValueError as e:
+        assert "yes" in str(e)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_filter_decided_skips_alias_sources_and_not_same_pairs():
+    recs = [rec("t", "9", "Johannes", "Kack", "g1"), rec("t", "9", "Johannes", "Kaeck", "g2"),
+            rec("t", "3", "Toby", "Prabhu", "g3"), rec("t", "3", "To", "Prabhu", "g4")]
+    rows = detect(recs)
+    assert len(rows) == 2
+    none = {"aliases": [], "not_same": []}
+    assert len(filter_decided(rows, none)) == 2
+    by_alias = {"aliases": [alias("t", "Johannes", "Kack", "Johannes", "Kaeck")], "not_same": []}
+    assert [r["team"] + r["number"] for r in filter_decided(rows, by_alias)] == ["t3"]
+    by_not_same = {"aliases": [], "not_same": [{"team": "t", "names": [["To", "Prabhu"], ["Toby", "Prabhu"]]}]}
+    assert [r["team"] + r["number"] for r in filter_decided(rows, by_not_same)] == ["t9"]
+
+
+def test_looks_garbled():
+    from app.name_dupes import looks_garbled
+    assert not any(looks_garbled(t) for t in ["João", "Müller", "Peña", "irmã", "Ramström"])
+    assert all(looks_garbled(t) for t in ["Joã\u0083o", "PeÃ±a", "H�kon", "Ramstrãm"])
+
+
+def test_mojibake_spelling_never_wins_as_canonical():
+    rows = detect([rec("t", "4", "Joao", "T", "g1"), rec("t", "4", "Joã\u0083o", "T", "g2"),
+                   rec("t", "4", "Joã\u0083o", "T", "g3"), rec("t", "4", "João", "T", "g4")])
+    assert {r["to"].first for r in rows} == {"João"}

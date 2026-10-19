@@ -7,6 +7,12 @@ so each variant becomes its own player. This is a read-only detector: it
 never writes to the DB. Run it with
 
     python -m app.name_dupes [--since YYYY-MM-DD] [--out report.csv]
+    python -m app.name_dupes --write-aliases          # record the safe tier
+    python -m app.name_dupes --import-decisions r.csv # record your review answers
+
+Decisions live in app/data/player_aliases.json. Aliases are applied to new
+rows at ingest and to stored rows at startup (normalize.py, db.py); pairs
+marked "different" are never reported again.
 
 Candidates are found by blocking on (team, season, jersey number) -- one
 player wears one number per team per season, so only names sharing a block
@@ -28,6 +34,7 @@ import argparse
 import csv
 import datetime as dt
 import itertools
+import json
 import re
 import sqlite3
 import unicodedata
@@ -36,7 +43,7 @@ from dataclasses import dataclass, field
 
 import jellyfish
 
-from . import config
+from . import config, normalize
 
 SAFE = "safe"
 REVIEW = "review"
@@ -92,6 +99,17 @@ _NICKNAMES = {
     "william": {"will", "bill", "billy", "liam", "willie"},
     "zachary": {"zach", "zack", "zak", "zac"},
 }
+
+
+# Double-decoded UTF-8 leaves C1 control characters (U+0080-U+009F) or an
+# "Ã"/"Â" lead character followed by a symbol -- and title-casing lowercases
+# the lead to "ã". A legitimate "ã" (João, irmã) is never followed by a
+# consonant or a symbol.
+_MOJIBAKE = re.compile(r"[\x80-\x9f]|[\u00c3\u00c2\u00e3][\u00a0-\u00bf]|\u00e3[bcdfghjklmnpqrstvwxyz]")
+
+
+def looks_garbled(text: str) -> bool:
+    return _GARBLE in text or _MOJIBAKE.search(text) is not None
 
 
 def _nick_equiv(a: str, b: str) -> bool:
@@ -257,7 +275,7 @@ def _canonical_sort_key(n: Name, total_games: int):
     bad_split = not last_words or last_words[-1] in _SUFFIXES  # last name blank, or just "Jr"
     accents = sum(1 for ch in full if ord(ch) > 127 and ch != _GARBLE)
     return (
-        _WILD in n.key, bad_split, case_bad, plain_title, len(n.first.split()),
+        looks_garbled(full), bad_split, case_bad, plain_title, len(n.first.split()),
         -accents, -total_games, full,
     )
 
@@ -361,9 +379,86 @@ def detect(records: list[dict], since: str | None = None) -> list[dict]:
     return out
 
 
+def filter_decided(rows: list[dict], file_data: dict) -> list[dict]:
+    """Drop candidates already settled: either spelling is an alias source
+    (a DB copy that predates the cleanup), or the pair was marked "different"."""
+    sources = {(a["team"], *a["from"]) for a in file_data["aliases"]}
+    different = {
+        frozenset((d["team"], n[0], n[1]) for n in d["names"])
+        for d in file_data["not_same"]
+    }
+    out = []
+    for r in rows:
+        a = (r["team"], r["from"].first, r["from"].last)
+        b = (r["team"], r["to"].first, r["to"].last)
+        if a in sources or b in sources or frozenset((a, b)) in different:
+            continue
+        out.append(r)
+    return out
+
+
+def merge_aliases(existing: list[dict], new: list[dict]) -> list[dict]:
+    """Union of alias entries. An existing entry for a spelling is never
+    overridden; chains (a -> b, b -> c) are flattened to a -> c; entries that
+    would map a name to itself or loop are dropped."""
+    mapping: dict[tuple, tuple] = {}
+    for entry in [*existing, *new]:
+        mapping.setdefault((entry["team"], *entry["from"]), (entry["team"], *entry["to"]))
+    out = []
+    for src, dst in mapping.items():
+        seen = {src}
+        while dst in mapping and dst not in seen:
+            seen.add(dst)
+            dst = mapping[dst]
+        if dst == src or dst in seen:
+            continue
+        out.append({"team": src[0], "from": [src[1], src[2]], "to": [dst[1], dst[2]]})
+    return sorted(out, key=lambda e: (e["team"], e["from"]))
+
+
+def to_alias_entries(rows: list[dict]) -> list[dict]:
+    return [
+        {"team": r["team"], "from": [r["from"].first, r["from"].last], "to": [r["to"].first, r["to"].last]}
+        for r in rows
+    ]
+
+
+def write_aliases_file(data: dict, path=None) -> None:
+    """One entry per line, so a PR diff shows exactly which aliases changed."""
+    path = path or normalize.ALIASES_PATH
+
+    def block(entries):
+        if not entries:
+            return "[]"
+        return "[\n" + ",\n".join("  " + json.dumps(e, ensure_ascii=False) for e in entries) + "\n]"
+
+    text = '{\n "aliases": ' + block(data["aliases"]) + ',\n "not_same": ' + block(data["not_same"]) + "\n}\n"
+    path.write_text(text, encoding="utf-8")
+
+
+def read_decisions(csv_path) -> tuple[list[dict], list[dict]]:
+    """(aliases, not_same) from a report CSV whose `decision` column was
+    filled in: "merge" (from -> to), "swap" (to -> from) or "different"."""
+    aliases, not_same = [], []
+    with open(csv_path, newline="", encoding="utf-8-sig") as f:
+        for r in csv.DictReader(f):
+            decision = (r.get("decision") or "").strip().lower()
+            a = [r["from_first"], r["from_last"]]
+            b = [r["to_first"], r["to_last"]]
+            if decision == "merge":
+                aliases.append({"team": r["team"], "from": a, "to": b})
+            elif decision == "swap":
+                aliases.append({"team": r["team"], "from": b, "to": a})
+            elif decision == "different":
+                not_same.append({"team": r["team"], "names": [a, b]})
+            elif decision:
+                raise ValueError(f"unknown decision {decision!r} for {r['team']} {a} / {b} (use merge, swap or different)")
+    return aliases, not_same
+
+
 _CSV_COLUMNS = [
     "tier", "reason", "score", "team", "season", "number",
-    "from_first", "from_last", "from_games", "to_first", "to_last", "to_games",
+    "from_first", "from_last", "from_games", "to_first", "to_last", "to_games", "decision",
 ]
 
 
@@ -375,7 +470,7 @@ def write_csv(rows: list[dict], path) -> None:
             w.writerow([
                 r["tier"], r["reason"], r["score"], r["team"], r["season"], r["number"],
                 r["from"].first, r["from"].last, r["from_games"],
-                r["to"].first, r["to"].last, r["to_games"],
+                r["to"].first, r["to"].last, r["to_games"], "",
             ])
 
 
@@ -384,12 +479,30 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--db", default=str(config.DB_PATH), help="SQLite file (opened read-only)")
     ap.add_argument("--since", help="only report names seen on/after this date (YYYY-MM-DD), for the weekly check")
     ap.add_argument("--out", help="CSV path (default: data/name_dupes-<today>.csv)")
+    ap.add_argument("--write-aliases", action="store_true", help="add the safe tier to player_aliases.json")
+    ap.add_argument("--import-decisions", metavar="CSV", help="add the merge/swap/different answers from a reviewed report")
     args = ap.parse_args(argv)
+
+    file_data = normalize.load_aliases_file()
+    if args.import_decisions:
+        aliases, not_same = read_decisions(args.import_decisions)
+        file_data["aliases"] = merge_aliases(file_data["aliases"], aliases)
+        file_data["not_same"] = [*file_data["not_same"], *(d for d in not_same if d not in file_data["not_same"])]
+        write_aliases_file(file_data)
+        print(f"{len(aliases)} merges and {len(not_same)} 'different' answers recorded in {normalize.ALIASES_PATH}")
+        return
 
     conn = sqlite3.connect(f"file:{args.db}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
-    rows = detect(load_records(conn), since=args.since)
+    rows = filter_decided(detect(load_records(conn), since=args.since), file_data)
     conn.close()
+
+    if args.write_aliases:
+        before = len(file_data["aliases"])
+        file_data["aliases"] = merge_aliases(file_data["aliases"], to_alias_entries([r for r in rows if r["tier"] == SAFE]))
+        write_aliases_file(file_data)
+        print(f"aliases: {before} -> {len(file_data['aliases'])} in {normalize.ALIASES_PATH}")
+        return
 
     out = args.out or str(config.BASE_DIR / "data" / f"name_dupes-{dt.date.today().isoformat()}.csv")
     write_csv(rows, out)

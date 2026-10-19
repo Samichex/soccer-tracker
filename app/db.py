@@ -1,10 +1,14 @@
 import datetime as dt
+import hashlib
 import json
+import logging
 import sqlite3
 import zlib
 from contextlib import contextmanager
 
-from . import config, validate
+from . import config, normalize, validate
+
+log = logging.getLogger("soccer-tracker.db")
 
 # Shared by every query below that returns games rows: prefers a team's full
 # name (only known once its boxscore has synced) over the short scoreboard
@@ -260,6 +264,65 @@ def init_db():
                 CREATE INDEX IF NOT EXISTS idx_team_rankings_seo ON team_rankings(seo);
                 """
             )
+
+        apply_player_aliases(conn)
+
+
+_ALIASES_APPLIED_KEY = "player_aliases_applied"
+
+
+def apply_player_aliases(conn, aliases: list[dict] | None = None, force: bool = False) -> dict | None:
+    """Rewrite already-stored player names to their canonical spelling, per
+    app/data/player_aliases.json (new rows get the same treatment at ingest,
+    see normalize.normalize_rows).
+
+    Runs once per change to the aliases list -- a hash of it is kept in
+    sync_meta -- so it costs nothing on a normal restart. All-or-nothing: a
+    failure rolls back every rewrite and is logged rather than raised, so a
+    bad alias can't keep the app from starting. Returns {"updated", "skipped"}
+    (skipped = rows left alone because the canonical spelling already exists
+    in the same game/number, which would collide on the primary key), or None
+    when there was nothing to do.
+    """
+    if aliases is None:
+        aliases = normalize.load_aliases_file()["aliases"]
+    digest = hashlib.sha256(json.dumps(aliases, sort_keys=True).encode()).hexdigest()
+    row = conn.execute("SELECT value FROM sync_meta WHERE key = ?", (_ALIASES_APPLIED_KEY,)).fetchone()
+    if not force and ((row and row["value"] == digest) or (not row and not aliases)):
+        return None
+
+    conn.commit()  # don't let a rollback below undo earlier migration steps
+    updated = skipped = 0
+    try:
+        for a in aliases:
+            team, (f_from, l_from), (f_to, l_to) = a["team"], a["from"], a["to"]
+            cur = conn.execute(
+                """
+                UPDATE OR IGNORE player_stats SET first_name = ?, last_name = ?
+                WHERE team_seo = ? AND first_name = ? AND last_name = ?
+                """,
+                (f_to, l_to, team, f_from, l_from),
+            )
+            updated += cur.rowcount
+            left = conn.execute(
+                "SELECT COUNT(*) FROM player_stats WHERE team_seo = ? AND first_name = ? AND last_name = ?",
+                (team, f_from, l_from),
+            ).fetchone()[0]
+            skipped += left
+        conn.execute(
+            """
+            INSERT INTO sync_meta (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+            """,
+            (_ALIASES_APPLIED_KEY, digest),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        log.exception("could not apply player aliases; leaving stored names unchanged")
+        return None
+    log.info("player aliases applied: %d rows renamed, %d left (name collision in same game)", updated, skipped)
+    return {"updated": updated, "skipped": skipped}
 
 
 def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
