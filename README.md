@@ -117,3 +117,39 @@ games and box scores, then `python -m app.backfill_rankings --season <year>`
 for the D1 poll weeks stored in `app/backfill_rankings.py` (today: 2026's
 weeks before this app's own daily snapshots began). Ranking weeks after
 that only existed as the app's own snapshots, so a lost disk loses them.
+
+## Player name cleanup
+
+The NCAA feed spells the same player differently across games (casing,
+nicknames, a middle name drifting between first/last, truncated or
+misspelled names, broken encoding), and the app identifies a player by exact
+`(team, first_name, last_name)`, so each variant becomes a separate player.
+
+`app/data/player_aliases.json` maps each known variant to its canonical
+spelling. It is applied to every newly synced box score
+(`normalize.normalize_rows`) and to already-stored rows on startup
+(`db.apply_player_aliases`, once per change to the file, all-or-nothing).
+
+The detector (`app/name_dupes.py`, needs `pip install -r requirements-dev.txt`)
+finds new variants. It reads the database but never writes to it. Compare
+players only within one team, season and jersey number, and never match two
+names that played in the same game.
+
+Weekly, against a copy of the production database:
+
+```bash
+python -m app.name_dupes --db path/to/soccer.db --since 2026-10-12
+```
+
+This writes `data/name_dupes-<date>.csv` (gitignored). Two kinds of rows:
+
+- **safe** (case, accents, punctuation, broken encoding, exact nicknames):
+  `python -m app.name_dupes --db path/to/soccer.db --write-aliases` records
+  them all.
+- **review** (typos, truncations, initials, dropped name parts, same surname
+  under a different first name): fill in the `decision` column in the CSV with
+  `merge` (from -> to), `swap` (to -> from) or `different` (two people; never
+  reported again), then run
+  `python -m app.name_dupes --import-decisions data/name_dupes-<date>.csv`.
+
+Commit the updated `player_aliases.json` in a PR; the deploy applies it.
