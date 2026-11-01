@@ -982,6 +982,45 @@ table.sortable th[data-sort].sort-asc::after { content: " \25B2"; font-size: 0.7
 table.sortable th[data-sort].sort-desc::after { content: " \25BC"; font-size: 0.7em; color: var(--accent); }
 table.sortable th[data-sort] a { color: inherit; text-decoration: none; display: block; }
 
+/* Teams page, phone layout: shown instead of the full table at <=560px. */
+.teams-mobile-wrap { display: none; }
+.teams-view-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: 0.9rem;
+    background: var(--neutral-soft);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+}
+.teams-view-tab {
+    flex: 1;
+    padding: 0.45rem 0.2rem;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+}
+.teams-view-tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 2px var(--scroll-shadow); }
+.teams-mobile .pill { padding: 0.18rem 0.42rem; margin-left: 3px; }
+.teams-mobile .pill:first-child { margin-left: 0; }
+.teams-mobile .form-dir { color: inherit; font-weight: 700; }
+.teams-mobile .pill.form-latest { position: relative; }
+.teams-mobile .pill.form-latest::after {
+    content: "";
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    bottom: -4px;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+}
+
 .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.1rem; font-size: 0.85rem; color: var(--muted); }
 .pagination a { font-weight: 600; color: var(--accent); }
 .pagination .disabled { color: var(--muted-2); }
@@ -1084,6 +1123,31 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
     .standings th:nth-child(1), .standings th:nth-child(2), .standings th:nth-child(3) {
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+
+    /* Teams page: swap the full table for the tabbed phone views. */
+    .teams-desktop { display: none; }
+    .teams-mobile-wrap { display: block; }
+    .teams-mobile-wrap .boxscore-card { padding-left: 0.4rem; padding-right: 0.4rem; }
+    .teams-mobile { table-layout: auto; }
+    .teams-mobile td, .teams-mobile th { padding-left: 0.3rem; padding-right: 0.3rem; }
+    .teams-mobile td { font-size: 0.82rem; }
+    .teams-mobile th { font-size: 0.66rem; letter-spacing: 0; }
+    .teams-mobile th.hdr-wrap { white-space: normal; }
+    /* Full has the most columns, so let names wrap to two lines instead of truncating. */
+    .teams-mobile[data-view="full"] .team-cell { white-space: normal; line-height: 1.2; }
+    .teams-mobile .team-cell, .teams-mobile .conf-cell {
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .teams-mobile .team-cell { width: 55%; }
+    .teams-mobile .conf-cell { width: 25%; }
+    .teams-mobile .form-cell { white-space: nowrap; }
+    .teams-mobile[data-view="overall"] :is(th, td):not(.v-overall),
+    .teams-mobile[data-view="conf"] :is(th, td):not(.v-conf),
+    .teams-mobile[data-view="full"] :is(th, td):not(.v-full),
+    .teams-mobile[data-view="form"] :is(th, td):not(.v-form) { display: none; }
 
     .matchup-names { font-size: 0.95rem; }
 }
