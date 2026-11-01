@@ -38,6 +38,38 @@ def test_all_teams_table_uses_each_teams_own_conference():
     assert (table["duke"]["overall_w"], table["duke"]["overall_d"]) == (1, 1)
 
 
+def test_conference_gd_counts_only_conference_games():
+    table = {t["seo"]: t for t in standings.build_all_teams_table(GAMES)}
+
+    # Duke: beat UNC 2-1 (conference), drew SMU 0-0 (non-conference).
+    assert (table["duke"]["conf_gf"], table["duke"]["conf_ga"], table["duke"]["conf_gd"]) == (2, 1, 1)
+    assert table["duke"]["gd"] == 1
+    # UNC: lost 1-2 to Duke (conference), lost 1-3 to SMU (non-conference).
+    assert table["unc"]["conf_gd"] == -1
+    assert table["unc"]["gd"] == -3
+    # SMU played no conference games.
+    assert table["smu"]["conf_gd"] == 0
+
+
+def test_form_is_last_five_results_oldest_first():
+    # Duke: W D L W W D W (seven games, mixed conference and non-conference).
+    scores = [("1", "0"), ("2", "2"), ("0", "1"), ("3", "0"), ("1", "0"), ("1", "1"), ("2", "1")]
+    games = [
+        _g("duke", f"opp{i}", hs, as_, ac="acc" if i % 2 else "american")
+        for i, (hs, as_) in enumerate(scores)
+    ]
+    duke = {t["seo"]: t for t in standings.build_all_teams_table(games)}["duke"]
+
+    assert duke["form"] == ["l", "w", "w", "d", "w"]  # games 3-7, most recent last
+
+
+def test_form_is_short_when_a_team_has_played_fewer_than_five():
+    table = {t["seo"]: t for t in standings.build_all_teams_table(GAMES)}
+
+    assert table["duke"]["form"] == ["w", "d"]
+    assert table["unc"]["form"] == ["l", "l"]  # unplayed game is not in form
+
+
 def test_team_schedule_results_and_record():
     unc_games = [g for g in GAMES if "unc" in (g["home_seo"], g["away_seo"])]
     rows, record = standings.build_team_schedule(unc_games, "unc", "acc")

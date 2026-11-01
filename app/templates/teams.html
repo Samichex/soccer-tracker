@@ -85,7 +85,7 @@
     {% if not table %}
     <p class="empty">No final games synced yet.</p>
     {% else %}
-    <div class="boxscore-card">
+    <div class="boxscore-card teams-desktop">
     <div class="table-scroll">
     <table class="sortable standings">
         <thead>
@@ -121,8 +121,56 @@
     </table>
     </div>
     </div>
+
+    {# Phone layout: one view at a time instead of every column at once. #}
+    <div class="teams-mobile-wrap">
+    <div class="teams-view-tabs" role="tablist">
+        <button type="button" class="teams-view-tab active" role="tab" aria-selected="true" data-view="overall">Overall</button>
+        <button type="button" class="teams-view-tab" role="tab" aria-selected="false" data-view="conf">Conf.</button>
+        <button type="button" class="teams-view-tab" role="tab" aria-selected="false" data-view="full">Full</button>
+        <button type="button" class="teams-view-tab" role="tab" aria-selected="false" data-view="form">Form</button>
+    </div>
+    <div class="boxscore-card">
+    <table class="sortable teams-mobile" data-view="overall">
+        <thead>
+            <tr>
+                {% if is_current_season %}<th class="num v-overall v-full v-form" data-sort="rank" data-sort-default="asc">Rk</th>{% endif %}
+                <th class="v-overall v-conf v-full v-form" data-sort="team" data-sort-default="asc">Team</th>
+                <th class="v-conf" data-sort="conference" data-sort-default="asc">Conference</th>
+                <th class="num v-overall v-full sort-desc" data-sort="overall" data-sort-default="desc">Overall</th>
+                <th class="num v-conf v-full" data-sort="conf" data-sort-default="desc">Conf.</th>
+                <th class="num v-conf" data-sort="conf_gd" data-sort-default="desc">GD</th>
+                <th class="num v-conf" data-sort="pts" data-sort-default="desc">Pts</th>
+                <th class="num v-full hdr-wrap" data-sort="nc" data-sort-default="desc">Non-Conf.</th>
+                <th class="num v-full" data-sort="gf_ga" data-sort-default="desc">+/-</th>
+                <th class="num v-overall v-full" data-sort="gd" data-sort-default="desc">GD</th>
+                <th class="num v-form">Last 5 <span class="form-dir" title="Oldest to most recent">&gt;</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in table %}
+            <tr data-i="{{ loop.index0 }}">
+                {% if is_current_season %}<td class="num v-overall v-full v-form" data-sort-key="rank" data-sort-value="{{ t.rank or 999 }}">{{ rank_arrow(t.rank, t.prev_rank) }} {% if t.rank and t.region %}{{ region_roman(t.region) }}-{{ t.rank }}{% else %}{{ t.rank or '' }}{% endif %}</td>{% endif %}
+                <td class="team-cell v-overall v-conf v-full v-form" data-sort-key="team" data-sort-value="{{ t.name }}"><a href="/team/{{ t.seo }}">{{ team_label_responsive(t.name_short, t.name, t.seo, t.conference) }}</a></td>
+                <td class="conf-cell v-conf" data-sort-key="conference" data-sort-value="{{ conference_label_fn(t.conference) }}"><a href="/conference/{{ t.conference }}">{{ conference_label_fn(t.conference) }}</a></td>
+                <td class="num v-overall v-full" data-sort-key="overall" data-sort-value="{{ t.overall_w * 3 + t.overall_d }}">{{ t.overall_w }}-{{ t.overall_l }}-{{ t.overall_d }}</td>
+                <td class="num v-conf v-full" data-sort-key="conf" data-sort-value="{{ t.conf_pts }}">{{ t.conf_w }}-{{ t.conf_l }}-{{ t.conf_d }}</td>
+                <td class="num v-conf" data-sort-key="conf_gd" data-sort-value="{{ t.conf_gd }}">{{ '%+d'|format(t.conf_gd) if t.conf_gd else 0 }}</td>
+                <td class="num v-conf" data-sort-key="pts" data-sort-value="{{ t.conf_pts }}">{{ t.conf_pts }}</td>
+                <td class="num v-full" data-sort-key="nc" data-sort-value="{{ t.nc_w * 3 + t.nc_d }}">{{ t.nc_w }}-{{ t.nc_l }}-{{ t.nc_d }}</td>
+                <td class="num v-full" data-sort-key="gf_ga" data-sort-value="{{ t.gf }}">{{ t.gf }}-{{ t.ga }}</td>
+                <td class="num v-overall v-full" data-sort-key="gd" data-sort-value="{{ t.gd }}">{{ '%+d'|format(t.gd) if t.gd else 0 }}</td>
+                <td class="num form-cell v-form" data-sort-key="form" data-sort-value="{{ t.form | length }}">{% for r in t.form %}<span class="pill result-{{ r }}{% if loop.last %} form-latest{% endif %}">{{ r | upper }}</span>{% endfor %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+
     <p class="glossary">GF = Goals For &middot; GA = Goals Against &middot; GD = Goal Differential (GF-GA)</p>
     <script src="/static/sort-table.js"></script>
+    <script src="/static/teams-views.js"></script>
     {% endif %}
 </body>
 </html>

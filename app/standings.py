@@ -2,6 +2,9 @@ from . import reference_data
 from .validate import safe_int
 
 
+FORM_GAMES = 5  # recent results shown in a team's form
+
+
 def _to_float(value):
     try:
         return float(value)
@@ -21,7 +24,9 @@ def _result(team_score: int, opp_score: int) -> str:
 def _tally_records(games, only_conference: str | None = None) -> list[dict]:
     """Conference and non-conference W-L-D, points and goals for every team
     in `games` that has a conference -- or only `only_conference`'s teams.
-    A game counts as a conference game when both sides share a conference."""
+    A game counts as a conference game when both sides share a conference.
+    `games` must be ordered oldest first: each team's `form` is its last
+    FORM_GAMES results in that order."""
     teams: dict[str, dict] = {}
 
     for g in games:
@@ -48,20 +53,29 @@ def _tally_records(games, only_conference: str | None = None) -> list[dict]:
                     "conf_w": 0, "conf_l": 0, "conf_d": 0,
                     "nc_w": 0, "nc_l": 0, "nc_d": 0,
                     "gf": 0, "ga": 0,
+                    "conf_gf": 0, "conf_ga": 0,
+                    "form": [],
                 },
             )
+            result = _result(team_score, opp_score)
             bucket = "conf" if is_conf_game else "nc"
-            team[f"{bucket}_{_result(team_score, opp_score)}"] += 1
+            team[f"{bucket}_{result}"] += 1
             team["gf"] += team_score
             team["ga"] += opp_score
+            if is_conf_game:
+                team["conf_gf"] += team_score
+                team["conf_ga"] += opp_score
+            team["form"].append(result)
 
     rows = list(teams.values())
     for t in rows:
+        t["form"] = t["form"][-FORM_GAMES:]  # games arrive oldest first
         t["conf_pts"] = 3 * t["conf_w"] + t["conf_d"]
         t["overall_w"] = t["conf_w"] + t["nc_w"]
         t["overall_l"] = t["conf_l"] + t["nc_l"]
         t["overall_d"] = t["conf_d"] + t["nc_d"]
         t["gd"] = t["gf"] - t["ga"]
+        t["conf_gd"] = t["conf_gf"] - t["conf_ga"]
     return rows
 
 
