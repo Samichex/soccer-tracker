@@ -504,6 +504,24 @@ def split_time_tz(value: str | None) -> tuple[str, str]:
     return value, ""
 
 
+_TOURNAMENT_ROUNDS = {
+    1: "First Round",
+    2: "Second Round",
+    3: "Third Round",
+    4: "Quarterfinals",
+    5: "Semifinals",
+    6: "Championship",
+}
+
+
+def tournament_round_label(bracket_round: int | None) -> str:
+    """"NCAA Tournament · Quarterfinals" for a game the feed marked as part
+    of the NCAA bracket (round names match the bracket endpoint's, same for
+    D1 and D3), or "" for any other game."""
+    name = _TOURNAMENT_ROUNDS.get(bracket_round)
+    return f"NCAA Tournament · {name}" if name else ""
+
+
 def period_short(value: str | None) -> str:
     """Compact badge label for a live game's current_period, e.g.
     "1st Half" -> "1ST", "2nd Half" -> "2ND", "Half" -> "HT". current_period

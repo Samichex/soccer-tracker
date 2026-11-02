@@ -24,7 +24,7 @@
             </div>
         </h1>
     </div>
-    <p class="game-meta">{{ game.date | pretty_date }} &middot; {% if game.status == 'pre' %}<span data-epoch="{{ game.start_epoch or '' }}">{{ game.start_time }}</span>{% else %}{{ game.current_period or game.status }}{% endif %}</p>
+    <p class="game-meta">{{ game.date | pretty_date }} &middot; {% if game.status == 'pre' %}<span data-epoch="{{ game.start_epoch or '' }}">{{ game.start_time }}</span>{% else %}{{ game.current_period or game.status }}{% endif %}{% if game.bracket_round %} &middot; {{ game.bracket_round | tournament_round }}{% endif %}</p>
 
     {% if team_stats %}
     <div class="boxscore-card stats-card">

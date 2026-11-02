@@ -22,3 +22,10 @@ def test_title_case_name_does_not_break_on_accented_letters():
 def test_title_case_name_empty_or_none():
     assert reference_data.title_case_name(None) == ""
     assert reference_data.title_case_name("") == ""
+
+
+def test_tournament_round_label_names_each_ncaa_round_and_blanks_others():
+    assert reference_data.tournament_round_label(4) == "NCAA Tournament · Quarterfinals"
+    assert reference_data.tournament_round_label(6) == "NCAA Tournament · Championship"
+    assert reference_data.tournament_round_label(None) == ""
+    assert reference_data.tournament_round_label(0) == ""

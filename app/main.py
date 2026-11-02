@@ -215,6 +215,7 @@ templates.env.filters["site_href"] = reference_data.site_href
 templates.env.filters["money"] = reference_data.format_money
 templates.env.filters["percent"] = reference_data.format_percent
 templates.env.filters["count"] = reference_data.format_count
+templates.env.filters["tournament_round"] = reference_data.tournament_round_label
 
 
 def _pretty_date(date_str: str | None) -> str:

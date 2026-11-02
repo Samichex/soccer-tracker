@@ -19,7 +19,7 @@ _GAME_COLUMNS = """
     g.home_score, g.home_conference,
     g.away_seo, COALESCE(ta.name_full, g.away_name) AS away_name, g.away_name AS away_name_short,
     g.away_score, g.away_conference,
-    g.network, g.url, g.division, g.updated_at
+    g.network, g.url, g.division, g.bracket_id, g.bracket_round, g.updated_at
 """
 _GAME_JOINS = """
     FROM games g
@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS games (
     away_conference TEXT,
     network TEXT,
     url TEXT,
+    bracket_id INTEGER,            -- NCAA tournament slot, e.g. 201 (see upsert_game); NULL otherwise
+    bracket_round INTEGER,         -- NCAA tournament round 1-6; NULL otherwise
     updated_at TEXT
 );
 
@@ -220,6 +222,15 @@ def init_db():
             # in upsert_game instead of relying on this backfill.
             conn.execute("ALTER TABLE games ADD COLUMN season TEXT")
             conn.execute("UPDATE games SET season = substr(date, 1, 4) WHERE season IS NULL")
+
+        # NCAA tournament slot/round, which the scoreboard feed only fills in
+        # for tournament games. No backfill: NULL is the correct value for
+        # every game already stored, except an already-synced tournament game,
+        # which picks these up the next time its date is re-synced (or via
+        # `python -m app.backfill --season <year>`).
+        for col in ("bracket_id", "bracket_round"):
+            if col not in game_cols:
+                conn.execute(f"ALTER TABLE games ADD COLUMN {col} INTEGER")
         # Deferred until here (rather than in the static SCHEMA above)
         # because an upgrading DB's `games` table already exists by the
         # time executescript(SCHEMA) runs its CREATE TABLE IF NOT EXISTS as
@@ -332,14 +343,17 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
     home_score = validate.validate_score(game_id, "home", g["home"].get("score"))
     away_score = validate.validate_score(game_id, "away", g["away"].get("score"))
     season = date_str[:4]
+    bracket_id, bracket_round = validate.validate_bracket(
+        game_id, g.get("bracketId"), g.get("bracketRound")
+    )
     conn.execute(
         """
         INSERT INTO games (
             id, date, season, start_time, start_epoch, status, current_period,
             home_seo, home_name, home_score, home_conference,
             away_seo, away_name, away_score, away_conference,
-            network, url, division, updated_at
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
+            network, url, division, bracket_id, bracket_round, updated_at
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
             start_time=excluded.start_time,
             start_epoch=excluded.start_epoch,
@@ -352,6 +366,10 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
             -- divisions' scoreboards under the same gameID; keep whichever
             -- division tagged it first rather than flip-flopping.
             division=COALESCE(games.division, excluded.division),
+            -- Only ever filled in once the bracket is published; a later
+            -- sync that comes back blank must not erase it.
+            bracket_id=COALESCE(excluded.bracket_id, games.bracket_id),
+            bracket_round=COALESCE(excluded.bracket_round, games.bracket_round),
             updated_at=datetime('now')
         """,
         (
@@ -373,6 +391,8 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
             g.get("network"),
             g.get("url"),
             division,
+            bracket_id,
+            bracket_round,
         ),
     )
     for side in ("home", "away"):
