@@ -2,7 +2,7 @@
 (function () {
     try {
         var path = window.location.pathname.split('/')[1] || '';
-        var section = { team: 'teams', teams: 'teams', player: 'players', players: 'players', stats: 'stats', 'rank-history': 'rank-history' }[path] || 'matches';
+        var section = { team: 'teams', teams: 'teams', player: 'players', players: 'players', stats: 'stats', 'rank-history': 'rank-history', bracket: 'bracket' }[path] || 'matches';
         if (window.sessionStorage.getItem('ftBrandSection') === section) {
             document.documentElement.classList.add('brand-no-anim');
         }
@@ -22,7 +22,7 @@
 {% set path = request.url.path %}
 {% if path.startswith('/team/') or path.startswith('/conference/') %}{% set back_fallback = '/teams' %}
 {% elif path == '/player' %}{% set back_fallback = ('/team/' ~ player.team_seo) if player and player.team_seo else '/players' %}
-{% elif path.startswith('/game/') or path == '/rank-history' %}{% set back_fallback = '/' %}
+{% elif path.startswith('/game/') or path == '/rank-history' or path == '/bracket' %}{% set back_fallback = '/' %}
 {% endif %}
 <div class="topnav">
     {% if back_fallback %}
@@ -42,6 +42,7 @@
     </form>
     <div class="topnav-links">
         <a href="/" {% if request.url.path == '/' %}class="active" aria-current="page"{% endif %}>Matches</a>
+        <a href="/bracket" {% if request.url.path == '/bracket' %}class="active" aria-current="page"{% endif %}>Tournament</a>
         <a href="/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
         <a href="/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
         <a href="/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>

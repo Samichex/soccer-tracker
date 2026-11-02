@@ -57,6 +57,11 @@ def get_boxscore(game_id: str) -> dict:
     return _get_with_backoff(url)
 
 
+def get_bracket(season: int | str, sport_path: str = config.DIVISIONS["d1"]) -> dict:
+    url = f"{config.NCAA_API_BASE}/brackets/{sport_path}/{season}"
+    return _get_with_backoff(url, timeout=30)
+
+
 def get_rankings(sport_path: str = config.DIVISIONS["d1"], poll: str = "") -> dict:
     path = f"{sport_path}/{poll}".rstrip("/")
     url = f"{config.NCAA_API_BASE}/rankings/{path}"

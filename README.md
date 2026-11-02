@@ -53,6 +53,10 @@ On startup it runs a full sync (today +/- a few days) and repeats every
   finalize upstream, so their dates drop out of this check once they're
   older than this.
 - `SYNC_INTERVAL_MINUTES` — background sync frequency (default 30).
+- `BRACKET_SYNC_FIRST_MONTH` — the NCAA tournament bracket (the `/bracket`
+  page) is re-pulled every sync cycle from this month on (default 11,
+  November). Before the field is announced the feed has only an empty
+  skeleton, which is ignored; the page says the bracket isn't announced yet.
 
 ## Deploying
 

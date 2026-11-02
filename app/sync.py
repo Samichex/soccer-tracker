@@ -294,6 +294,76 @@ def sync_rankings(
     )
 
 
+def _parse_bracket(data: dict) -> list[dict]:
+    """bracket_games rows (db._BRACKET_FIELDS) for every real game in a
+    /brackets response. The feed always lists the full 64-slot template;
+    a slot is real once it's `enabled` or has a team -- the skeleton posted
+    before the field is announced, and a 48-team D1 bracket's 16 unused
+    first-round slots, have neither."""
+    championships = data.get("championships") or []
+    rows = []
+    for g in (championships[0].get("games") or []) if championships else []:
+        teams = g.get("teams") or []
+        if not (g.get("enabled") or teams):
+            continue
+        contest_id = str(g.get("contestId") or "")
+        bracket_id = validate.safe_int(g.get("bracketId"))
+        round_ = bracket_id // 100 if bracket_id is not None else None
+        if not contest_id or round_ not in range(1, 7):
+            log.warning("bracket game %r has an unrecognized id/slot %r, skipping", contest_id, g.get("bracketId"))
+            continue
+        row = {
+            "contest_id": contest_id,
+            "bracket_id": bracket_id,
+            "round": round_,
+            "victor_bracket_id": validate.safe_int(g.get("victorBracketPositionId")),
+            "victor_slot": (g.get("victorGamePosition") or "").lower() or None,
+            "start_date": _parse_us_date(g.get("startDate")),
+            "start_epoch": validate.safe_int(g.get("startTimeEpoch")),
+            "status": validate.validate_game_status(contest_id, (g.get("statusCodeDisplay") or "").lower() or None),
+            "final_message": g.get("finalMessage") or None,
+        }
+        # The feed lists the top team first; a slot still waiting on an
+        # earlier round has one team (or none) and leaves the rest empty.
+        by_side = {"top": None, "bottom": None}
+        for t in teams:
+            by_side["top" if t.get("isTop") else "bottom"] = t
+        for side, t in by_side.items():
+            t = t or {}
+            row[f"{side}_seo"] = t.get("seoname") or None
+            row[f"{side}_name"] = t.get("nameShort") or None
+            row[f"{side}_seed"] = validate.safe_int(t.get("seed"))
+            row[f"{side}_score"] = validate.safe_int(t.get("score"))
+            row[f"{side}_winner"] = 1 if t.get("isWinner") else 0
+        rows.append(row)
+    return rows
+
+
+def _parse_us_date(value: str | None) -> str | None:
+    """The bracket feed's "11/20/2025" as YYYY-MM-DD, else None."""
+    try:
+        return dt.datetime.strptime(value, "%m/%d/%Y").date().isoformat()
+    except (TypeError, ValueError):
+        return None
+
+
+def sync_bracket(conn, division: str = "d1", season: int | str | None = None, sport_path: str | None = None) -> int:
+    """Store `division`'s NCAA tournament bracket for `season` (default: this
+    year). Returns how many games were stored; 0 means the bracket isn't
+    published yet (or the feed came back empty), and whatever was stored
+    before is left alone."""
+    sport_path = sport_path or config.DIVISIONS[division]
+    season = str(season or dt.date.today().year)
+    rows = _parse_bracket(ncaa_client.get_bracket(season, sport_path))
+    if not rows:
+        log.info("no %s %s bracket published yet", division, season)
+        return 0
+    with conn:
+        db.replace_bracket(conn, division, season, rows)
+    log.info("synced %s %s bracket (%s games)", division, season, len(rows))
+    return len(rows)
+
+
 def run_full_sync():
     """Sync the live window: recent results plus the near-term schedule.
 
@@ -338,6 +408,12 @@ def run_full_sync():
                 sync_regional_rankings(conn, division, config.DIVISIONS[division])
             except Exception:
                 log.exception("failed to sync regional rankings for %s", division)
+        if today.month >= config.BRACKET_SYNC_FIRST_MONTH:
+            for division in config.ENABLED_DIVISIONS:
+                try:
+                    sync_bracket(conn, division, today.year)
+                except Exception:
+                    log.exception("failed to sync %s bracket", division)
         # Stored as naive UTC ISO text, the format reference_data.format_last_synced reads.
         db.set_last_synced(conn, dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat())
 

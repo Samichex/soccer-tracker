@@ -3,6 +3,7 @@ import json
 import math
 import re
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 from markupsafe import Markup
 
@@ -504,6 +505,11 @@ def split_time_tz(value: str | None) -> tuple[str, str]:
     return value, ""
 
 
+_EASTERN = ZoneInfo("America/New_York")
+
+# Round tabs on a phone: six of them share one row, so these stay tiny.
+_TOURNAMENT_ROUNDS_SHORT = {1: "Rd 1", 2: "Rd 2", 3: "Rd 3", 4: "QF", 5: "SF", 6: "Final"}
+
 _TOURNAMENT_ROUNDS = {
     1: "First Round",
     2: "Second Round",
@@ -520,6 +526,181 @@ def tournament_round_label(bracket_round: int | None) -> str:
     D1 and D3), or "" for any other game."""
     name = _TOURNAMENT_ROUNDS.get(bracket_round)
     return f"NCAA Tournament · {name}" if name else ""
+
+
+# Pixel geometry of the bracket page (static/style.css reads these through
+# CSS variables set in bracket.html). A game card is two team rows plus a
+# footer; PITCH is the vertical distance between consecutive first-round
+# cards, and GUTTER the width of the gap between rounds that the connector
+# lines cross.
+BRACKET_LAYOUT = {"row_h": 26, "foot_h": 18, "pitch": 82, "gutter": 26}
+
+
+def _place_bracket_games(games: list[dict]) -> float:
+    """Give every game a vertical position `y` (in card slots, 0 = top) so
+    each game sits halfway between the games that feed it, and return how
+    many slots tall the bracket is. Games nothing feeds into (first-round
+    games, or a seed's bye) take the next free slot top to bottom; the walk
+    starts from the final and visits a game's top feeder before its bottom."""
+    by_id = {g["bracket_id"]: g for g in games}
+    feeders: dict[int, list[dict]] = {}
+    for g in games:
+        if g["victor_bracket_id"] in by_id:
+            feeders.setdefault(g["victor_bracket_id"], []).append(g)
+    for group in feeders.values():
+        group.sort(key=lambda f: (f["victor_slot"] != "top", f["bracket_id"]))
+
+    next_leaf = 0
+    visited: set[int] = set()  # also stops a malformed feed's loop from recursing forever
+
+    def place(g):
+        nonlocal next_leaf
+        if g["bracket_id"] in visited:
+            return
+        visited.add(g["bracket_id"])
+        kids = feeders.get(g["bracket_id"], [])
+        for k in kids:
+            place(k)
+        kids = [k for k in kids if "y" in k]
+        if kids:
+            g["y"] = sum(k["y"] for k in kids) / len(kids)
+        else:
+            g["y"] = float(next_leaf)
+            next_leaf += 1
+
+    # The final(s) first, then anything the feed left disconnected.
+    roots = [g for g in games if g["victor_bracket_id"] not in by_id]
+    for g in sorted(roots, key=lambda g: (-g["round"], g["bracket_id"])) + games:
+        place(g)
+    for g in games:
+        g["feeders"] = feeders.get(g["bracket_id"], [])
+    return max(next_leaf, 1)
+
+
+def _bracket_links(g: dict) -> dict | None:
+    """The connector lines drawn in the gutter left of game `g`: one elbow per
+    game that feeds it, from the team that won that game (or the middle of the
+    card while it's undecided) to the row of `g` the winner moves into.
+    Returns an <svg> box (`top` relative to g's card) and its paths, or None
+    for a first-round game."""
+    lay = BRACKET_LAYOUT
+    row_h, gutter, mid = lay["row_h"], lay["gutter"], lay["gutter"] / 2
+    elbows = []
+    for f in g["feeders"]:
+        dy = (f["y"] - g["y"]) * lay["pitch"]
+        winner_side = next((i for i, s in enumerate(f["sides"]) if s["winner"]), None)
+        start = dy + (row_h * (winner_side + 0.5) if winner_side is not None else row_h)
+        end = row_h * (1.5 if f["victor_slot"] == "bottom" else 0.5)
+        elbows.append((start, end, winner_side is not None))
+    if not elbows:
+        return None
+    top = min(min(s, e) for s, e, _ in elbows) - 2
+    bottom = max(max(s, e) for s, e, _ in elbows) + 2
+    paths = [
+        {"d": f"M0 {s - top:.1f} H{mid:g} V{e - top:.1f} H{gutter}", "decided": decided}
+        for s, e, decided in sorted(elbows, key=lambda x: x[2])  # decided last, so drawn on top
+    ]
+    return {"top": round(top, 1), "height": round(bottom - top, 1), "paths": paths}
+
+
+def build_bracket_rounds(games) -> list[dict]:
+    """Group db.get_bracket_games rows into [{"number", "name", "games",
+    "height"}], one per round that has games, in round order, ready to draw
+    as a tree: each game carries `y` (see _place_bracket_games), `sides` (top,
+    then bottom), `links` (_bracket_links), a short `date_label`, `kickoff`
+    ("6:00 PM ET" -- the viewer's own timezone replaces it client-side, see
+    static/localize-time.js) and a `note` ("FINAL (2OT)", "LIVE"). A team
+    still to be decided has an empty name; a score is hidden until the game
+    starts."""
+    rows = []
+    for row in games:
+        g = dict(row)
+        started = g["status"] in ("live", "final")
+        g["sides"] = [
+            {
+                "seo": g[f"{side}_seo"],
+                "name": g[f"{side}_name"],
+                "seed": g[f"{side}_seed"],
+                "score": g[f"{side}_score"] if started and g[f"{side}_name"] else None,
+                "winner": bool(g[f"{side}_winner"]),
+                "known": bool(g[f"{side}_known"]),
+            }
+            for side in ("top", "bottom")
+        ]
+        epoch = g["start_epoch"]
+        if epoch:
+            local = dt.datetime.fromtimestamp(epoch, tz=_EASTERN)
+            g["kickoff"] = f"{local.hour % 12 or 12}:{local.minute:02d} {local.strftime('%p')} ET"
+        else:
+            g["kickoff"] = ""
+        try:
+            day = dt.date.fromisoformat(g["start_date"])
+            g["date_label"] = f"{day:%b} {day.day}"
+        except (TypeError, ValueError):
+            g["date_label"] = ""
+        if g["status"] == "live":
+            g["note"] = "LIVE"
+        elif g["status"] == "final":
+            # A plain "FINAL" is implied by the score; keep only what adds
+            # something, e.g. "FINAL (2OT)" or "FINAL/PK".
+            g["note"] = "" if (g["final_message"] or "FINAL") == "FINAL" else g["final_message"]
+        else:
+            g["note"] = ""
+        rows.append(g)
+
+    slots = _place_bracket_games(rows)
+    by_id = {g["bracket_id"]: g for g in rows}
+    for g in rows:
+        g["links"] = _bracket_links(g)
+        g["advances"] = _bracket_advances(g, by_id.get(g["victor_bracket_id"]))
+    lay = BRACKET_LAYOUT
+    height = (slots - 1) * lay["pitch"] + 2 * lay["row_h"] + lay["foot_h"]
+
+    rounds: dict[int, list[dict]] = {}
+    for g in rows:
+        g["top_px"] = round(g["y"] * lay["pitch"], 1)
+        rounds.setdefault(g["round"], []).append(g)
+    return [
+        {
+            "number": n,
+            "name": _TOURNAMENT_ROUNDS.get(n, f"Round {n}"),
+            "short": _TOURNAMENT_ROUNDS_SHORT.get(n, f"R{n}"),
+            # Top to bottom as drawn in the tree, which is also the order the
+            # phone's one-round-at-a-time list reads in.
+            "games": sorted(rounds[n], key=lambda g: g["y"]),
+            "height": height,
+        }
+        for n in sorted(rounds)
+    ]
+
+
+def _bracket_advances(g: dict, nxt: dict | None) -> str:
+    """The phone list's stand-in for the tree's connector line: where game
+    `g`'s winner goes next and who they meet there, e.g. "Winner plays No. 1
+    Vermont in the Second Round". "" for the final."""
+    if nxt is None:
+        return ""
+    round_name = _TOURNAMENT_ROUNDS.get(nxt["round"], f"Round {nxt['round']}")
+    opponent = nxt["sides"][0 if g["victor_slot"] == "bottom" else 1]
+    if g["victor_slot"] not in ("top", "bottom") or not opponent["name"]:
+        meets = ""
+    else:
+        seed = f"No. {opponent['seed']} " if opponent["seed"] else ""
+        meets = f"{seed}{opponent['name']}"
+    if g["status"] == "final":
+        winner = next((s["name"] for s in g["sides"] if s["winner"]), None)
+        if winner:
+            return f"{winner} advanced to the {round_name}" + (f" vs {meets}" if meets else "")
+    return f"Winner plays {meets} in the {round_name}" if meets else f"Winner advances to the {round_name}"
+
+
+def current_bracket_round(rounds: list[dict]) -> int | None:
+    """The round the bracket page opens on: the earliest one that still has a
+    game to play, else (the tournament is over) the last round."""
+    for r in rounds:
+        if any(g["status"] != "final" for g in r["games"]):
+            return r["number"]
+    return rounds[-1]["number"] if rounds else None
 
 
 def period_short(value: str | None) -> str:

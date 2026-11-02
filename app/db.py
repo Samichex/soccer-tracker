@@ -53,6 +53,36 @@ CREATE TABLE IF NOT EXISTS games (
 
 CREATE INDEX IF NOT EXISTS idx_games_date ON games(date);
 
+-- The NCAA tournament bracket (sync.sync_bracket): one row per real game,
+-- replaced wholesale on each sync. contest_id is the same id space as
+-- games.id (so a bracket game can link to its game page); bracket_id is the
+-- slot in the bracket template and is only unique within one division +
+-- season (D2 games on the D1 scoreboard reuse D1's numbers).
+CREATE TABLE IF NOT EXISTS bracket_games (
+    division TEXT NOT NULL,
+    season TEXT NOT NULL,
+    contest_id TEXT NOT NULL,
+    bracket_id INTEGER NOT NULL,
+    round INTEGER NOT NULL,        -- 1-6, the hundreds digit of bracket_id
+    victor_bracket_id INTEGER,     -- the slot the winner advances to (NULL for the final)
+    victor_slot TEXT,              -- which team row of that game: top | bottom
+    start_date TEXT,               -- YYYY-MM-DD
+    start_epoch INTEGER,
+    status TEXT,                   -- pre | live | final
+    final_message TEXT,
+    top_seo TEXT,
+    top_name TEXT,
+    top_seed INTEGER,
+    top_score INTEGER,
+    top_winner INTEGER,
+    bottom_seo TEXT,
+    bottom_name TEXT,
+    bottom_seed INTEGER,
+    bottom_score INTEGER,
+    bottom_winner INTEGER,
+    PRIMARY KEY (division, season, contest_id)
+);
+
 CREATE TABLE IF NOT EXISTS player_stats (
     game_id TEXT NOT NULL,
     team_id TEXT NOT NULL,
@@ -804,6 +834,43 @@ def get_available_seasons(conn, division: str = "d1") -> list[str]:
         (division,),
     ).fetchall()
     return [r["season"] for r in rows]
+
+
+_BRACKET_FIELDS = (
+    "contest_id", "bracket_id", "round", "victor_bracket_id", "victor_slot", "start_date", "start_epoch", "status", "final_message",
+    "top_seo", "top_name", "top_seed", "top_score", "top_winner",
+    "bottom_seo", "bottom_name", "bottom_seed", "bottom_score", "bottom_winner",
+)
+
+
+def replace_bracket(conn, division: str, season: str, rows: list[dict]) -> None:
+    """Swap in this division + season's whole bracket. Replaced rather than
+    merged: a game's two teams are filled in as earlier rounds finish, and
+    the feed never reissues a slot under another contest_id."""
+    conn.execute("DELETE FROM bracket_games WHERE division = ? AND season = ?", (division, season))
+    conn.executemany(
+        f"INSERT INTO bracket_games (division, season, {', '.join(_BRACKET_FIELDS)}) "
+        f"VALUES (?, ?, {', '.join('?' for _ in _BRACKET_FIELDS)})",
+        [(division, season, *(r.get(f) for f in _BRACKET_FIELDS)) for r in rows],
+    )
+
+
+def get_bracket_games(conn, division: str, season: str):
+    """The stored bracket in round, then slot, order. `has_game` says whether
+    the game also exists in `games` (so it has a page to link to); `top_known`
+    / `bottom_known` whether the team has a /team page."""
+    return conn.execute(
+        """
+        SELECT b.*,
+               EXISTS (SELECT 1 FROM games g WHERE g.id = b.contest_id) AS has_game,
+               EXISTS (SELECT 1 FROM teams t WHERE t.seo = b.top_seo) AS top_known,
+               EXISTS (SELECT 1 FROM teams t WHERE t.seo = b.bottom_seo) AS bottom_known
+        FROM bracket_games b
+        WHERE b.division = ? AND b.season = ?
+        ORDER BY b.round, b.bracket_id
+        """,
+        (division, season),
+    ).fetchall()
 
 
 def get_team(conn, seo: str):

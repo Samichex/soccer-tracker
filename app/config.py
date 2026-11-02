@@ -82,6 +82,12 @@ SCHEDULE_SYNC_INTERVAL_HOURS = int(os.environ.get("SCHEDULE_SYNC_INTERVAL_HOURS"
 
 SYNC_INTERVAL_MINUTES = int(os.environ.get("SYNC_INTERVAL_MINUTES", "30"))
 
+# The NCAA tournament bracket (sync.sync_bracket) only exists from the
+# tournament's run-up to its final in mid-December, so the live sync only
+# re-pulls it from this month on. A bracket for an earlier season is loaded
+# once with `python -m app.backfill_bracket`.
+BRACKET_SYNC_FIRST_MONTH = int(os.environ.get("BRACKET_SYNC_FIRST_MONTH", "11"))
+
 # When a game is currently live, poll far more often than the idle
 # SYNC_INTERVAL_MINUTES cadence so scores/clock update promptly.
 LIVE_SYNC_INTERVAL_SECONDS = int(os.environ.get("LIVE_SYNC_INTERVAL_SECONDS", "90"))

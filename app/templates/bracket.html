@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include "_head.html" %}
+    <title>FT: NCAA Tournament</title>
+</head>
+<body class="wide">
+    {% include "_nav.html" %}
+
+    <h1>NCAA Tournament</h1>
+    {% if not rounds %}
+    <p class="empty">
+        {% if season %}The {{ season }} bracket hasn't been announced yet.{% else %}No bracket yet.{% endif %}
+    </p>
+    {% else %}
+    <p class="team-meta">{{ division_label(resolve_division(request)) }} Men's Soccer &middot; {{ season }}</p>
+
+    {# Round picker: only shown on narrow screens, where the page lists one round at a time
+       instead of drawing the whole tree. Plain links (?round=N) so it works without JS;
+       static/bracket-tabs.js swaps rounds in place. #}
+    <nav class="bracket-tabs" aria-label="Round">
+        {% for r in rounds %}
+        <a class="bracket-tab{% if r.number == selected %} active{% endif %}{% if r.number == current %} is-current{% endif %}"
+           href="{{ querystring_with(request, round=r.number) }}" data-round="{{ r.number }}"
+           title="{{ r.name }}{% if r.number == current %} (current round){% endif %}"
+           {% if r.number == selected %}aria-current="true"{% endif %}>{{ r.short }}</a>
+        {% endfor %}
+    </nav>
+
+    <div class="bracket-scroll">
+        <div class="bracket" style="--row-h: {{ layout.row_h }}px; --foot-h: {{ layout.foot_h }}px; --gutter: {{ layout.gutter }}px">
+            {% for r in rounds %}
+            <section class="bracket-round{% if r.number == selected %} is-selected{% endif %}" data-round="{{ r.number }}" aria-label="{{ r.name }}">
+                <h2 class="bracket-round-title">{{ r.name }}</h2>
+                <div class="bracket-games" style="--h: {{ r.height }}px">
+                    {% for g in r.games %}
+                    <div class="bracket-game" style="--top: {{ g.top_px }}px">
+                        {% if g.links %}
+                        <svg class="bracket-links" width="{{ layout.gutter }}" height="{{ g.links.height }}" style="top: {{ g.links.top }}px" aria-hidden="true">
+                            {% for p in g.links.paths %}<path{% if p.decided %} class="is-decided"{% endif %} d="{{ p.d }}"/>{% endfor %}
+                        </svg>
+                        {% endif %}
+                        <div class="bracket-card{% if g.has_game %} has-link{% endif %}">
+                            {% if g.has_game %}
+                            <a class="bracket-card-link" href="/game/{{ g.contest_id }}" aria-label="Game details: {{ g.sides[0].name or 'TBD' }} vs {{ g.sides[1].name or 'TBD' }}"></a>
+                            {% endif %}
+                            {% for s in g.sides %}
+                            <div class="bracket-team{% if s.winner %} is-winner{% endif %}{% if not s.name %} is-tbd{% endif %}">
+                                <span class="bracket-seed">{{ s.seed or '' }}</span>
+                                <span class="bracket-name">
+                                    {%- if s.name and s.known %}<a href="/team/{{ s.seo }}">{{ s.name }}</a>
+                                    {%- else %}{{ s.name or 'TBD' }}{% endif -%}
+                                </span>
+                                <span class="bracket-score">{{ s.score if s.score is not none else '' }}</span>
+                            </div>
+                            {% endfor %}
+                            <div class="bracket-game-foot">
+                                <span>
+                                    {%- if g.status == 'pre' and g.kickoff %}{{ g.date_label }} &middot; <span data-epoch="{{ g.start_epoch }}">{{ g.kickoff }}</span>
+                                    {%- else %}{{ g.date_label }}{% endif -%}
+                                </span>
+                                <span>
+                                    {%- if g.note %}<span class="bracket-note{% if g.status == 'live' %} is-live{% endif %}">{{ g.note }}</span>{% endif -%}
+                                    {%- if g.has_game %}<a class="bracket-details" href="/game/{{ g.contest_id }}">Details</a>{% endif -%}
+                                </span>
+                            </div>
+                            {% if g.advances %}<div class="bracket-advances">{{ g.advances }}</div>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="/static/bracket-tabs.js"></script>
+    {% endif %}
+</body>
+</html>
