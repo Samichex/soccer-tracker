@@ -90,6 +90,24 @@ def validate_game_status(game_id: str, status: str | None) -> str | None:
     return None
 
 
+def validate_bracket(game_id: str, bracket_id, bracket_round) -> tuple[int | None, int | None]:
+    """(bracket_id, bracket_round) as ints, or (None, None) when the game
+    isn't an NCAA tournament game (the feed sends "" for both). Rounds run
+    1-6, so a pair with only one of the two, or a round outside that, is
+    logged and discarded together rather than labelling a regular-season
+    game with a bogus round."""
+    bid, rnd = safe_int(bracket_id), safe_int(bracket_round)
+    if bid is None and rnd is None:
+        return None, None
+    if bid is None or rnd is None or not (1 <= rnd <= 6):
+        log.warning(
+            "game %s: unrecognized bracket id=%r round=%r, discarding",
+            game_id, bracket_id, bracket_round,
+        )
+        return None, None
+    return bid, rnd
+
+
 def validate_score(game_id: str, side: str, score) -> str | None:
     """Pass through a blank or non-negative-integer score; log and blank
     out anything else so it can't be silently CAST to an unintended int."""

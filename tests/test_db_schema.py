@@ -339,3 +339,58 @@ def test_legacy_plain_text_raw_boxscore_still_reads_and_converts(conn):
     assert types == {"blob"}
     assert db.get_raw_boxscore(conn, "old") == _BOX
     assert db.get_team_stats(conn, "old")["away"]["corners"] == 1
+
+
+def test_upsert_game_stores_ncaa_tournament_bracket_fields(conn):
+    game = _game()
+    game["game"]["bracketId"] = "301"
+    game["game"]["bracketRound"] = "3"
+    db.upsert_game(conn, game, "2026-11-30")
+    row = conn.execute("SELECT bracket_id, bracket_round FROM games WHERE id = 'g1'").fetchone()
+    assert (row["bracket_id"], row["bracket_round"]) == (301, 3)
+
+
+def test_upsert_game_leaves_bracket_fields_null_for_regular_games(conn):
+    game = _game()
+    game["game"]["bracketId"] = ""
+    game["game"]["bracketRound"] = ""
+    db.upsert_game(conn, game, "2026-09-01")
+    row = conn.execute("SELECT bracket_id, bracket_round FROM games WHERE id = 'g1'").fetchone()
+    assert (row["bracket_id"], row["bracket_round"]) == (None, None)
+
+
+def test_upsert_game_keeps_bracket_fields_when_a_later_sync_omits_them(conn):
+    game = _game()
+    game["game"]["bracketId"] = "201"
+    game["game"]["bracketRound"] = "2"
+    db.upsert_game(conn, game, "2026-11-23")
+    db.upsert_game(conn, _game(), "2026-11-23")  # feed blanks them
+    row = conn.execute("SELECT bracket_id, bracket_round FROM games WHERE id = 'g1'").fetchone()
+    assert (row["bracket_id"], row["bracket_round"]) == (201, 2)
+
+
+def test_upsert_game_discards_implausible_bracket_round(conn, caplog):
+    game = _game()
+    game["game"]["bracketId"] = "901"
+    game["game"]["bracketRound"] = "9"
+    with caplog.at_level(logging.WARNING):
+        db.upsert_game(conn, game, "2026-11-23")
+    row = conn.execute("SELECT bracket_id, bracket_round FROM games WHERE id = 'g1'").fetchone()
+    assert (row["bracket_id"], row["bracket_round"]) == (None, None)
+    assert "unrecognized bracket" in caplog.text
+
+
+def test_init_db_adds_bracket_columns_to_an_existing_games_table(tmp_path, monkeypatch):
+    path = tmp_path / "old.db"
+    old = sqlite3.connect(path)
+    old.execute("CREATE TABLE games (id TEXT PRIMARY KEY, date TEXT NOT NULL)")
+    old.execute("INSERT INTO games (id, date) VALUES ('g1', '2025-09-01')")
+    old.commit()
+    old.close()
+    monkeypatch.setattr(db.config, "DB_PATH", path)
+    db.init_db()
+    check = sqlite3.connect(path)
+    cols = {r[1] for r in check.execute("PRAGMA table_info(games)")}
+    assert {"bracket_id", "bracket_round"} <= cols
+    assert check.execute("SELECT bracket_id FROM games WHERE id = 'g1'").fetchone()[0] is None
+    check.close()
