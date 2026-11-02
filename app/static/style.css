@@ -1151,3 +1151,101 @@ table.sortable th[data-sort] a { color: inherit; text-decoration: none; display:
 
     .matchup-names { font-size: 0.95rem; }
 }
+
+/* NCAA tournament bracket. Wide screens (above 1060px) draw it as a tree: one
+   column per round, cards absolutely positioned (reference_data.
+   build_bracket_rounds computes where), elbow connectors as SVGs in the gutter
+   left of each card. Narrower screens list one round at a time instead -- see
+   the media query at the end of this block. */
+.bracket-scroll { overflow-x: auto; margin-top: 12px; padding-bottom: 10px; }
+.bracket { display: flex; min-width: 960px; }
+.bracket-round { flex: 1 1 0; min-width: 0; }
+.bracket-round + .bracket-round { margin-left: var(--gutter); }
+.bracket-round-title {
+    margin: 0 0 10px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--muted);
+}
+.bracket-games { position: relative; height: var(--h); }
+.bracket-game { position: absolute; left: 0; right: 0; top: var(--top); height: calc(var(--row-h) * 2 + var(--foot-h)); }
+.bracket-card {
+    position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 1px var(--border);
+}
+.bracket-team {
+    box-sizing: border-box; height: var(--row-h); display: grid;
+    grid-template-columns: 1.1rem minmax(0, 1fr) auto; align-items: center;
+    gap: 5px; padding: 0 8px; font-size: 0.86rem;
+}
+.bracket-team + .bracket-team { border-top: 1px solid var(--border); }
+.bracket-team.is-winner { background: var(--win-bg); font-weight: 700; }
+.bracket-team.is-tbd { color: var(--muted); }
+.bracket-team a { color: inherit; text-decoration: none; }
+.bracket-team a:hover { text-decoration: underline; }
+.bracket-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bracket-seed { color: var(--muted); font-size: 0.7rem; text-align: right; font-variant-numeric: tabular-nums; }
+.bracket-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.bracket-game-foot {
+    box-sizing: border-box; height: var(--foot-h); display: flex; justify-content: space-between;
+    align-items: center; gap: 6px; padding: 0 8px; white-space: nowrap; overflow: hidden;
+    font-size: 0.66rem; color: var(--muted); background: var(--neutral-soft);
+}
+.bracket-game-foot a { color: var(--accent); text-decoration: none; font-weight: 600; margin-left: 6px; }
+.bracket-note.is-live { color: var(--live); font-weight: 700; }
+.bracket-links { position: absolute; left: calc(var(--gutter) * -1); overflow: visible; pointer-events: none; }
+.bracket-links path { fill: none; stroke: var(--muted-2); stroke-width: 1.25; opacity: 0.55; }
+.bracket-links path.is-decided { stroke: var(--accent); stroke-width: 1.75; opacity: 1; }
+
+/* Only the narrow layout uses these. */
+.bracket-tabs, .bracket-advances, .bracket-card-link { display: none; }
+
+@media (max-width: 1060px) {
+    /* Round picker, styled like the Teams page's phone view tabs. */
+    .bracket-tabs {
+        display: flex; gap: 2px; padding: 3px; margin: 12px 0 14px;
+        position: sticky; top: 0; z-index: 10;
+        background: var(--neutral-soft); border: 1px solid var(--border); border-radius: 999px;
+    }
+    .bracket-tab {
+        flex: 1; text-align: center; padding: 0.5rem 0.2rem; border-radius: 999px;
+        font-size: 0.88rem; font-weight: 600; color: var(--text); text-decoration: none; white-space: nowrap;
+    }
+    .bracket-tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 2px var(--scroll-shadow); }
+    /* A dot on the round the tournament is up to, for when another is open. */
+    .bracket-tab.is-current:not(.active)::after {
+        content: ""; display: inline-block; width: 5px; height: 5px; margin-left: 4px;
+        border-radius: 50%; background: var(--accent); vertical-align: middle;
+    }
+
+    .bracket-scroll { overflow: visible; margin-top: 0; padding-bottom: 0; }
+    .bracket { display: block; min-width: 0; }
+    .bracket-round { display: none; }
+    .bracket-round.is-selected { display: block; }
+    .bracket-round + .bracket-round { margin-left: 0; }
+    .bracket-round-title { font-size: 0.95rem; margin: 0 0 10px; }
+
+    .bracket-games { height: auto; display: flex; flex-direction: column; gap: 10px; }
+    .bracket-game { position: static; height: auto; }
+    .bracket-links { display: none; }
+    .bracket-card { height: auto; }
+
+    .bracket-team { height: 44px; padding: 0 12px; font-size: 1rem; grid-template-columns: 1.4rem minmax(0, 1fr) auto; }
+    .bracket-seed { font-size: 0.78rem; }
+    .bracket-game-foot { height: auto; min-height: 30px; padding: 6px 12px; font-size: 0.8rem; }
+    .bracket-advances {
+        display: block; padding: 7px 12px; font-size: 0.8rem; color: var(--muted);
+        border-top: 1px solid var(--border);
+    }
+
+    /* The whole card opens the game, so the small Details link and the team
+       links (which would compete with it for the tap) step aside. */
+    .bracket-card-link { display: block; position: absolute; inset: 0; z-index: 1; }
+    .bracket-card.has-link .bracket-team a { pointer-events: none; }
+    .bracket-details { display: none; }
+}
+
+/* Five header links (Matches, Tournament, Teams, Players, Stats) plus the menu
+   button need a little less spacing on the narrowest phones to stay on screen. */
+@media (max-width: 400px) {
+    .topnav-links { gap: 10px; }
+}

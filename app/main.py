@@ -833,6 +833,32 @@ def rank_history_page(
     )
 
 
+@app.get("/bracket", response_class=HTMLResponse)
+def bracket_page(
+    request: Request, division: str | None = None, season: str | None = None, round: int | None = None
+):
+    division = _resolve_division(request, division)
+    with db.get_conn() as conn:
+        season = _resolve_season(conn, request, division, season)
+        games = db.get_bracket_games(conn, division, season) if season else []
+    rounds = reference_data.build_bracket_rounds(games)
+    current = reference_data.current_bracket_round(rounds)
+    # Narrow screens show one round at a time: the one asked for with
+    # ?round=, else the earliest round with a game still to play.
+    selected = round if round in {r["number"] for r in rounds} else current
+    return templates.TemplateResponse(
+        request,
+        "bracket.html",
+        {
+            "rounds": rounds,
+            "season": season,
+            "layout": reference_data.BRACKET_LAYOUT,
+            "current": current,
+            "selected": selected,
+        },
+    )
+
+
 @app.get("/about", response_class=HTMLResponse)
 def about_page(request: Request):
     return templates.TemplateResponse(request, "about.html")
