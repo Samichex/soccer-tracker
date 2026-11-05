@@ -203,7 +203,9 @@ def _parse_regional_rankings(data: dict) -> list[dict]:
     region = None
     for entry in data.get("data", []):
         school = (entry.get("SCHOOL") or "").strip()
-        raw_rank = str(entry.get("RANK") or "").strip()
+        # The feed called this column RANK until it was renamed REGIONAL RANK
+        # (seen 2026-11-02); accept either so a rename back doesn't break us again.
+        raw_rank = str(entry.get("REGIONAL RANK") or entry.get("RANK") or "").strip()
         if not school and raw_rank.startswith("Region "):
             region = _REGION_ROMAN_TO_INT.get(raw_rank[len("Region "):].strip())
             continue
