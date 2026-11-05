@@ -45,7 +45,6 @@
         <a href="/bracket" {% if request.url.path == '/bracket' %}class="active" aria-current="page"{% endif %}>Tournament</a>
         <a href="/teams" {% if request.url.path == '/teams' %}class="active" aria-current="page"{% endif %}>Teams</a>
         <a href="/players" {% if request.url.path == '/players' %}class="active" aria-current="page"{% endif %}>Players</a>
-        <a href="/stats" {% if request.url.path == '/stats' %}class="active" aria-current="page"{% endif %}>Stats</a>
 
         <div class="menu" id="ft-menu">
             <button type="button" class="menu-toggle" id="ft-menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="ft-menu-panel" aria-label="Open menu">
@@ -54,6 +53,9 @@
             <div class="menu-panel" id="ft-menu-panel">
                 {% set rank_history_enabled = current_division in rankings_supported_divisions %}
                 <div class="menu-section">
+                    <a class="menu-row menu-link{% if request.url.path == '/stats' %} active{% endif %}" href="/stats"{% if request.url.path == '/stats' %} aria-current="page"{% endif %}>
+                        <span>Stat Leaders</span>
+                    </a>
                     {% if rank_history_enabled %}
                     <a class="menu-row menu-link{% if request.url.path == '/rank-history' %} active{% endif %}" href="/rank-history"{% if request.url.path == '/rank-history' %} aria-current="page"{% endif %}>
                         <span>Rank History</span>
@@ -63,9 +65,6 @@
                         <span>Rank History</span>
                     </a>
                     {% endif %}
-                    <a class="menu-row menu-link{% if request.url.path == '/about' %} active{% endif %}" href="/about"{% if request.url.path == '/about' %} aria-current="page"{% endif %}>
-                        <span>About</span>
-                    </a>
                 </div>
                 <div class="menu-section">
                     <div class="menu-row">

@@ -859,9 +859,13 @@ def bracket_page(
     )
 
 
-@app.get("/about", response_class=HTMLResponse)
-def about_page(request: Request):
-    return templates.TemplateResponse(request, "about.html")
+# The /about page is hidden until its copy is reworked: app/templates/about.html
+# is kept, but the route is off and the nav link removed. To bring it back,
+# restore this route and the "About" link in templates/_nav.html:
+#
+# @app.get("/about", response_class=HTMLResponse)
+# def about_page(request: Request):
+#     return templates.TemplateResponse(request, "about.html")
 
 
 class _SeasonRoster(NamedTuple):
