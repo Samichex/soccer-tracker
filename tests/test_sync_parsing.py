@@ -161,6 +161,25 @@ def test_parse_rankings_maps_expected_fields():
     ]
 
 
+@pytest.mark.parametrize("rank_key", ["REGIONAL RANK", "RANK"])
+def test_parse_regional_rankings_accepts_either_rank_column(rank_key):
+    # The live rankings/soccer-men/d3 feed sends "REGIONAL RANK" (checked
+    # 2026-11-02); it used to send "RANK".
+    data = {
+        "data": [
+            {rank_key: "Region I", "SCHOOL": "", "IN-DIVISION RECORD": "", "NPI": ""},
+            {rank_key: "1", "SCHOOL": "Williams", "IN-DIVISION RECORD": "11-2-2", "NPI": "61.593"},
+            {rank_key: "Region II", "SCHOOL": "", "IN-DIVISION RECORD": "", "NPI": ""},
+            {rank_key: "1", "SCHOOL": "Messiah", "IN-DIVISION RECORD": "12-1-1", "NPI": "60.100"},
+        ]
+    }
+    rows = sync._parse_regional_rankings(data)
+    assert rows == [
+        {"region": 1, "school": "Williams", "rank": 1, "npi": "61.593", "record": "11-2-2"},
+        {"region": 2, "school": "Messiah", "rank": 1, "npi": "60.100", "record": "12-1-1"},
+    ]
+
+
 def test_parse_rankings_skips_rows_with_unparseable_rank():
     data = {"data": [{"RANK": "NR", "SCHOOL": "Some School"}, {"RANK": "3", "SCHOOL": "Duke"}]}
     rows = sync._parse_rankings(data)
