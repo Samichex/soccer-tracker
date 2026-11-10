@@ -183,6 +183,15 @@ CREATE TABLE IF NOT EXISTS game_boxscore_raw (
                                    -- until compress_raw_boxscores_batch converts them
     fetched_at TEXT
 );
+
+-- Consecutive failed box score fetches per game, so a box score upstream
+-- never serves stops being retried forever (see games_missing_boxscore).
+-- A row is dropped as soon as a fetch succeeds.
+CREATE TABLE IF NOT EXISTS boxscore_fetch_failures (
+    game_id TEXT PRIMARY KEY,
+    failures INTEGER NOT NULL,
+    last_failed_at TEXT
+);
 """
 
 
@@ -503,6 +512,7 @@ def delete_superseded_games(conn, date_str: str, division: str, keep_ids: set[st
     # pointing at a game id that no longer exists.
     conn.execute(f"DELETE FROM player_stats WHERE game_id IN ({placeholders})", remove_ids)
     conn.execute(f"DELETE FROM game_boxscore_raw WHERE game_id IN ({placeholders})", remove_ids)
+    conn.execute(f"DELETE FROM boxscore_fetch_failures WHERE game_id IN ({placeholders})", remove_ids)
     cur = conn.execute(f"DELETE FROM games WHERE id IN ({placeholders})", remove_ids)
     return cur.rowcount
 
@@ -617,19 +627,53 @@ def games_missing_boxscore(conn, since_date: str | None = None):
     """Final games with no player_stats yet. `since_date` (YYYY-MM-DD)
     limits this to games played on/after that date -- the background sync
     passes the start of its live window so a box score upstream will never
-    serve (e.g. a handful of 2025 D3 games that 502 every time) isn't
-    re-fetched every cycle forever. None means every game, however old."""
-    date_clause = " AND g.date >= ?" if since_date is not None else ""
-    params = (since_date,) if since_date is not None else ()
+    serve isn't re-fetched every cycle forever. None means every game,
+    however old.
+
+    Independently of that, a game is skipped once it has failed
+    config.BOXSCORE_GIVE_UP_FAILURES fetches in a row *and* was played more
+    than config.BOXSCORE_GIVE_UP_MIN_AGE_DAYS ago: a recent game's box score
+    may just not be posted yet, but an old one that keeps erroring (a few
+    2025 non-D1 opponents 502 every time) is never going to be. Fetching the
+    game's own page, or record_boxscore_success, clears the failure count."""
+    clauses, params = [], []
+    if since_date is not None:
+        clauses.append("g.date >= ?")
+        params.append(since_date)
+    give_up_before = (dt.date.today() - dt.timedelta(days=config.BOXSCORE_GIVE_UP_MIN_AGE_DAYS)).isoformat()
+    clauses.append(
+        """NOT EXISTS (
+            SELECT 1 FROM boxscore_fetch_failures f
+            WHERE f.game_id = g.id AND f.failures >= ? AND g.date < ?
+        )"""
+    )
+    params += [config.BOXSCORE_GIVE_UP_FAILURES, give_up_before]
     rows = conn.execute(
         f"""
         SELECT g.id FROM games g
-        WHERE g.status = 'final'{date_clause}
+        WHERE g.status = 'final' AND {" AND ".join(clauses)}
         AND NOT EXISTS (SELECT 1 FROM player_stats p WHERE p.game_id = g.id)
         """,
         params,
     ).fetchall()
     return [r["id"] for r in rows]
+
+
+def record_boxscore_failure(conn, game_id: str) -> None:
+    conn.execute(
+        """
+        INSERT INTO boxscore_fetch_failures (game_id, failures, last_failed_at)
+        VALUES (?, 1, datetime('now'))
+        ON CONFLICT(game_id) DO UPDATE SET
+            failures = failures + 1,
+            last_failed_at = excluded.last_failed_at
+        """,
+        (game_id,),
+    )
+
+
+def record_boxscore_success(conn, game_id: str) -> None:
+    conn.execute("DELETE FROM boxscore_fetch_failures WHERE game_id = ?", (game_id,))
 
 
 def unfinished_games_by_date(conn, since_date: str, before_date: str) -> dict[tuple[str, str], int]:

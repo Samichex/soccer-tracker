@@ -134,6 +134,15 @@ def _sync_boxscore(conn, game_id: str) -> int:
     return len(rows)
 
 
+def _record_boxscore_failure(conn, game_id: str) -> None:
+    # Bookkeeping only: failing to record a failure must not break the sweep.
+    try:
+        with conn:
+            db.record_boxscore_failure(conn, game_id)
+    except Exception:
+        log.exception("could not record boxscore failure for game %s", game_id)
+
+
 def sync_boxscores(conn, game_ids: list[str]):
     """Fetch and store box scores for `game_ids`, replacing any already
     stored. A failure for one game is logged and skipped, not raised."""
@@ -142,7 +151,10 @@ def sync_boxscores(conn, game_ids: list[str]):
             count = _sync_boxscore(conn, game_id)
         except Exception:
             log.exception("failed to fetch boxscore for game %s", game_id)
+            _record_boxscore_failure(conn, game_id)
             continue
+        with conn:
+            db.record_boxscore_success(conn, game_id)
         log.info("stored boxscore for game %s (%s players)", game_id, count)
 
 
