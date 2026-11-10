@@ -183,3 +183,55 @@ def test_catch_up_leaves_a_date_alone_when_the_feed_comes_back_empty(conn, monke
 
     assert sync.catch_up_stuck_games() == 0
     assert conn.execute("SELECT status FROM games WHERE id = 'stuck'").fetchone()["status"] == "pre"
+
+
+def _final_game_on(conn, id_, date):
+    db.upsert_game(conn, _scoreboard_game(id_), date)
+    conn.commit()
+
+
+def _failing(fetched):
+    def fake(game_id):
+        fetched.append(game_id)
+        raise RuntimeError("upstream 502")
+    return fake
+
+
+def test_old_game_whose_boxscore_keeps_failing_is_given_up_on(conn, monkeypatch):
+    today = dt.date.today()
+    old = (today - dt.timedelta(days=60)).isoformat()
+    _final_game_on(conn, "old", old)
+    fetched = []
+    monkeypatch.setattr(ncaa_client, "get_boxscore", _failing(fetched))
+
+    for _ in range(config.BOXSCORE_GIVE_UP_FAILURES + 2):
+        sync.sync_missing_boxscores(conn)
+
+    assert fetched == ["old"] * config.BOXSCORE_GIVE_UP_FAILURES
+
+
+def test_recent_game_whose_boxscore_keeps_failing_is_never_given_up_on(conn, monkeypatch):
+    # Not posted yet is a normal state for a game that just finished.
+    recent = (dt.date.today() - dt.timedelta(days=2)).isoformat()
+    _final_game_on(conn, "recent", recent)
+    fetched = []
+    monkeypatch.setattr(ncaa_client, "get_boxscore", _failing(fetched))
+
+    for _ in range(config.BOXSCORE_GIVE_UP_FAILURES + 2):
+        sync.sync_missing_boxscores(conn)
+
+    assert len(fetched) == config.BOXSCORE_GIVE_UP_FAILURES + 2
+
+
+def test_a_successful_fetch_clears_the_failure_count(conn, monkeypatch):
+    old = (dt.date.today() - dt.timedelta(days=60)).isoformat()
+    _final_game_on(conn, "old", old)
+    monkeypatch.setattr(ncaa_client, "get_boxscore", _failing([]))
+    for _ in range(config.BOXSCORE_GIVE_UP_FAILURES):
+        sync.sync_boxscores(conn, ["old"])
+    assert db.games_missing_boxscore(conn) == []  # given up on
+
+    # A direct fetch (e.g. the game page) that works resets the record.
+    monkeypatch.setattr(ncaa_client, "get_boxscore", lambda game_id: _boxscore())
+    sync.sync_boxscores(conn, ["old"])
+    assert conn.execute("SELECT COUNT(*) FROM boxscore_fetch_failures").fetchone()[0] == 0

@@ -78,6 +78,13 @@ SCHEDULE_DAYS_FORWARD = int(os.environ.get("SCHEDULE_DAYS_FORWARD", "65"))
 # season, without re-checking cancelled matches (never finalized upstream)
 # forever.
 CATCHUP_DAYS_BACK = int(os.environ.get("CATCHUP_DAYS_BACK", "120"))
+
+# A final game whose box score fetch has failed this many times in a row,
+# and was played more than BOXSCORE_GIVE_UP_MIN_AGE_DAYS ago, is no longer
+# retried by the sweeps (db.games_missing_boxscore). The age floor keeps a
+# recent game -- whose box score may just not be posted yet -- retrying.
+BOXSCORE_GIVE_UP_FAILURES = int(os.environ.get("BOXSCORE_GIVE_UP_FAILURES", "3"))
+BOXSCORE_GIVE_UP_MIN_AGE_DAYS = int(os.environ.get("BOXSCORE_GIVE_UP_MIN_AGE_DAYS", "14"))
 SCHEDULE_SYNC_INTERVAL_HOURS = int(os.environ.get("SCHEDULE_SYNC_INTERVAL_HOURS", "24"))
 
 SYNC_INTERVAL_MINUTES = int(os.environ.get("SYNC_INTERVAL_MINUTES", "30"))
