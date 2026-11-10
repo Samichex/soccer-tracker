@@ -385,6 +385,18 @@ def upsert_game(conn, game: dict, date_str: str, division: str = "d1"):
             network, url, division, bracket_id, bracket_round, updated_at
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
+            -- Conference-tournament games are published with a "TBA" slot
+            -- until the bracket decides who plays, and keep the same gameID
+            -- once it does (ASUN semifinal 6666301 went TBA -> Stetson).
+            -- The feed is authoritative on who is playing, so refresh the
+            -- teams every sync; COALESCE keeps what we have if a later
+            -- response comes back with a field blank.
+            home_seo=COALESCE(excluded.home_seo, games.home_seo),
+            home_name=COALESCE(excluded.home_name, games.home_name),
+            home_conference=COALESCE(excluded.home_conference, games.home_conference),
+            away_seo=COALESCE(excluded.away_seo, games.away_seo),
+            away_name=COALESCE(excluded.away_name, games.away_name),
+            away_conference=COALESCE(excluded.away_conference, games.away_conference),
             start_time=excluded.start_time,
             start_epoch=excluded.start_epoch,
             status=COALESCE(excluded.status, games.status),
