@@ -56,6 +56,36 @@ def test_upsert_game_updates_score_on_conflict(conn):
     assert row["home_score"] == "5"
 
 
+def test_upsert_game_fills_in_a_tba_opponent_once_the_feed_names_it(conn):
+    # Conference-tournament games are listed with a TBA slot until the
+    # bracket decides the pairing, under the same gameID the real game keeps.
+    pending = _game(id_="semi", home="north-florida", away="tba")
+    pending["game"]["gameState"] = "pre"
+    pending["game"]["away"]["conferences"] = []
+    db.upsert_game(conn, pending, "2026-11-09")
+
+    decided = _game(id_="semi", home="north-florida", away="stetson")
+    decided["game"]["gameState"] = "live"
+    decided["game"]["away"]["conferences"] = [{"conferenceSeo": "asun"}]
+    db.upsert_game(conn, decided, "2026-11-09")
+
+    row = conn.execute("SELECT * FROM games WHERE id = 'semi'").fetchone()
+    assert (row["away_seo"], row["away_name"], row["away_conference"]) == ("stetson", "Stetson", "asun")
+    assert row["home_seo"] == "north-florida"
+    assert row["status"] == "live"
+    assert conn.execute("SELECT COUNT(*) FROM games WHERE id = 'semi'").fetchone()[0] == 1
+
+
+def test_upsert_game_keeps_known_teams_when_a_later_sync_omits_them(conn):
+    db.upsert_game(conn, _game(), "2026-09-01")
+    blank = _game()
+    blank["game"]["home"]["names"] = {}
+    blank["game"]["away"]["names"] = {}
+    db.upsert_game(conn, blank, "2026-09-01")
+    row = conn.execute("SELECT home_seo, home_name, away_seo, away_name FROM games WHERE id = 'g1'").fetchone()
+    assert tuple(row) == ("duke", "Duke", "unc", "Unc")
+
+
 def test_upsert_game_discards_unrecognized_status(conn, caplog):
     bad = _game()
     bad["game"]["gameState"] = "postponed"
